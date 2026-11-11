@@ -128,11 +128,11 @@ export default function HomePage() {
 
       <section className="shell org-home-promo section-space" aria-labelledby="org-home-title">
         <div>
-          <Eyebrow>For businesses and organisations</Eyebrow>
-          <h2 id="org-home-title">Develop confident leaders. Strengthen your organisation.</h2>
-          <p>Explore leadership development, human resource management, healthcare management and bespoke corporate learning with Heeva for Organisations.</p>
+          <Eyebrow>Heeva for Business</Eyebrow>
+          <h2 id="org-home-title">Leadership development. Stronger organisations.</h2>
+          <p>Corporate training and management advisory for organisations, shaped around your people, priorities and sector.</p>
         </div>
-        <ButtonLink to="/for-organisations" variant="outline">Explore organisational services</ButtonLink>
+        <ButtonLink to="/for-organisations" variant="outline">Heeva Courses for Business</ButtonLink>
       </section>
 
       <section className="feedback-section shell section-space">

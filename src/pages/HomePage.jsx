@@ -126,6 +126,15 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="shell org-home-promo section-space" aria-labelledby="org-home-title">
+        <div>
+          <Eyebrow>Heeva for Business</Eyebrow>
+          <h2 id="org-home-title">Leadership development. Stronger organisations.</h2>
+          <p>Corporate training and management advisory for organisations, shaped around your people, priorities and sector.</p>
+        </div>
+        <ButtonLink to="/for-organisations" variant="outline">Heeva Courses for Business</ButtonLink>
+      </section>
+
       <section className="feedback-section shell section-space">
         <div className="feedback-mark" aria-hidden="true">“</div>
         <div><Eyebrow>Voices from the Heeva community</Eyebrow><h2>Read feedback where it was <em>published.</em></h2><p>We do not reproduce learner or family comments here. You can read Heeva’s published reviews on Trustpilot.</p><a className="text-link" href={externalLinks.reviews} target="_blank" rel="noreferrer">Read published reviews <span aria-hidden="true">↗</span><span className="sr-only"> (opens in a new tab)</span></a></div>

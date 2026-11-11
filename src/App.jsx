@@ -15,6 +15,8 @@ import ConsultationPage from './pages/ConsultationPage.jsx';
 import FaqPage from './pages/FaqPage.jsx';
 import ContactPage from './pages/ContactPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
+import OrganisationsPage from './pages/OrganisationsPage.jsx';
+import './styles/organisations.css';
 
 const pageMeta = {
   '/': ['Heeva Courses | Discover what makes your child shine', 'Personalised online courses, a free consultation and room to discuss the right next step with Heeva.'],
@@ -23,6 +25,7 @@ const pageMeta = {
   '/how-heeva-works': ['How Heeva works | Heeva Courses', 'Learn how to begin with a free consultation and discuss course information, trial terms and next steps.'],
   '/for-parents': ['For parents | Heeva Courses', 'Information for families about course fit, fees, teacher onboarding, safeguarding and published policies.'],
   '/about': ['About Heeva | Heeva Courses', 'Learn about Heeva Courses and its published focus on individual online learning.'],
+  '/for-organisations': ['Heeva for Business | Corporate training & management advisory', 'Leadership development, human resource management, healthcare management and tailored corporate learning from Heeva.'],
   '/consultation': ['Free consultation | Heeva Courses', 'Preview the Heeva consultation journey. This form does not send or save personal information.'],
   '/faq': ['Frequently asked questions | Heeva Courses', 'Answers about online courses, free consultations, course details, safeguarding questions and this preview form.'],
   '/contact': ['Contact Heeva | Heeva Courses', 'Published contact information for Heeva Courses Ltd. in London.'],
@@ -42,6 +45,7 @@ function CurrentPage() {
   if (path === '/how-heeva-works') return <HowItWorksPage />;
   if (path === '/for-parents') return <ParentsPage />;
   if (path === '/about') return <AboutPage />;
+  if (path === '/for-organisations') return <OrganisationsPage />;
   if (path === '/consultation') return <ConsultationPage />;
   if (path === '/faq') return <FaqPage />;
   if (path === '/contact') return <ContactPage />;

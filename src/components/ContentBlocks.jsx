@@ -36,9 +36,6 @@ export function SectionHeading({ eyebrow, title, children, light = false, align 
 export function CourseCard({ course, index = 0 }) {
   return (
     <article className={`course-card card-${course.colour}`}>
-      <div className="course-card-image">
-        <img src={course.image} alt={course.imageAlt} width="1200" height="800" loading="lazy" decoding="async" />
-      </div>
       <div className="course-card-top">
         <span className="course-mark" aria-hidden="true">{course.mark}</span>
         <span className="course-count">{String(index + 1).padStart(2, '0')}</span>

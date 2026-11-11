@@ -887,3 +887,36 @@ img { display: block; max-width: 100%; }
   .course-card-image { height: 165px; }
   .course-detail-image { height: 245px; }
 }
+
+
+/* Return the catalogue cards to their original compact, illustrated design. */
+.course-card { padding: 19px 19px 21px; }
+.course-card-image { display: none; }
+
+/* Place a small subject photograph inside the original circular course-detail feature. */
+.detail-art {
+  width: 290px;
+  height: 290px;
+  overflow: hidden;
+}
+.detail-course-photo {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 164px;
+  height: 164px;
+  border: 5px solid rgba(255,253,248,.9);
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+  box-shadow: 0 10px 26px rgba(35,60,53,.18);
+}
+.detail-art > small {
+  z-index: 2;
+  padding: 4px 10px;
+  border-radius: 30px;
+  background: var(--paper);
+}
+@media (max-width: 560px) {
+  .detail-course-photo { width: 148px; height: 148px; }
+}

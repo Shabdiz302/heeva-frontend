@@ -18,8 +18,9 @@ export default function CourseDetailPage({ course }) {
             </a>
             <ButtonLink to={`/consultation?interest=${course.slug}`}>Ask about this course</ButtonLink>
           </div>
-          <div className="course-detail-image">
-            <img src={course.image} alt={course.imageAlt} width="1200" height="800" loading="eager" decoding="async" />
+          <div className="detail-art" aria-label={`Illustration for ${course.title}`}>
+            <img className="detail-course-photo" src={course.image} alt={course.imageAlt} width="180" height="180" loading="eager" decoding="async" />
+            <small>{categoryLabel(course.category)}</small>
           </div>
         </div>
       </section>

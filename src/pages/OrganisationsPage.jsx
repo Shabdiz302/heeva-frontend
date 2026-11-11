@@ -114,21 +114,33 @@ export default function OrganisationsPage() {
 
       <section className="shell org-profile section-space">
         <div className="org-profile-aside">
-          <span className="org-profile-monogram" aria-hidden="true">MZ</span>
-          <div><small>ACADEMIC & PRACTICAL EXPERIENCE</small><b>Dr Maryam<br />Zahmatkesh</b></div>
+          <a className="org-profile-image-link" href="https://pure.royalholloway.ac.uk/en/persons/maryam-zahmatkesh/" target="_blank" rel="noreferrer" aria-label="Open Dr Maryam Zahmatkesh's official academic profile">
+            <img
+              className="org-profile-photo"
+              src="https://pure.royalholloway.ac.uk/files-asset/46469730/Picture1.png?f=jpg&w=160"
+              alt="Portrait of Dr Maryam Zahmatkesh, sourced from her Royal Holloway academic profile"
+              width="160"
+              height="160"
+              loading="lazy"
+              decoding="async"
+            />
+          </a>
+          <div><small>BUSINESS & ORGANISATIONAL EXPERTISE</small><b>Dr Maryam<br />Zahmatkesh</b></div>
         </div>
         <div className="org-profile-copy">
-          <Eyebrow>Professional expertise</Eyebrow>
-          <h2>Academic understanding, informed by <em>management practice.</em></h2>
-          <p>Dr Maryam Zahmatkesh is a Lecturer in Health Management at Royal Holloway, University of London, in its School of Business and Management. Her academic background includes human resource management, organisation studies and healthcare management.</p>
-          <p>Before joining academia, she held general management roles in public and private hospitals. Her responsibilities included human resources, finance, access, performance targets, quality standards and contributing to strategic planning.</p>
+          <Eyebrow>Expertise behind our approach</Eyebrow>
+          <h2>Helping organisations think clearly about <em>people, leadership and performance.</em></h2>
+          <p>Heeva for Business is shaped by Dr Maryam Zahmatkesh’s work across healthcare management, human resource management and organisation studies. Her perspective connects the realities of leading services and teams with the questions that matter to organisations: how managers make decisions, how responsibility is shared, and how people and performance are supported.</p>
+          <p>Before moving into academia, Maryam held general management responsibilities in public and private hospitals, spanning workforce matters, finance, service access, performance targets, quality standards and strategic planning. She has also taught HRM and medical management and leadership in higher education.</p>
+          <p>Her doctoral research examined the autonomy of middle managers in healthcare organisations in England and Iran. This provides a strong academic lens for exploring delegation, decision-making, managerial roles and organisational context—particularly in complex service environments.</p>
           <div className="org-credentials">
-            <div><b>PhD</b><span>HRM/Healthcare, Royal Holloway</span></div>
-            <div><b>MSc</b><span>Leadership and Management in Health, Kingston University</span></div>
-            <div><b>BSc</b><span>Healthcare Management, University of Isfahan</span></div>
+            <div><b>PhD</b><span>Healthcare organisations and middle-manager autonomy</span></div>
+            <div><b>MSc</b><span>Leadership and Management in Health</span></div>
+            <div><b>BSc</b><span>Healthcare Management</span></div>
           </div>
-          <p className="org-profile-note">Her previous academic roles include teaching HRM at Aston Business School and course direction and teaching in Medical Management and Leadership at Aston Medical School. Her university appointments are provided as professional background only. Heeva is an independent business; no university partnership, endorsement or delivery on behalf of either university is implied.</p>
-          <a className="text-link" href="https://pure.royalholloway.ac.uk/en/persons/maryam-zahmatkesh/" target="_blank" rel="noreferrer">View the public academic profile <span aria-hidden="true">↗</span><span className="sr-only"> (opens in a new tab)</span></a>
+          <p className="org-profile-note">For Heeva, this expertise informs the proposed focus of our organisational learning and advisory work: leadership capability, people management, healthcare management and organisational decision-making. Each engagement would be scoped to the organisation’s needs; no client outcomes or established corporate programme history are claimed. Maryam’s university role is stated as professional background only. Heeva is independent and does not represent or imply endorsement by Royal Holloway or Aston University.</p>
+          <a className="text-link" href="https://pure.royalholloway.ac.uk/en/persons/maryam-zahmatkesh/" target="_blank" rel="noreferrer">View Dr Maryam’s academic profile <span aria-hidden="true">↗</span><span className="sr-only"> (opens in a new tab)</span></a>
+          <p className="org-photo-credit">Portrait source: Royal Holloway Research Portal. Used here to identify Dr Maryam; a higher-resolution, approved portrait is recommended for the final website.</p>
         </div>
       </section>
 

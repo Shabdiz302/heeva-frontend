@@ -749,3 +749,97 @@ img { display: block; max-width: 100%; }
   .contact-detail { grid-template-columns: minmax(105px, .75fr) minmax(0, 1.25fr); font-size: 14px; }
   .course-detail-layout > div:first-child .button { width: 100%; margin: 0 0 10px; }
 }
+
+
+/* WhatsApp contact and support panel at the foot of the homepage. */
+.home-whatsapp-support {
+  padding-block: 42px;
+  background: #e8efe6;
+  border-top: 1px solid #d7e2d5;
+}
+.home-whatsapp-inner {
+  display: grid;
+  grid-template-columns: 62px minmax(0,1fr) auto;
+  align-items: center;
+  gap: 22px;
+}
+.home-whatsapp-mark {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: #237b55;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: .02em;
+  box-shadow: 0 8px 20px rgba(35,123,85,.18);
+}
+.home-whatsapp-copy h2 {
+  margin: 7px 0 5px;
+  color: var(--forest-deep);
+  font: 400 clamp(25px,3vw,34px)/1.1 var(--serif);
+}
+.home-whatsapp-copy p {
+  margin: 0;
+  color: #5f7166;
+  font-size: 15px;
+  line-height: 1.65;
+}
+.home-whatsapp-copy small {
+  display: inline-block;
+  margin-top: 8px;
+  color: #64746a;
+  font-size: 13px;
+}
+.button-whatsapp { background: #237b55; border-color: #237b55; color: #fff; }
+.button-whatsapp:hover { background: #195f41; border-color: #195f41; }
+.button-whatsapp > span { color: #e4f2e9; }
+@media (max-width: 700px) {
+  .home-whatsapp-inner { grid-template-columns: 50px minmax(0,1fr); gap: 14px; }
+  .home-whatsapp-mark { width: 48px; height: 48px; }
+  .home-whatsapp-copy h2 { font-size: 27px; }
+  .home-whatsapp-inner .button { grid-column: 1 / -1; width: 100%; }
+}
+
+/* Consistent portrait framing for the teacher directory and profile pages. */
+.teacher-photo {
+  background: linear-gradient(145deg, #e9eee6 0%, #dce5db 100%);
+  border-bottom: 1px solid rgba(35,60,53,.08);
+}
+.teacher-photo img {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+  object-position: center 38%;
+  filter: saturate(1.035) contrast(1.02);
+  transition: transform .35s ease, filter .35s ease;
+}
+.teacher-card:hover .teacher-photo img {
+  transform: scale(1.035);
+  filter: saturate(1.07) contrast(1.03);
+}
+.teacher-profile-photo {
+  border: 1px solid rgba(35,60,53,.1);
+  background: linear-gradient(145deg, #e9eee6 0%, #dce5db 100%);
+}
+.teacher-profile-photo img {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+  object-position: center 38%;
+  filter: saturate(1.035) contrast(1.02);
+}
+.hero-photo-frame img {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+  object-position: center 38%;
+}

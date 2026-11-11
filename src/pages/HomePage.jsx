@@ -1,7 +1,7 @@
 import { Link } from '../router.jsx';
 import { categories, courses } from '../data/courses.js';
 import { teachers } from '../data/teachers.js';
-import { externalLinks } from '../data/site.js';
+import { contact, externalLinks } from '../data/site.js';
 import { ButtonLink, CourseCard, Eyebrow, SectionHeading, TeacherCard, TrustCard } from '../components/ContentBlocks.jsx';
 
 const categoryDescriptions = {
@@ -155,6 +155,26 @@ export default function HomePage() {
       <section className="shell final-cta section-space">
         <div className="final-cta-copy"><Eyebrow>Your first step is a conversation</Eyebrow><h2>Let’s find the right <em>starting point.</em></h2></div>
         <ButtonLink to="/consultation">Book your free consultation</ButtonLink>
+      </section>
+
+      <section className="home-whatsapp-support" aria-labelledby="home-whatsapp-title">
+        <div className="shell home-whatsapp-inner">
+          <div className="home-whatsapp-mark" aria-hidden="true">WA</div>
+          <div className="home-whatsapp-copy">
+            <Eyebrow>Questions or need support?</Eyebrow>
+            <h2 id="home-whatsapp-title">Chat with Heeva on WhatsApp.</h2>
+            <p>Ask our team about courses, teachers, registration or choosing the right next step.</p>
+            <small>WhatsApp support: {contact.whatsapp}</small>
+          </div>
+          <a
+            className="button button-whatsapp"
+            href={`https://wa.me/${contact.whatsappLink}?text=${encodeURIComponent('Hello Heeva, I would like some help with your courses.')}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Chat with us <span aria-hidden="true">↗</span>
+          </a>
+        </div>
       </section>
     </>
   );

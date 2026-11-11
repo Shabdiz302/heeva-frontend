@@ -34,21 +34,24 @@ export function SectionHeading({ eyebrow, title, children, light = false, align 
 }
 
 export function CourseCard({ course, index = 0 }) {
+  const status = course.status || 'available';
+  const meta = status === 'coming-soon' ? 'New course · details in development' : status === 'published-check-details' ? 'Published course · check details' : `£${course.price} · ${course.sessions} sessions`;
+  const action = status === 'coming-soon' ? 'Register interest' : status === 'published-check-details' ? 'View course details' : 'Explore course';
   return (
-    <article className={`course-card card-${course.colour}`}>
-      <img className="course-card-photo" src={course.image} alt="" aria-hidden="true" width="80" height="80" loading="lazy" decoding="async" />
+    <article className={`course-card card-${course.colour}${status === 'coming-soon' ? ' course-card-coming-soon' : ''}`}>
+      <img className="course-card-photo" src={course.image} alt="" aria-hidden="true" width="112" height="112" loading="lazy" decoding="async" />
       <div className="course-card-top">
         <span className="course-mark" aria-hidden="true">{course.mark}</span>
         <span className="course-count">{String(index + 1).padStart(2, '0')}</span>
       </div>
       <span className="course-category">{categoryLabel(course.category)}</span>
       <h3>{course.title}</h3>
-      <p className="course-meta">{course.sessions} sessions <span aria-hidden="true">·</span> {course.lessonLength}</p>
-      <Link className="card-link" to={`/courses/${course.slug}`}>Explore course <span aria-hidden="true">↗</span></Link>
+      <p className="course-meta">{meta}</p>
+      <Link className="card-link" to={`/courses/${course.slug}`}>{action} <span aria-hidden="true">↗</span></Link>
+      {status === 'coming-soon' && <span className="course-status-tag">Coming soon</span>}
     </article>
   );
 }
-
 export function TeacherCard({ teacher, index = 0 }) {
   return (
     <article className="teacher-card">

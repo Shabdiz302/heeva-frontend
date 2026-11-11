@@ -25,7 +25,7 @@ const pageMeta = {
   '/how-heeva-works': ['How Heeva works | Heeva Courses', 'Learn how to begin with a free consultation and discuss course information, trial terms and next steps.'],
   '/for-parents': ['For parents | Heeva Courses', 'Information for families about course fit, fees, teacher onboarding, safeguarding and published policies.'],
   '/about': ['About Heeva | Heeva Courses', 'Learn about Heeva Courses and its published focus on individual online learning.'],
-  '/for-organisations': ['Heeva for Organisations | Leadership, HRM & Healthcare Management', 'Management development, corporate training and organisational advisory shaped around your organisation.'],
+  '/for-organisations': ['Heeva for Business | Corporate training & management advisory', 'Leadership development, human resource management, healthcare management and tailored corporate learning from Heeva.'],
   '/consultation': ['Free consultation | Heeva Courses', 'Preview the Heeva consultation journey. This form does not send or save personal information.'],
   '/faq': ['Frequently asked questions | Heeva Courses', 'Answers about online courses, free consultations, course details, safeguarding questions and this preview form.'],
   '/contact': ['Contact Heeva | Heeva Courses', 'Published contact information for Heeva Courses Ltd. in London.'],

@@ -1,0 +1,36 @@
+{
+  "sourceDirectory": "https://heevacourses.com/heeva-teachers",
+  "resolutionCheck": "The published directory image and the individual profile view both serve 263×223 JPEGs with no srcset or larger public portrait variant observed.",
+  "displayTreatment": {
+    "aspectRatio": "263:223",
+    "fit": "contain",
+    "maximumRenderedSize": "263×223 CSS pixels",
+    "crop": "none",
+    "upscale": "none",
+    "processing": "WebP conversion and responsive downscaling only. No face retouching or color adjustment. Source JPEG copies were re-encoded to remove EXIF metadata."
+  },
+  "assets": [
+    { "name": "Albertus V.", "sourceUrl": "https://heevacourses.com/uploads/user_profile/teacher/65817dba3e40d/albertus-sm-65817f69adfe8.jpg", "sourceDimensions": { "width": 263, "height": 223 }, "webp": "/images/teachers/albertus-v.webp", "sourceJpegCopy": "/images/teachers/original/albertus-v.jpg" },
+    { "name": "Bahar S.", "sourceUrl": "https://heevacourses.com/uploads/user_profile/teacher/62e5e8ea3e279/62e5ea0c9bbac.jpg", "sourceDimensions": { "width": 263, "height": 223 }, "webp": "/images/teachers/bahar-s.webp", "sourceJpegCopy": "/images/teachers/original/bahar-s.jpg" },
+    { "name": "Calley-Anne B.", "sourceUrl": "https://heevacourses.com/uploads/user_profile/teacher/6575be0b7005e/calley-th-6575c1e30b2a7.jpg", "sourceDimensions": { "width": 263, "height": 223 }, "webp": "/images/teachers/calley-anne-b.webp", "sourceJpegCopy": "/images/teachers/original/calley-anne-b.jpg" },
+    { "name": "Catlyn A.", "sourceUrl": "https://heevacourses.com/uploads/user_profile/teacher/63f8207777777/catlyn-263x256.jpg", "sourceDimensions": { "width": 263, "height": 223 }, "webp": "/images/teachers/catlyn-a.webp", "sourceJpegCopy": "/images/teachers/original/catlyn-a.jpg" },
+    { "name": "Fahimeh Sh.", "sourceUrl": "https://heevacourses.com/uploads/user_profile/teacher/619256c2c4383/fahimeh-pic-61925e1ad65c6.jpg", "sourceDimensions": { "width": 263, "height": 223 }, "webp": "/images/teachers/fahimeh-sh.webp", "sourceJpegCopy": "/images/teachers/original/fahimeh-sh.jpg" },
+    { "name": "Fatemeh Kh.", "sourceUrl": "https://heevacourses.com/uploads/user_profile/teacher/62022f3f3b999/fatemeh-k.jpg", "sourceDimensions": { "width": 263, "height": 223 }, "webp": "/images/teachers/fatemeh-kh.webp", "sourceJpegCopy": "/images/teachers/original/fatemeh-kh.jpg" },
+    { "name": "Honey U.", "sourceUrl": "https://heevacourses.com/uploads/user_profile/teacher/61f82076d2261/Honey-sm-61f82b6c812ab.jpg", "sourceDimensions": { "width": 263, "height": 223 }, "webp": "/images/teachers/honey-u.webp", "sourceJpegCopy": "/images/teachers/original/honey-u.jpg" },
+    { "name": "Mahya A.", "sourceUrl": "https://heevacourses.com/uploads/user_profile/teacher/6098345ab6ecf/mahya.a-6098436f0060d.jpg", "sourceDimensions": { "width": 263, "height": 223 }, "webp": "/images/teachers/mahya-a.webp", "sourceJpegCopy": "/images/teachers/original/mahya-a.jpg" },
+    { "name": "Maryam M.", "sourceUrl": "https://heevacourses.com/uploads/user_profile/teacher/609834aec5683/maryam.m-609836b77826e.jpg", "sourceDimensions": { "width": 263, "height": 223 }, "webp": "/images/teachers/maryam-m.webp", "sourceJpegCopy": "/images/teachers/original/maryam-m.jpg" },
+    { "name": "Mohammad P.", "sourceUrl": "https://heevacourses.com/uploads/user_profile/teacher/614f776b4466a/mohammad_p.jpg", "sourceDimensions": { "width": 263, "height": 223 }, "webp": "/images/teachers/mohammad-p.webp", "sourceJpegCopy": "/images/teachers/original/mohammad-p.jpg" },
+    { "name": "Neda M.", "sourceUrl": "https://heevacourses.com/uploads/user_profile/teacher/648860baa50c4/neda-m.jpg", "sourceDimensions": { "width": 263, "height": 223 }, "webp": "/images/teachers/neda-m.webp", "sourceJpegCopy": "/images/teachers/original/neda-m.jpg" },
+    { "name": "Niyayesh R.", "sourceUrl": "https://heevacourses.com/uploads/user_profile/teacher/616c0b1c19c3c/niyayesh-rashidi-616c0c9da5670.jpg", "sourceDimensions": { "width": 263, "height": 223 }, "webp": "/images/teachers/niyayesh-r.webp", "sourceJpegCopy": "/images/teachers/original/niyayesh-r.jpg" },
+    { "name": "Parastoo K.", "sourceUrl": "https://heevacourses.com/uploads/user_profile/teacher/61992c877fdfd/Parastoo-sm-61992c877fdfd.jpg", "sourceDimensions": { "width": 263, "height": 223 }, "webp": "/images/teachers/parastoo-k.webp", "sourceJpegCopy": "/images/teachers/original/parastoo-k.jpg" },
+    { "name": "Rhona P.", "sourceUrl": "https://heevacourses.com/uploads/user_profile/teacher/64d725bc761e8/rhona-th-64d72ed1e0bd5.jpg", "sourceDimensions": { "width": 263, "height": 223 }, "webp": "/images/teachers/rhona-p.webp", "sourceJpegCopy": "/images/teachers/original/rhona-p.jpg" },
+    { "name": "Roya K.", "sourceUrl": "https://heevacourses.com/uploads/user_profile/teacher/60ebfb9abd548/roya-60ec0036c5000.jpg", "sourceDimensions": { "width": 263, "height": 223 }, "webp": "/images/teachers/roya-k.webp", "sourceJpegCopy": "/images/teachers/original/roya-k.jpg" },
+    { "name": "Saghar A.", "sourceUrl": "https://heevacourses.com/uploads/user_profile/teacher/64b98d7b84edb/tch-sa.jpg", "sourceDimensions": { "width": 263, "height": 223 }, "webp": "/images/teachers/saghar-a.webp", "sourceJpegCopy": "/images/teachers/original/saghar-a.jpg" },
+    { "name": "Sepideh M.", "sourceUrl": "https://heevacourses.com/uploads/user_profile/teacher/60a35a3a6fb59/609836bggffvv.jpg", "sourceDimensions": { "width": 263, "height": 223 }, "webp": "/images/teachers/sepideh-m.webp", "sourceJpegCopy": "/images/teachers/original/sepideh-m.jpg" },
+    { "name": "Ali Alavi", "sourceUrl": "https://heevacourses.com/uploads/user_profile/teacher/2222dddd/t3-603294e4a6d16.jpg", "sourceDimensions": { "width": 263, "height": 223 }, "webp": "/images/teachers/ali-alavi.webp", "sourceJpegCopy": "/images/teachers/original/ali-alavi.jpg" },
+    { "name": "Thana A.", "sourceUrl": "https://heevacourses.com/uploads/user_profile/teacher/61dc63b0cb6eb/Thana-sm-61e04c0525b32.jpg", "sourceDimensions": { "width": 263, "height": 223 }, "webp": "/images/teachers/thana-a.webp", "sourceJpegCopy": "/images/teachers/original/thana-a.jpg" },
+    { "name": "Vanessa K.", "sourceUrl": "https://heevacourses.com/uploads/user_profile/teacher/65018bf8a3ce6/vanessa-th-65018eac8c1e1.jpg", "sourceDimensions": { "width": 263, "height": 223 }, "webp": "/images/teachers/vanessa-k.webp", "sourceJpegCopy": "/images/teachers/original/vanessa-k.jpg" },
+    { "name": "Zahra R.", "sourceUrl": "https://heevacourses.com/uploads/user_profile/teacher/61992c8774f8a/Zahra-sm-61992c8774f8a.jpg", "sourceDimensions": { "width": 263, "height": 223 }, "webp": "/images/teachers/zahra-r.webp", "sourceJpegCopy": "/images/teachers/original/zahra-r.jpg" },
+    { "name": "Zyllah S.", "sourceUrl": "https://heevacourses.com/uploads/user_profile/teacher/64afe0a0db0a9/zyllah-sm.jpg", "sourceDimensions": { "width": 263, "height": 223 }, "webp": "/images/teachers/zyllah-s.webp", "sourceJpegCopy": "/images/teachers/original/zyllah-s.jpg" }
+  ]
+}

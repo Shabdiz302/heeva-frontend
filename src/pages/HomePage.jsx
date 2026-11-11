@@ -21,7 +21,7 @@ export default function HomePage() {
         <div className="shell hero-grid">
           <div className="hero-copy">
             <Eyebrow>Learning with room to grow</Eyebrow>
-            <h1>Discover what makes your child <em>possible.</em></h1>
+            <h1>Discover what makes your child <em>shine.</em></h1>
             <p className="hero-lead">A thoughtful start to online learning, shaped around your child and the things they are curious about.</p>
             <div className="hero-actions">
               <ButtonLink to="/consultation">Book your free consultation</ButtonLink>

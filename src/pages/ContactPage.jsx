@@ -12,7 +12,9 @@ export default function ContactPage() {
           <Eyebrow>Heeva Courses Ltd.</Eyebrow>
           <h2>Say hello.</h2>
           <div className="contact-detail"><span>Email</span><a href={`mailto:${contact.email}`}>{contact.email} <span aria-hidden="true">↗</span></a></div>
-          <div className="contact-detail"><span>London phone</span><a href={`tel:${contact.telephoneLink}`}>{contact.telephone} <span aria-hidden="true">↗</span></a></div>
+          {contact.regionalPhones.map(({ location, number, link }) => (
+            <div className="contact-detail" key={location}><span>{location} phone</span><a href={`tel:${link}`}>{number} <span aria-hidden="true">↗</span></a></div>
+          ))}
           <div className="contact-detail"><span>WhatsApp</span><a href={`https://wa.me/${contact.whatsappLink}`} target="_blank" rel="noreferrer">{contact.whatsapp} <span aria-hidden="true">↗</span><span className="sr-only"> (opens in a new tab)</span></a></div>
           <div className="contact-detail"><span>Head office</span><p>{contact.address}</p></div>
           <ButtonLink to="/consultation">Book a free consultation</ButtonLink>

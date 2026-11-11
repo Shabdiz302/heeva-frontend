@@ -57,10 +57,9 @@ export function TeacherCard({ teacher, index = 0 }) {
             <source srcSet={teacher.photo} type="image/webp" />
             <img src={teacher.originalPhoto} alt={`Portrait of ${teacher.name}, ${teacher.role}`} width="263" height="223" loading="lazy" decoding="async" style={{ objectPosition: teacher.imagePosition || 'center' }} />
           </picture>
-          <span className="teacher-photo-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
         </div>
         <div className="teacher-card-copy">
-          <h3>{teacher.name}</h3>
+          <div className="teacher-card-heading"><h3>{teacher.name}</h3><span className="teacher-card-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span></div>
           <p className="teacher-role">{teacher.role}</p>
           <p className="teacher-summary">{teacher.summary}</p>
           <span className="teacher-profile-link">View full profile <span aria-hidden="true">↗</span></span>

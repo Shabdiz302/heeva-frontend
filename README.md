@@ -14,7 +14,7 @@ A responsive React and Vite frontend preview for Heeva Courses. The site is a st
 - FAQ
 - Contact information
 
-The course list contains published course names, session counts and lesson lengths. Fees and course suitability are discussed during consultation. The teacher directory uses portraits and biography information published by Heeva; original portrait copies are retained separately and stripped of image metadata, while optimized WebP files are used on pages. No customer reviews are reproduced; the home page links to Heeva’s published Trustpilot profile.
+The course list contains published course names, session counts and lesson lengths. Fees and course suitability are discussed during consultation. Teacher portraits and biographies come from Heeva’s public directory. The public portrait files are 263×223 pixels; cards preserve that landscape ratio, do not crop or enlarge them, and use WebP conversions. Re-encoded JPEG copies with image metadata removed are retained separately. `public/images/teachers/asset-manifest.json` lists every portrait source URL, source dimensions, local filename, and display treatment. No customer reviews are reproduced; the home page links to Heeva’s published Trustpilot profile.
 
 ## Run locally
 

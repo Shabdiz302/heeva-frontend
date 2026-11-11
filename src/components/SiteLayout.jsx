@@ -8,7 +8,6 @@ const primaryNav = [
   ['How it works', '/how-heeva-works'],
   ['For parents', '/for-parents'],
   ['About', '/about'],
-  ['For organisations', '/for-organisations'],
 ];
 
 function Brand({ footer = false }) {
@@ -61,6 +60,7 @@ export function SiteHeader() {
               const active = to === '/courses' ? courseActive : pathname === to;
               return <Link key={to} to={to} aria-current={active ? 'page' : undefined} onClick={closeMenu}>{label}</Link>;
             })}
+            <Link className="button button-nav button-outline business-nav-button" to="/for-organisations" aria-current={pathname === '/for-organisations' ? 'page' : undefined} onClick={closeMenu}>For Business <span aria-hidden="true">↗</span></Link>
             <Link className="button button-nav" to="/consultation" onClick={closeMenu}>Book a free consultation <span aria-hidden="true">↗</span></Link>
           </nav>
         </div>
@@ -94,7 +94,7 @@ export function SiteFooter() {
           <h2>Heeva</h2>
           <Link to="/about">About Heeva</Link>
           <Link to="/contact">Contact</Link>
-          <Link to="/for-organisations">For organisations</Link>
+          <Link to="/for-organisations">Heeva for Business</Link>
           <a href={policies.privacy} target="_blank" rel="noreferrer">Privacy policy <span aria-hidden="true">↗</span></a>
           <a href={policies.terms} target="_blank" rel="noreferrer">Terms of service <span aria-hidden="true">↗</span></a>
         </div>

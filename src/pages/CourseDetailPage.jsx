@@ -18,7 +18,9 @@ export default function CourseDetailPage({ course }) {
             </a>
             <ButtonLink to={`/consultation?interest=${course.slug}`}>Ask about this course</ButtonLink>
           </div>
-          <div className="detail-art" aria-hidden="true"><span>{course.mark}</span><i /><b>HEEVA<br />COURSES</b><small>{categoryLabel(course.category)}</small></div>
+          <div className="course-detail-image">
+            <img src={course.image} alt={course.imageAlt} width="1200" height="800" loading="eager" decoding="async" />
+          </div>
         </div>
       </section>
       <section className="shell course-detail-body">

@@ -15,6 +15,8 @@ export const courses = [
     lessonLength: '45–60 minutes',
     mark: 'ف',
     colour: 'rose',
+    image: 'https://heevacourses.com/uploads/course_img_and_file/efefef/efefef-1.jpg',
+    imageAlt: 'Farsi reading and writing course materials',
   },
   {
     slug: 'piano',
@@ -25,6 +27,8 @@ export const courses = [
     lessonLength: '45 minutes',
     mark: '♫',
     colour: 'gold',
+    image: 'https://images.unsplash.com/photo-1760907218312-ababb81393f6?auto=format&fit=crop&w=1200&q=80',
+    imageAlt: 'Piano keyboard and sheet music for piano lessons',
   },
   {
     slug: 'guitar',
@@ -35,6 +39,8 @@ export const courses = [
     lessonLength: '30 minutes',
     mark: '♬',
     colour: 'sage',
+    image: 'https://images.unsplash.com/photo-1512153129600-528cae82b06a?auto=format&fit=crop&w=1200&q=80',
+    imageAlt: 'Close-up of a musician playing an acoustic guitar',
   },
   {
     slug: 'general-english',
@@ -45,6 +51,8 @@ export const courses = [
     lessonLength: '60 minutes',
     mark: 'Aa',
     colour: 'lavender',
+    image: 'https://heevacourses.com/uploads/course_img_and_file/6138d11edb71d/bg-6138d21a9ab95.jpg',
+    imageAlt: 'English language learning and online study',
   },
   {
     slug: 'watercolour-drawing',
@@ -55,6 +63,8 @@ export const courses = [
     lessonLength: '45 minutes',
     mark: '◒',
     colour: 'blue',
+    image: 'https://heevacourses.com/uploads/course_img_and_file/62bee3a1599cf/watercolor-inner-62bee734ef7bb.jpg',
+    imageAlt: 'Watercolour painting and art materials',
   },
   {
     slug: 'violin',
@@ -65,6 +75,8 @@ export const courses = [
     lessonLength: '30–45 minutes',
     mark: '♩',
     colour: 'peach',
+    image: 'https://heevacourses.com/uploads/course_img_and_file/62d43b0aecec1/viollin-62d43b8ee3dac.jpg',
+    imageAlt: 'Violin instrument for beginner to advanced lessons',
   },
   {
     slug: 'creative-arts-for-children',
@@ -75,6 +87,8 @@ export const courses = [
     lessonLength: '45 minutes',
     mark: '✿',
     colour: 'sage',
+    image: 'https://images.unsplash.com/photo-1777537953517-bc8bc3b476b4?auto=format&fit=crop&w=1200&q=80',
+    imageAlt: 'Colourful paintbrush and palette for children's creative art',
   },
   {
     slug: 'discover-your-childs-talent-for-music',
@@ -85,6 +99,8 @@ export const courses = [
     lessonLength: '30–45 minutes',
     mark: '♪',
     colour: 'rose',
+    image: 'https://images.unsplash.com/photo-1769097542113-49f995910fc5?auto=format&fit=crop&w=1200&q=80',
+    imageAlt: 'Children practising piano together in a music lesson',
   },
 ];
 

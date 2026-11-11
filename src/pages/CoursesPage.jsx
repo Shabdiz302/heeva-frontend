@@ -9,7 +9,7 @@ export default function CoursesPage() {
     const term = search.trim().toLocaleLowerCase();
     return courses.filter((course) => {
       const matchesCategory = category === 'all' || course.category === category;
-      return matchesCategory && (!term || `${course.title} ${course.category}`.toLocaleLowerCase().includes(term));
+      return matchesCategory && (!term || `${course.title} ${course.category} ${course.description || ''}`.toLocaleLowerCase().includes(term));
     });
   }, [category, search]);
 

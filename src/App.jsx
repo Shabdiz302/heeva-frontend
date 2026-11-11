@@ -23,7 +23,7 @@ const SITE_NAME = 'Heeva Courses';
 
 const pageMeta = {
   '/': ['Heeva Courses | Discover what makes your child shine', 'Personalised online courses, a free consultation and room to discuss the right next step with Heeva.'],
-  '/courses': ['Courses | Heeva Courses', 'Explore Heeva’s published online courses in music, languages and creative arts. Discuss fees and suitability in a free consultation.'],
+  '/courses': ['Courses | Heeva Courses', 'Explore Heeva’s online courses in music, languages, creative arts, AI and digital skills. Browse existing programmes and upcoming courses.'],
   '/teachers': ['Our teachers | Heeva Courses', 'Search the current Heeva teacher directory by name, subject, or biography and open individual teacher profiles.'],
   '/how-heeva-works': ['How Heeva works | Heeva Courses', 'Learn how to begin with a free consultation and discuss course information, trial terms and next steps.'],
   '/for-parents': ['For parents | Heeva Courses', 'Information for families about course fit, fees, teacher onboarding, safeguarding and published policies.'],

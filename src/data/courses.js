@@ -27,7 +27,7 @@ export const courses = [
     lessonLength: '45 minutes',
     mark: '♫',
     colour: 'gold',
-    image: 'https://images.unsplash.com/photo-1760907218312-ababb81393f6?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?auto=format&fit=crop&w=720&q=82',
     imageAlt: 'Piano keyboard and sheet music for piano lessons',
   },
   {
@@ -39,7 +39,7 @@ export const courses = [
     lessonLength: '30 minutes',
     mark: '♬',
     colour: 'sage',
-    image: 'https://images.unsplash.com/photo-1512153129600-528cae82b06a?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=720&q=82',
     imageAlt: 'Close-up of a musician playing an acoustic guitar',
   },
   {
@@ -87,7 +87,7 @@ export const courses = [
     lessonLength: '45 minutes',
     mark: '✿',
     colour: 'sage',
-    image: 'https://images.unsplash.com/photo-1777537953517-bc8bc3b476b4?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=720&q=82',
     imageAlt: "Colourful paintbrush and palette for children’s creative art",
   },
   {
@@ -99,7 +99,7 @@ export const courses = [
     lessonLength: '30–45 minutes',
     mark: '♪',
     colour: 'rose',
-    image: 'https://images.unsplash.com/photo-1769097542113-49f995910fc5?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1507838153414-b4b713384a76?auto=format&fit=crop&w=720&q=82',
     imageAlt: 'Children practising piano together in a music lesson',
   },
 ];

@@ -951,3 +951,11 @@ img { display: block; max-width: 100%; }
   position: relative;
   z-index: 2;
 }
+
+/* Slightly larger course thumbnail circles. */
+.course-card-photo { right:-42px; bottom:18px; width:112px; height:112px; object-fit:cover; object-position:center; border-radius:50%; box-shadow:0 4px 14px rgba(35,60,53,.16); }
+.course-card::after { right:-42px; bottom:18px; width:112px; height:112px; border-color:rgba(35,60,53,.2); }
+.course-card h3 { max-width:205px; }
+.course-card .course-meta { max-width:190px; }
+.course-card .card-link { max-width:65%; }
+@media (max-width:700px) { .course-card-photo,.course-card::after { right:-38px; bottom:16px; width:102px; height:102px; } }

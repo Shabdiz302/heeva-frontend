@@ -8,6 +8,7 @@ const primaryNav = [
   ['How it works', '/how-heeva-works'],
   ['For parents', '/for-parents'],
   ['About', '/about'],
+  ['For organisations', '/for-organisations'],
 ];
 
 function Brand({ footer = false }) {
@@ -93,6 +94,7 @@ export function SiteFooter() {
           <h2>Heeva</h2>
           <Link to="/about">About Heeva</Link>
           <Link to="/contact">Contact</Link>
+          <Link to="/for-organisations">For organisations</Link>
           <a href={policies.privacy} target="_blank" rel="noreferrer">Privacy policy <span aria-hidden="true">↗</span></a>
           <a href={policies.terms} target="_blank" rel="noreferrer">Terms of service <span aria-hidden="true">↗</span></a>
         </div>

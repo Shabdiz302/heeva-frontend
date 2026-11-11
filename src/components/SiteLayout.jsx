@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useRouter } from '../router.jsx';
-import { assetUrl } from '../utils/assets.js';
 import { policies } from '../data/site.js';
+import { assetPath } from '../utils/assets.js';
 
 const primaryNav = [
   ['Courses', '/courses'],
@@ -15,7 +15,7 @@ const primaryNav = [
 function Brand({ footer = false }) {
   return (
     <Link className={`brand${footer ? ' brand-footer' : ''}`} to="/" aria-label="Heeva Courses home">
-      <img className="brand-logo" src={assetUrl('/images/brand/heeva-logo.png')} width="160" height="81" alt="Heeva Courses" />
+      <img className="brand-logo" src={assetPath('/images/brand/heeva-logo.png')} width="160" height="81" alt="Heeva Courses" />
     </Link>
   );
 }

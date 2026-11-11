@@ -1,5 +1,4 @@
 import { Link } from '../router.jsx';
-import { assetUrl } from '../utils/assets.js';
 import { categories, courses } from '../data/courses.js';
 import { teachers } from '../data/teachers.js';
 import { externalLinks } from '../data/site.js';
@@ -33,8 +32,8 @@ export default function HomePage() {
           <div className="hero-visual">
             <div className="hero-photo-frame">
               <picture>
-                <source srcSet={assetUrl(heroTeacher.photo)} type="image/webp" />
-                <img src={assetUrl(heroTeacher.originalPhoto)} alt={`Portrait of ${heroTeacher.name}, ${heroTeacher.role}`} width="263" height="223" loading="eager" decoding="async" fetchpriority="high" />
+                <source srcSet={heroTeacher.photo} type="image/webp" />
+                <img src={heroTeacher.originalPhoto} alt={`Portrait of ${heroTeacher.name}, ${heroTeacher.role}`} width="263" height="223" loading="eager" decoding="async" fetchpriority="high" />
               </picture>
             </div>
             <div className="hero-shape hero-shape-yellow" aria-hidden="true">✳</div>

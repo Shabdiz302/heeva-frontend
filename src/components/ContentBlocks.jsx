@@ -1,6 +1,5 @@
 import { Link } from '../router.jsx';
 import { categoryLabel } from '../data/courses.js';
-import { assetUrl } from '../utils/assets.js';
 
 export function Eyebrow({ children, light = false, icon = '✳' }) {
   return <div className={`eyebrow${light ? ' eyebrow-light' : ''}`}><span aria-hidden="true">{icon}</span>{children}</div>;
@@ -55,8 +54,8 @@ export function TeacherCard({ teacher, index = 0 }) {
       <Link className="teacher-card-link" to={`/teachers/${teacher.slug}`} aria-label={`View ${teacher.name}'s teacher profile`}>
         <div className="teacher-photo">
           <picture>
-            <source srcSet={assetUrl(teacher.photo)} type="image/webp" />
-            <img src={assetUrl(teacher.originalPhoto)} alt={`Portrait of ${teacher.name}, ${teacher.role}`} width="263" height="223" loading="lazy" decoding="async" style={{ objectPosition: teacher.imagePosition || 'center' }} />
+            <source srcSet={teacher.photo} type="image/webp" />
+            <img src={teacher.originalPhoto} alt={`Portrait of ${teacher.name}, ${teacher.role}`} width="263" height="223" loading="lazy" decoding="async" style={{ objectPosition: teacher.imagePosition || 'center' }} />
           </picture>
         </div>
         <div className="teacher-card-copy">

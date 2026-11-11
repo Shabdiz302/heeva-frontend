@@ -1,6 +1,5 @@
 import { Link } from '../router.jsx';
 import { CTASection, Eyebrow } from '../components/ContentBlocks.jsx';
-import { assetUrl } from '../utils/assets.js';
 
 export default function TeacherProfilePage({ teacher }) {
   return (
@@ -9,8 +8,8 @@ export default function TeacherProfilePage({ teacher }) {
       <section className="shell teacher-profile-hero">
         <div className="teacher-profile-photo">
           <picture>
-            <source srcSet={assetUrl(teacher.photo)} type="image/webp" />
-            <img src={assetUrl(teacher.originalPhoto)} alt={`Portrait of ${teacher.name}, ${teacher.role}`} width="263" height="223" loading="eager" decoding="async" style={{ objectPosition: teacher.imagePosition || 'center' }} />
+            <source srcSet={teacher.photo} type="image/webp" />
+            <img src={teacher.originalPhoto} alt={`Portrait of ${teacher.name}, ${teacher.role}`} width="263" height="223" loading="eager" decoding="async" style={{ objectPosition: teacher.imagePosition || 'center' }} />
           </picture>
         </div>
         <div className="teacher-profile-copy">

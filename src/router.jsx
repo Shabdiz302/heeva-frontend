@@ -1,0 +1,55 @@
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+
+const RouterContext = createContext(null);
+
+export function RouterProvider({ children }) {
+  const [pathname, setPathname] = useState(() => window.location.pathname);
+
+  useEffect(() => {
+    const onPopState = () => setPathname(window.location.pathname);
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  const navigate = useCallback((to) => {
+    const url = new URL(to, window.location.href);
+    if (url.origin !== window.location.origin) return;
+    window.history.pushState({}, '', `${url.pathname}${url.search}${url.hash}`);
+    setPathname(url.pathname);
+    if (url.hash) {
+      window.setTimeout(() => document.getElementById(url.hash.slice(1))?.scrollIntoView(), 0);
+    } else {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+  }, []);
+
+  const value = useMemo(() => ({ pathname, navigate }), [pathname, navigate]);
+  return <RouterContext.Provider value={value}>{children}</RouterContext.Provider>;
+}
+
+export function useRouter() {
+  const router = useContext(RouterContext);
+  if (!router) throw new Error('useRouter must be used inside RouterProvider');
+  return router;
+}
+
+export function Link({ to, onClick, children, ...props }) {
+  const { navigate } = useRouter();
+  return (
+    <a
+      {...props}
+      href={to}
+      onClick={(event) => {
+        onClick?.(event);
+        if (
+          event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey ||
+          event.shiftKey || event.altKey || props.target === '_blank'
+        ) return;
+        event.preventDefault();
+        navigate(to);
+      }}
+    >
+      {children}
+    </a>
+  );
+}

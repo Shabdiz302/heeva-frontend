@@ -1,66 +1,58 @@
-# Heeva frontend
+# Heeva Courses frontend
 
-A new React + Vite frontend prototype for Heeva Courses. It is intentionally separate from the existing custom PHP application.
+A responsive React and Vite frontend preview for Heeva Courses. The site is a static single-page application configured for Cloudflare Workers Static Assets. It remains separate from Heeva’s PHP application and does not send consultation form data to a backend.
 
-## Current scope
+## Pages
 
-- Responsive, child-first homepage
-- Course category browsing and local search
-- Teacher introduction and parent-facing trust content
-- Consultation enquiry demo (currently local-only; no data is transmitted)
-- No connection to the live PHP backend yet
+- Home
+- All courses and individual course details
+- Searchable teacher directory and individual teacher profiles
+- How Heeva works
+- Information for parents
+- About Heeva
+- Free consultation preview
+- FAQ
+- Contact information
 
-## Requirements
-
-- Node.js 20.19+ or 22.12+
-- npm
+The course list contains published course names, session counts and lesson lengths. Fees and course suitability are discussed during consultation. The teacher directory uses portraits and biography information published by Heeva; original portrait copies are retained separately and stripped of image metadata, while optimized WebP files are used on pages. No customer reviews are reproduced; the home page links to Heeva’s published Trustpilot profile.
 
 ## Run locally
 
+Requirements: Node.js 20.19+ or 22.12+ and pnpm.
+
 ```bash
-npm install
-npm run dev
+pnpm install --frozen-lockfile
+pnpm run dev
 ```
 
 Open the local URL printed by Vite.
 
-## Build for deployment
+To create and preview a production build locally:
 
 ```bash
-npm run build
-npm run preview
+pnpm run build
+pnpm run preview
 ```
 
 The production build is written to `dist/`.
 
-## Deploy preview
+## Cloudflare Workers Builds
 
-This is a static frontend and can be deployed to Cloudflare Pages. Build command: `npm run build`. Output directory: `dist`.
+The repository uses `wrangler.jsonc` for a static assets deployment with SPA fallback. In Cloudflare Workers Builds, use:
 
-## PHP integration plan
+- Build command: `pnpm run build`
+- Deploy command: `pnpm run deploy`
 
-The current PHP application and database remain authoritative. Before integration:
+The deploy script is intended for the configured Cloudflare build workflow. Do not connect this frontend to the production PHP system until an API and security review has been completed.
 
-1. Audit the existing PHP application and database.
-2. Identify existing routes, authentication/session behaviour, course and teacher data, booking and enquiry handling.
-3. Create or document stable, authenticated API endpoints in PHP.
-4. Configure CORS and CSRF protections correctly.
-5. Replace demo data and the local-only enquiry handler with a typed API client.
-6. Test in staging before changing production routing.
+## Consultation preview
 
-Do not point this frontend at production APIs until the endpoints and security controls have been reviewed.
+The form validates required fields in the browser and displays a confirmation state. It does not transmit or persist personal information. A reviewed, secure integration with Heeva’s existing PHP backend is required before accepting enquiries.
+
+## Content and safeguarding
+
+The site uses published course details, teacher names, roles, biographies, and credentials only where the profiles state them, along with company contact information and existing policy links. It does not claim course age suitability, course outcomes, pricing, availability, DBS checks or accreditations. Parents are invited to ask Heeva for current safeguarding information before enrolment.
 
 ## Public repository safety
 
-This repository is designed to be public. Never commit:
-- `.env` or `.env.local`
-- API secrets, passwords, tokens, SSH keys
-- Database dumps or customer/student records
-- Private teacher or child information
-- Existing PHP backend source unless deliberately reviewed and approved
-
-`.env.example` is safe to commit because it contains placeholders only.
-
-## Brand and content notes
-
-This is an initial design direction using the Heeva name and provisional copy. Confirm brand colours, logo, photography permissions, safeguarding wording, teacher biographies and testimonials before launch. Do not publish identifiable images or testimonials involving children without appropriate documented permission.
+Do not commit `.env` files, API credentials, database dumps, customer or student records, private teacher details, or unreviewed PHP backend source. `.env.example` contains a blank public configuration placeholder only. `node_modules`, `dist` and `.pnpm-store` are ignored by Git.

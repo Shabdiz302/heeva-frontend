@@ -1,0 +1,83 @@
+export const categories = [
+  { id: 'all', label: 'All courses', icon: '✳' },
+  { id: 'music', label: 'Music', icon: '♫' },
+  { id: 'languages', label: 'Languages', icon: 'あ' },
+  { id: 'creative-arts', label: 'Creative arts', icon: '✿' },
+];
+
+export const courses = [
+  {
+    slug: 'basic-farsi-reading-writing-part-1',
+    title: 'Basic Farsi Reading & Writing (Part 1)',
+    category: 'languages',
+    sessions: 16,
+    lessonLength: '45–60 minutes',
+    mark: 'ف',
+    colour: 'rose',
+  },
+  {
+    slug: 'piano',
+    title: 'Piano',
+    category: 'music',
+    sessions: 12,
+    lessonLength: '45 minutes',
+    mark: '♫',
+    colour: 'gold',
+  },
+  {
+    slug: 'guitar',
+    title: 'Guitar',
+    category: 'music',
+    sessions: 12,
+    lessonLength: '30 minutes',
+    mark: '♬',
+    colour: 'sage',
+  },
+  {
+    slug: 'general-english',
+    title: 'General English',
+    category: 'languages',
+    sessions: 12,
+    lessonLength: '60 minutes',
+    mark: 'Aa',
+    colour: 'lavender',
+  },
+  {
+    slug: 'watercolour-drawing',
+    title: 'Watercolour Drawing',
+    category: 'creative-arts',
+    sessions: 12,
+    lessonLength: '45 minutes',
+    mark: '◒',
+    colour: 'blue',
+  },
+  {
+    slug: 'violin',
+    title: 'Violin',
+    category: 'music',
+    sessions: 12,
+    lessonLength: '30–45 minutes',
+    mark: '♩',
+    colour: 'peach',
+  },
+  {
+    slug: 'creative-arts-for-children',
+    title: 'Creative Arts for Children',
+    category: 'creative-arts',
+    sessions: 12,
+    lessonLength: '45 minutes',
+    mark: '✿',
+    colour: 'sage',
+  },
+  {
+    slug: 'discover-your-childs-talent-for-music',
+    title: "Discover Your Child's Talent for Music",
+    category: 'music',
+    sessions: 12,
+    lessonLength: '30–45 minutes',
+    mark: '♪',
+    colour: 'rose',
+  },
+];
+
+export const categoryLabel = (id) => categories.find((category) => category.id === id)?.label ?? id;

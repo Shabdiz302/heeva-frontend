@@ -88,7 +88,7 @@ export const courses = [
     mark: '✿',
     colour: 'sage',
     image: 'https://images.unsplash.com/photo-1777537953517-bc8bc3b476b4?auto=format&fit=crop&w=1200&q=80',
-    imageAlt: 'Colourful paintbrush and palette for children's creative art',
+    imageAlt: "Colourful paintbrush and palette for children’s creative art",
   },
   {
     slug: 'discover-your-childs-talent-for-music',

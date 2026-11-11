@@ -1,4 +1,5 @@
 import { contact } from '../data/site.js';
+import { assetPath } from '../utils/assets.js';
 import { Eyebrow, PageIntro } from '../components/ContentBlocks.jsx';
 import '../styles/organisations.css';
 
@@ -117,10 +118,10 @@ export default function OrganisationsPage() {
           <a className="org-profile-image-link" href="https://pure.royalholloway.ac.uk/en/persons/maryam-zahmatkesh/" target="_blank" rel="noreferrer" aria-label="Open Dr Maryam Zahmatkesh's official academic profile">
             <img
               className="org-profile-photo"
-              src="https://pure.royalholloway.ac.uk/files-asset/46469730/Picture1.png?f=jpg&w=160"
-              alt="Portrait of Dr Maryam Zahmatkesh, sourced from her Royal Holloway academic profile"
-              width="160"
-              height="160"
+              src={assetPath('/images/brand/maryam-zahmatkesh-business.webp')}
+              alt="Professional portrait of Dr Maryam Zahmatkesh"
+              width="600"
+              height="400"
               loading="lazy"
               decoding="async"
             />
@@ -140,7 +141,7 @@ export default function OrganisationsPage() {
           </div>
           <p className="org-profile-note">For Heeva, this expertise informs the proposed focus of our organisational learning and advisory work: leadership capability, people management, healthcare management and organisational decision-making. Each engagement would be scoped to the organisation’s needs; no client outcomes or established corporate programme history are claimed. Maryam’s university role is stated as professional background only. Heeva is independent and does not represent or imply endorsement by Royal Holloway or Aston University.</p>
           <a className="text-link" href="https://pure.royalholloway.ac.uk/en/persons/maryam-zahmatkesh/" target="_blank" rel="noreferrer">View Dr Maryam’s academic profile <span aria-hidden="true">↗</span><span className="sr-only"> (opens in a new tab)</span></a>
-          <p className="org-photo-credit">Portrait source: Royal Holloway Research Portal. Used here to identify Dr Maryam; a higher-resolution, approved portrait is recommended for the final website.</p>
+          <p className="org-photo-credit">Professional portrait prepared for Heeva for Business. Dr Maryam’s academic background can be verified through the official profile linked above.</p>
         </div>
       </section>
 

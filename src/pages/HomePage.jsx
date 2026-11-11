@@ -21,7 +21,7 @@ export default function HomePage() {
         <div className="shell hero-grid">
           <div className="hero-copy">
             <Eyebrow>Learning with room to grow</Eyebrow>
-            <h1>Discover what makes your child <em>possible.</em></h1>
+            <h1>Discover what makes your child <em>shine.</em></h1>
             <p className="hero-lead">A thoughtful start to online learning, shaped around your child and the things they are curious about.</p>
             <div className="hero-actions">
               <ButtonLink to="/consultation">Book your free consultation</ButtonLink>
@@ -124,6 +124,15 @@ export default function HomePage() {
             <div className="trust-links"><Link to="/for-parents">Read information for parents <span aria-hidden="true">↗</span></Link><Link to="/faq">Browse common questions <span aria-hidden="true">↗</span></Link></div>
           </div>
         </div>
+      </section>
+
+      <section className="shell org-home-promo section-space" aria-labelledby="org-home-title">
+        <div>
+          <Eyebrow>For businesses and organisations</Eyebrow>
+          <h2 id="org-home-title">Develop confident leaders. Strengthen your organisation.</h2>
+          <p>Explore leadership development, human resource management, healthcare management and bespoke corporate learning with Heeva for Organisations.</p>
+        </div>
+        <ButtonLink to="/for-organisations" variant="outline">Explore organisational services</ButtonLink>
       </section>
 
       <section className="feedback-section shell section-space">

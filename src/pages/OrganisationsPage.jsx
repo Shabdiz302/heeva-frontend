@@ -52,7 +52,7 @@ const enquiries = `mailto:${contact.email}?subject=${encodeURIComponent('Heeva f
 export default function OrganisationsPage() {
   return (
     <div className="org-page">
-      <PageIntro eyebrow="Heeva for Organisations" title={<>Develop confident leaders. <em>Strengthen organisations.</em></>}>
+      <PageIntro eyebrow="Heeva for Business" title={<>Develop confident leaders. <em>Strengthen organisations.</em></>}>
         <p>Management development, corporate learning and carefully scoped advisory work for organisations. Our focus is leadership, human resource management and healthcare management, grounded in academic knowledge and practical management experience.</p>
       </PageIntro>
 

@@ -920,3 +920,35 @@ img { display: block; max-width: 100%; }
 @media (max-width: 560px) {
   .detail-course-photo { width: 148px; height: 148px; }
 }
+
+
+/* Small subject photo replaces the yellow decorative mark on course cards.
+   Preserve the original compact card layout and the existing circular outline. */
+.course-card-photo {
+  position: absolute;
+  z-index: 0;
+  right: -20px;
+  bottom: 42px;
+  display: block;
+  width: 64px;
+  height: 64px;
+  border: 4px solid var(--yellow);
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+  background: #f1e7c8;
+  box-shadow: 0 3px 12px rgba(35,60,53,.14);
+  pointer-events: none;
+}
+.course-card::after {
+  z-index: 0;
+  pointer-events: none;
+}
+.course-card .course-card-top,
+.course-card .course-category,
+.course-card h3,
+.course-card .course-meta,
+.course-card .card-link {
+  position: relative;
+  z-index: 1;
+}

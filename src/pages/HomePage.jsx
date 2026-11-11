@@ -1,4 +1,5 @@
 import { Link } from '../router.jsx';
+import { assetUrl } from '../utils/assets.js';
 import { categories, courses } from '../data/courses.js';
 import { teachers } from '../data/teachers.js';
 import { externalLinks } from '../data/site.js';
@@ -32,8 +33,8 @@ export default function HomePage() {
           <div className="hero-visual">
             <div className="hero-photo-frame">
               <picture>
-                <source srcSet={heroTeacher.photo} type="image/webp" />
-                <img src={heroTeacher.originalPhoto} alt={`Portrait of ${heroTeacher.name}, ${heroTeacher.role}`} width="263" height="223" loading="eager" decoding="async" fetchpriority="high" />
+                <source srcSet={assetUrl(heroTeacher.photo)} type="image/webp" />
+                <img src={assetUrl(heroTeacher.originalPhoto)} alt={`Portrait of ${heroTeacher.name}, ${heroTeacher.role}`} width="263" height="223" loading="eager" decoding="async" fetchpriority="high" />
               </picture>
             </div>
             <div className="hero-shape hero-shape-yellow" aria-hidden="true">✳</div>
@@ -124,6 +125,15 @@ export default function HomePage() {
             <div className="trust-links"><Link to="/for-parents">Read information for parents <span aria-hidden="true">↗</span></Link><Link to="/faq">Browse common questions <span aria-hidden="true">↗</span></Link></div>
           </div>
         </div>
+      </section>
+
+      <section className="shell org-home-promo section-space" aria-labelledby="org-home-title">
+        <div>
+          <Eyebrow>Heeva for Business</Eyebrow>
+          <h2 id="org-home-title">Leadership development. Stronger organisations.</h2>
+          <p>Explore proposed leadership development, healthcare management education, HRM and organisational advisory services.</p>
+        </div>
+        <ButtonLink to="/for-organisations" variant="outline">Explore Heeva for Business</ButtonLink>
       </section>
 
       <section className="feedback-section shell section-space">

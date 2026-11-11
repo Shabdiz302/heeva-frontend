@@ -8,6 +8,7 @@ export const categories = [
 export const courses = [
   {
     slug: 'basic-farsi-reading-writing-part-1',
+    liveSlug: 'basic_farsi_reading_and_writing_part_1',
     title: 'Basic Farsi Reading & Writing (Part 1)',
     category: 'languages',
     sessions: 16,
@@ -17,6 +18,7 @@ export const courses = [
   },
   {
     slug: 'piano',
+    liveSlug: 'learn_how_to_play_piano_beginner_to_advanced',
     title: 'Piano',
     category: 'music',
     sessions: 12,
@@ -26,6 +28,7 @@ export const courses = [
   },
   {
     slug: 'guitar',
+    liveSlug: 'guitar_playing_beginner_to_advanced',
     title: 'Guitar',
     category: 'music',
     sessions: 12,
@@ -35,6 +38,7 @@ export const courses = [
   },
   {
     slug: 'general-english',
+    liveSlug: 'general_english_course',
     title: 'General English',
     category: 'languages',
     sessions: 12,
@@ -44,6 +48,7 @@ export const courses = [
   },
   {
     slug: 'watercolour-drawing',
+    liveSlug: 'watercolour_drawing_beginner_to_advanced',
     title: 'Watercolour Drawing',
     category: 'creative-arts',
     sessions: 12,
@@ -53,6 +58,7 @@ export const courses = [
   },
   {
     slug: 'violin',
+    liveSlug: 'learn_the_violin_beginner_to_advanced',
     title: 'Violin',
     category: 'music',
     sessions: 12,
@@ -62,6 +68,7 @@ export const courses = [
   },
   {
     slug: 'creative-arts-for-children',
+    liveSlug: 'unlock_the_world_of_creativity_and_art_for_children',
     title: 'Creative Arts for Children',
     category: 'creative-arts',
     sessions: 12,
@@ -71,6 +78,7 @@ export const courses = [
   },
   {
     slug: 'discover-your-childs-talent-for-music',
+    liveSlug: 'discover_your_child_talent_for_music',
     title: "Discover Your Child's Talent for Music",
     category: 'music',
     sessions: 12,

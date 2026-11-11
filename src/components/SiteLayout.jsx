@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useRouter } from '../router.jsx';
+import { assetUrl } from '../utils/assets.js';
 import { policies } from '../data/site.js';
 
 const primaryNav = [
@@ -8,12 +9,13 @@ const primaryNav = [
   ['How it works', '/how-heeva-works'],
   ['For parents', '/for-parents'],
   ['About', '/about'],
+  ['For Business', '/for-organisations'],
 ];
 
 function Brand({ footer = false }) {
   return (
     <Link className={`brand${footer ? ' brand-footer' : ''}`} to="/" aria-label="Heeva Courses home">
-      <img className="brand-logo" src="/images/brand/heeva-logo.png" width="160" height="81" alt="Heeva Courses" />
+      <img className="brand-logo" src={assetUrl('/images/brand/heeva-logo.png')} width="160" height="81" alt="Heeva Courses" />
     </Link>
   );
 }
@@ -82,6 +84,7 @@ export function SiteFooter() {
           <Link to="/courses">All courses</Link>
           <Link to="/teachers">Our teachers</Link>
           <Link to="/how-heeva-works">How Heeva works</Link>
+          <a href="https://heevacourses.com/student/login" target="_blank" rel="noreferrer">Student login <span aria-hidden="true">↗</span><span className="sr-only"> (opens in a new tab)</span></a>
         </div>
         <div className="footer-col">
           <h2>For families</h2>
@@ -92,7 +95,9 @@ export function SiteFooter() {
         <div className="footer-col">
           <h2>Heeva</h2>
           <Link to="/about">About Heeva</Link>
+          <Link to="/for-organisations">Heeva for Business</Link>
           <Link to="/contact">Contact</Link>
+          <a href="https://heevacourses.com/student/registration" target="_blank" rel="noreferrer">Create a student account <span aria-hidden="true">↗</span><span className="sr-only"> (opens in a new tab)</span></a>
           <a href={policies.privacy} target="_blank" rel="noreferrer">Privacy policy <span aria-hidden="true">↗</span></a>
           <a href={policies.terms} target="_blank" rel="noreferrer">Terms of service <span aria-hidden="true">↗</span></a>
         </div>

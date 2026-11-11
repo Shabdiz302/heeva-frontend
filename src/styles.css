@@ -698,3 +698,54 @@ img { display: block; max-width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }
+
+/* Readable text sizing across every page, including compact mobile layouts. */
+.utility-bar, .utility-contact { font-size: 13px; }
+.primary-nav { font-size: 15px; }
+.button { font-size: 15px; }
+.button-nav { font-size: 14px; }
+.eyebrow { font-size: 12px; }
+.text-link { font-size: 14px; }
+.hero-lead { font-size: 17px; }
+.hero-note b, .hero-label b { font-size: 14px; }
+.hero-note small, .hero-label small, .highlight-inner small { font-size: 13px; }
+.hero-bottomline, .highlight-inner b, .course-count, .course-category { font-size: 12px; }
+.detail-facts span, .breadcrumbs, .trust-number, .faq-index { font-size: 13px; }
+.trial-note small, .trial-note > span { font-size: 12px; }
+.small-note { font-size: 13px !important; }
+.section-heading-side, .why-copy > p, .trial-copy > p, .parent-trust-copy > p, .feedback-section p,
+.home-faq-list details p, .page-intro-copy, .detail-lead, .detail-note-grid > div > p,
+.detail-consult-card > p, .teacher-practice-grid p, .process-intro p, .process-step p,
+.trial-detail-grid p, .parent-topic p, .privacy-callout p, .parents-ask-section > div > p,
+.about-story-copy p, .about-values-grid p, .about-company-section > div:last-child p,
+.consultation-aside > p, .preview-notice p, .consultation-form label, .consultation-form label small,
+.form-heading p, .form-privacy, .form-status, .faq-answer p, .contact-detail, .contact-hours-card dl > div,
+.not-found-page p { font-size: 15px; line-height: 1.75; }
+.category-copy small, .course-meta, .card-link, .teacher-card-copy p, .teacher-profile-link,
+.teacher-source-note, .teacher-directory-content .results-count, .results-count, .empty-results p,
+.page-cta-band p, .back-link, .trust-links a, .policy-links a, .parent-topic > span,
+.parent-ask-card a, .consultation-contact, .form-heading > span, .contact-hours-card .small-note,
+.footer-intro p, .footer-email, .footer-col a, .footer-bottom { font-size: 13px; }
+.teacher-card-copy .teacher-role, .teacher-card-copy .teacher-summary, .teacher-profile-copy > p:not(.teacher-profile-subject, .teacher-source-note),
+.faq-item summary, .home-faq-list summary, .consultation-form input, .consultation-form select,
+.consultation-form textarea, .contact-detail a, .contact-detail p, .detail-facts b { font-size: 15px; }
+.search-control input { font-size: 16px; }
+.filter-chip { font-size: 14px; }
+.footer-col h2 { font-size: 12px; }
+.form-heading p, .form-privacy, .form-status { font-size: 13px; }
+
+@media (max-width: 560px) {
+  .primary-nav > a:not(.button), .primary-nav { font-size: 16px; }
+  .utility-bar, .utility-contact { font-size: 12px; }
+  .hero-lead { font-size: 16px; }
+  .hero-bottomline { font-size: 12px; }
+  .hero-caption { font-size: 13px; }
+  .course-preview-heading .text-link { font-size: 14px; }
+  .course-meta, .card-link, .teacher-card-copy p, .teacher-profile-link { font-size: 13px; }
+  .teacher-card-copy .teacher-role, .teacher-card-copy .teacher-summary { font-size: 14px; }
+  .home-faq-list summary, .faq-item summary { font-size: 15px; }
+  .footer-col a, .footer-bottom { font-size: 13px; }
+  .breadcrumbs { font-size: 13px; }
+  .contact-detail { grid-template-columns: minmax(105px, .75fr) minmax(0, 1.25fr); font-size: 14px; }
+  .course-detail-layout > div:first-child .button { width: 100%; margin: 0 0 10px; }
+}

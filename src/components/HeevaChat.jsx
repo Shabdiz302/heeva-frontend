@@ -13,7 +13,9 @@ const QUICK_QUESTIONS = [
 const greetings = [
   {
     role: 'assistant',
-    content: 'Hello! Welcome to Heeva. I can help with courses, the one free lesson, registration and Heeva for Business. فارسی هم می‌توانم پاسخ بدهم. How can I help?',
+    content: API_URL
+      ? 'Hello! Welcome to Heeva. I can help with courses, the one free lesson, registration and Heeva for Business. فارسی هم می‌توانم پاسخ بدهم. How can I help?'
+      : 'Hello! Welcome to Heeva. Our AI assistant is temporarily unavailable, but our team can still help you on WhatsApp or by email using the links below. / سلام! دستیار هوشمند هیوا موقتاً در دسترس نیست؛ اما می‌توانید از طریق واتساپ یا ایمیل با تیم ما در ارتباط باشید.',
   },
 ];
 
@@ -52,9 +54,23 @@ export default function HeevaChat() {
     const prompt = value.trim();
     if (!prompt || sending || prompt.length > 1200) return;
     const nextMessages = [...messages, { role: 'user', content: prompt }].slice(-11);
-    setMessages(nextMessages);
     setText('');
     setError('');
+
+    // Keep the support widget visible even before the private OpenAI Worker is configured.
+    // In offline mode, direct visitors to the existing Heeva WhatsApp and email contacts.
+    if (!API_URL) {
+      const isPersian = /[\\u0600-\\u06FF]/.test(prompt);
+      setMessages([...nextMessages, {
+        role: 'assistant',
+        content: isPersian
+          ? 'متأسفم، دستیار هوشمند در حال حاضر در دسترس نیست. لطفاً از پیوند واتساپ یا ایمیل پایین پنجره استفاده کنید تا تیم هیوا به شما کمک کند.'
+          : 'I’m sorry, the AI assistant is not available at the moment. Please use the WhatsApp or email links below and the Heeva team will help you.',
+      }].slice(-12));
+      return;
+    }
+
+    setMessages(nextMessages);
     setSending(true);
     try {
       const response = await fetch(`${API_URL}/chat`, {
@@ -87,8 +103,6 @@ export default function HeevaChat() {
 
   const waUrl = `https://wa.me/${contact.whatsappLink}?text=${encodeURIComponent('Hello Heeva, I need help with a course enquiry.')}`;
 
-  if (!API_URL) return null;
-
   return (
     <div className="heeva-chat-root">
       {open && (
@@ -97,7 +111,7 @@ export default function HeevaChat() {
             <div className="heeva-chat-avatar" aria-hidden="true">H</div>
             <div className="heeva-chat-heading">
               <strong>Heeva Support</strong>
-              <span>AI assistant · English & فارسی</span>
+              <span>{API_URL ? 'AI assistant · English & فارسی' : 'Assistant unavailable · WhatsApp & email support'}</span>
             </div>
             <button className="heeva-chat-close" type="button" aria-label="Close chat" onClick={() => setOpen(false)}>×</button>
           </header>
@@ -110,7 +124,7 @@ export default function HeevaChat() {
             {sending && <div className="heeva-chat-message is-assistant heeva-chat-typing">Heeva is typing…</div>}
             <div ref={endRef} />
           </div>
-          {messages.length <= 1 && (
+          {API_URL && messages.length <= 1 && (
             <div className="heeva-chat-quick">
               {QUICK_QUESTIONS.map((item) => <button key={item.en} type="button" onClick={() => quickAsk(item)}>{item.en}</button>)}
             </div>

@@ -1,0 +1,23 @@
+name = "heeva-ai-assistant"
+main = "src/index.js"
+compatibility_date = "2026-11-12"
+workers_dev = true
+
+[[ratelimits]]
+name = "CHAT_LIMITER"
+namespace_id = "72531001"
+
+[ratelimits.simple]
+limit = 8
+period = 60
+
+[[durable_objects.bindings]]
+name = "BUDGET_GATE"
+class_name = "BudgetGate"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["BudgetGate"]
+
+[vars]
+OPENAI_MODEL = "gpt-6-luna"

@@ -1,0 +1,3 @@
+# Copy to .dev.vars on your own machine and add your key privately.
+# Never commit .dev.vars.
+OPENAI_API_KEY=

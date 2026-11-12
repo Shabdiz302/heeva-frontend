@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useRouter } from '../router.jsx';
 import { policies } from '../data/site.js';
 import { assetPath } from '../utils/assets.js';
+import HeevaChat from './HeevaChat.jsx';
 
 const primaryNav = [
   ['Courses', '/courses'],
@@ -117,6 +118,7 @@ export function SiteLayout({ children }) {
       <SiteHeader />
       <main id="main-content" tabIndex="-1">{children}</main>
       <SiteFooter />
+      <HeevaChat />
     </>
   );
 }

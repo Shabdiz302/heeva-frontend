@@ -1,0 +1,27 @@
+.heeva-chat-root{position:fixed;right:24px;bottom:24px;z-index:1000;font-family:inherit;color:#203e34}
+.heeva-chat-launcher{display:flex;align-items:center;gap:9px;border:0;border-radius:999px;padding:12px 18px 12px 13px;background:#214f40;color:#fff;box-shadow:0 9px 30px rgba(25,55,44,.22);font:700 14px/1.1 inherit;cursor:pointer}
+.heeva-chat-launcher:hover{background:#173f32;transform:translateY(-1px)}
+.heeva-chat-launcher-icon{display:grid;place-items:center;width:29px;height:29px;border-radius:50%;background:#f4ead8;color:#214f40;font-size:19px}
+.heeva-chat-panel{position:absolute;right:0;bottom:68px;display:flex;flex-direction:column;width:min(390px,calc(100vw - 28px));height:min(590px,calc(100dvh - 115px));overflow:hidden;border:1px solid #e2e6dd;border-radius:18px;background:#fffdf8;box-shadow:0 20px 65px rgba(25,55,44,.22)}
+.heeva-chat-header{display:flex;align-items:center;gap:11px;padding:16px 17px;background:#214f40;color:#fff}
+.heeva-chat-avatar{display:grid;place-items:center;width:39px;height:39px;border-radius:50%;background:#f4ead8;color:#214f40;font:700 19px Georgia,serif}
+.heeva-chat-heading{display:flex;flex:1;flex-direction:column;gap:3px}
+.heeva-chat-heading strong{font-size:15px}
+.heeva-chat-heading span{font-size:12px;color:#d4e2d9}
+.heeva-chat-close{border:0;background:transparent;color:#fff;font-size:27px;cursor:pointer;line-height:1}
+.heeva-chat-messages{display:flex;flex:1;flex-direction:column;gap:10px;overflow-y:auto;padding:16px;background:#fffdf8}
+.heeva-chat-message{max-width:89%;padding:11px 13px;border-radius:14px;font-size:14px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.heeva-chat-message.is-assistant{align-self:flex-start;background:#edf1e9;color:#29483c;border-bottom-left-radius:4px}
+.heeva-chat-message.is-user{align-self:flex-end;background:#214f40;color:#fff;border-bottom-right-radius:4px}
+.heeva-chat-typing{opacity:.7;font-style:italic}
+.heeva-chat-quick{display:flex;flex-wrap:wrap;gap:7px;padding:0 14px 12px}
+.heeva-chat-quick button{border:1px solid #d8e0d6;border-radius:999px;background:#f6f7f1;color:#315344;padding:7px 10px;font-size:12px;cursor:pointer}
+.heeva-chat-error{padding:6px 15px;color:#9c4f40;font-size:12px}
+.heeva-chat-form{display:flex;gap:8px;align-items:center;padding:11px 13px;border-top:1px solid #e9ece4;background:#fff}
+.heeva-chat-form input{flex:1;min-width:0;border:1px solid #dfe5dc;border-radius:999px;padding:12px 14px;font:inherit;font-size:14px;outline:none}
+.heeva-chat-form input:focus{border-color:#729483;box-shadow:0 0 0 3px rgba(88,128,105,.12)}
+.heeva-chat-form button{width:42px;height:42px;border:0;border-radius:50%;background:#214f40;color:#fff;font-size:23px;cursor:pointer}
+.heeva-chat-form button:disabled{opacity:.4;cursor:not-allowed}
+.heeva-chat-footer{display:flex;justify-content:space-between;gap:8px;padding:0 14px 12px;color:#77857b;font-size:10px}
+.heeva-chat-footer a{color:#315d49;text-decoration:none;font-weight:700;white-space:nowrap}
+@media(max-width:540px){.heeva-chat-root{right:12px;bottom:12px}.heeva-chat-panel{right:-2px;bottom:62px;height:min(620px,calc(100dvh - 90px))}.heeva-chat-launcher{padding:10px 14px 10px 11px}}

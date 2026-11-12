@@ -1,7 +1,9 @@
 name: Deploy Heeva AI Assistant
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - preview/github-pages
 
 permissions:
   contents: read
@@ -11,10 +13,26 @@ jobs:
     name: Deploy private AI gateway
     runs-on: ubuntu-latest
     steps:
-      - name: Check out selected branch
+      - name: Check deployment credentials
+        id: credentials
+        shell: bash
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [[ -n "$CF_API_TOKEN" && -n "$CF_ACCOUNT_ID" ]]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Cloudflare deployment secrets are not configured; skipping Worker deployment safely."
+          fi
+
+      - name: Check out preview branch
+        if: steps.credentials.outputs.ready == 'true'
         uses: actions/checkout@v4
 
       - name: Deploy Worker to Cloudflare
+        if: steps.credentials.outputs.ready == 'true'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

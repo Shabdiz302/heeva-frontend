@@ -1,3 +1,5 @@
+import { publishedCourseDetails } from './publishedCourseDetails.js';
+
 export const categories = [
   { id: 'all', label: 'All courses', icon: '✳' },
   { id: 'music', label: 'Music', icon: '♫' },
@@ -123,3 +125,11 @@ for (const [slug, details] of Object.entries(featuredCourseDetails)) {
 }
 
 // Course photography refresh: one distinct subject-matched image per course; the existing circular, centred crop styling is unchanged.
+
+// Published package details do not confirm an instructor's current availability.
+for (const course of courses) {
+  const listing = publishedCourseDetails[course.slug];
+  if (!listing) continue;
+  const { price, sessions, ...eligibility } = listing;
+  Object.assign(course, { price, sessions, bookingDetails: eligibility });
+}

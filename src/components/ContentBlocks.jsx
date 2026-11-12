@@ -36,7 +36,7 @@ export function SectionHeading({ eyebrow, title, children, light = false, align 
 export function CourseCard({ course }) {
   const status = course.status;
   const statusLabel = status === 'coming-soon' ? 'Coming soon' : status === 'available' ? 'Available' : 'Check availability';
-  const meta = status === 'coming-soon' ? 'New course · details in development' : status === 'published-check-details' ? 'Published on Heeva' : `£${course.price} · ${course.sessions} sessions`;
+  const meta = status === 'coming-soon' ? 'New course · details in development' : course.price ? `£${course.price} · ${course.sessions} sessions` : 'Ask Heeva for details';
   const action = status === 'coming-soon' ? 'See planned course' : 'View course details';
   return (
     <article className={`course-card card-${course.colour}${status === 'coming-soon' ? ' course-card-coming-soon' : ''}`}>

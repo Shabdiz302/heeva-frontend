@@ -18,12 +18,21 @@ export default function CourseDetailPage({ course }) {
   const isPublishedUnconfirmed = status === 'published-check-details';
   const isPiano = course.slug === 'piano';
   const { bookingDetails } = course;
-  const trialMessage = encodeURIComponent(`Hi Heeva, I’m interested in ${course.title}. Could you help me find a suitable teacher and arrange one free trial lesson?`);
-  const trialUrl = `https://wa.me/${contact.whatsappLink}?text=${trialMessage}`;
+  const whatsappRequest = isComingSoon
+    ? 'Could you let me know when this course opens?'
+    : isPublishedUnconfirmed
+      ? 'Could you confirm teacher availability, lesson duration and whether I can arrange one free trial lesson?'
+      : 'Could you help me find a suitable teacher and arrange one free trial lesson?';
+  const whatsappMessage = encodeURIComponent(`Hi Heeva, I’m interested in ${course.title}. ${whatsappRequest}`);
+  const whatsappUrl = `https://wa.me/${contact.whatsappLink}?text=${whatsappMessage}`;
+  const whatsappLabel = isComingSoon ? 'Register interest on WhatsApp' : isPublishedUnconfirmed ? 'Ask about availability on WhatsApp' : 'Request a free trial on WhatsApp';
+  const ageLabel = bookingDetails?.ageLabel ?? (bookingDetails ? `Ages ${bookingDetails.minimumAge}+` : null);
+  const languageRequirement = bookingDetails?.languageRequirement ?? (bookingDetails?.farsiLevel ? `${bookingDetails.farsiLevel} understanding of Farsi` : null);
+  const hasPublishedDuration = !isPublishedUnconfirmed && course.lessonLength;
   const lessonFormat = isComingSoon
     ? 'Online course planned. Session length, number of lessons and fees will be confirmed before bookings open.'
     : isPublishedUnconfirmed
-      ? 'Online lessons. Check the existing Heeva course page for the current lesson length, number of sessions and fee.'
+      ? 'Online lessons. Ask Heeva to confirm lesson duration, package details and availability.'
       : `Online lessons · ${course.lessonLength} per lesson · ${course.sessions} sessions listed. Ask Heeva to confirm the current fee before booking.`;
   const enquiryPath = `/consultation?interest=${course.slug}`;
   return (
@@ -43,25 +52,25 @@ export default function CourseDetailPage({ course }) {
               <>
                 <p className="detail-lead">{course.description}</p>
                 <p className="detail-lead"><strong>{isComingSoon ? 'Example first activity' : 'In the first lesson'}</strong><br />{firstLessons[course.slug]}</p>
-                {!bookingDetails && <><p className="detail-lead"><strong>Lesson format</strong><br />{lessonFormat}</p>
-                <p className="detail-lead">
-                  <strong>{isComingSoon ? 'Ask about availability' : 'Start with one free trial lesson'}</strong><br />
-                  {isComingSoon
-                    ? 'Ask Heeva when the course is expected to open and whether a free trial lesson will be available.'
-                    : 'Ask Heeva about availability for one free trial lesson. It’s a chance to meet the teacher and try the course before deciding whether to continue.'}
-                </p></>}
               </>
             )}
             {bookingDetails && (
               <>
-                <p className="detail-lead"><strong>{pounds.format(course.price)} for {course.sessions} online lessons</strong><br />{course.lessonLength} per lesson · {pounds.format(course.price / course.sessions)} per lesson within the package</p>
-                <p className="detail-lead"><strong>Ages {bookingDetails.minimumAge}+ · {bookingDetails.farsiLevel} understanding of Farsi</strong><br />{bookingDetails.learnerFit}</p>
-                <p className="detail-lead"><strong>Start with one free trial lesson</strong><br />Tell us the learner’s level and when you’re available. Heeva can suggest a teacher and confirm the lesson language and trial time. After the trial, you can decide whether to book the package.</p>
-                <a className="button button-whatsapp" href={trialUrl} target="_blank" rel="noreferrer">Request a free trial on WhatsApp <span aria-hidden="true">↗</span></a>
+                <p className="detail-lead"><strong>{pounds.format(course.price)} for {course.sessions} online lessons</strong><br />{hasPublishedDuration && `${course.lessonLength} per lesson · `}{pounds.format(course.price / course.sessions)} per lesson within the package</p>
+                <p className="detail-lead"><strong>{ageLabel}{languageRequirement && ` · ${languageRequirement}`}</strong>{bookingDetails.learnerFit && <><br />{bookingDetails.learnerFit}</>}</p>
               </>
             )}
-            {!isComingSoon && <a className="button" href={`https://heevacourses.com/online-courses/${course.liveSlug}`} target="_blank" rel="noreferrer">{isPublishedUnconfirmed ? 'Check current details on Heeva' : 'View details & book on Heeva'} <span aria-hidden="true">↗</span></a>}
-            {!bookingDetails && <ButtonLink to={enquiryPath} variant="outline">{isComingSoon ? "Ask about availability" : "Request a free consultation"}</ButtonLink>}
+            {!bookingDetails && <p className="detail-lead"><strong>Lesson format</strong><br />{lessonFormat}</p>}
+            <p className="detail-lead">
+              <strong>{isComingSoon ? 'Interested in this course?' : isPublishedUnconfirmed ? 'Confirm availability with Heeva' : 'Start with one free trial lesson'}</strong><br />
+              {isComingSoon
+                ? 'Send Heeva a message to register your interest and ask when the course will open.'
+                : isPublishedUnconfirmed
+                  ? 'Ask Heeva to confirm teacher availability, lesson duration and whether you can arrange one free trial lesson.'
+                  : 'Tell us the learner’s level and when you’re available. Heeva can suggest a teacher and confirm the lesson language and trial time. After the trial, you can decide whether to book the package.'}
+            </p>
+            <a className="button button-whatsapp" href={whatsappUrl} target="_blank" rel="noreferrer">{whatsappLabel} <span aria-hidden="true">↗</span></a>
+            {!isComingSoon && course.slug !== 'introduction-to-farsi' && <a className="button" href={`https://heevacourses.com/online-courses/${course.liveSlug}`} target="_blank" rel="noreferrer">{isPublishedUnconfirmed ? 'Check current details on Heeva' : 'View details & book on Heeva'} <span aria-hidden="true">↗</span></a>}
           </div>
           <div className="detail-art" aria-label={`Illustration for ${course.title}`}>
             <img className="detail-course-photo" src={course.image} alt={course.imageAlt} width="180" height="180" loading="eager" decoding="async" />
@@ -90,13 +99,15 @@ export default function CourseDetailPage({ course }) {
             <b>Level</b><p>{course.level || 'To be confirmed'}</p>
             <b>Before you begin</b><p>{course.requirements || 'Please contact Heeva to confirm prerequisites.'}</p>
             {isComingSoon && <p className="coming-soon-note">This is a planned course. Tutor, timetable, final content and price will be confirmed before bookings open.</p>}
-            {isPublishedUnconfirmed && <p className="coming-soon-note">This course has a published Heeva page. Check that page for current registration status, price and session details before booking.</p>}
+            {isPublishedUnconfirmed && <p className="coming-soon-note">Ask Heeva to confirm the current timetable and available teachers before booking.</p>}
           </aside>
         </div>
         <div className="detail-note-grid">
-          <div><Eyebrow>{isComingSoon ? 'Be among the first to hear' : 'Continue with Heeva'}</Eyebrow><h2>{isComingSoon ? 'Interested in this course?' : 'Course details and booking.'}</h2><p>{isComingSoon ? 'Contact Heeva to ask when this course will be available.' : 'The existing Heeva course page provides current registration, account, free-trial and payment information. This preview does not process a booking or payment.'}</p></div>
+          <div><Eyebrow>{isComingSoon ? 'Be among the first to hear' : 'Continue with Heeva'}</Eyebrow><h2>{isComingSoon ? 'Interested in this course?' : 'Course details and booking.'}</h2><p>{isComingSoon ? 'Contact Heeva to ask when this course will be available.' : 'Contact Heeva to confirm the current booking and payment steps.'}</p></div>
           <aside className="detail-consult-card"><span className="consult-spark" aria-hidden="true">✳</span><h3>{isComingSoon ? 'Register interest' : 'Questions about fit?'}</h3><p>{isComingSoon ? 'Choose a topic you would like to discuss.' : 'Ask Heeva about learner needs, current course information and free-trial terms.'}</p>
-            <ButtonLink to={enquiryPath} variant="outline">{isComingSoon ? "Ask about availability" : "Request a free consultation"}</ButtonLink>
+            {isComingSoon || isPublishedUnconfirmed
+              ? <a className="button button-outline" href={whatsappUrl} target="_blank" rel="noreferrer">{whatsappLabel}</a>
+              : <ButtonLink to={enquiryPath} variant="outline">Request a free consultation</ButtonLink>}
           </aside>
         </div>
         <Link className="back-link" to="/courses"><span aria-hidden="true">←</span> Back to all courses</Link>

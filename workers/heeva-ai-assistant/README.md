@@ -40,3 +40,17 @@ pnpm dlx wrangler dev
 ```
 
 Use a local `.dev.vars` file for `OPENAI_API_KEY` only on your own machine; never commit it. The committed `.dev.vars.example` contains no secrets.
+
+
+## Deploy through GitHub Actions (recommended)
+
+1. Create a Cloudflare API token with the **Edit Cloudflare Workers** permission, scoped to the Heeva Cloudflare account.
+2. In GitHub → Settings → Secrets and variables → Actions, add repository secrets:
+   - `CLOUDFLARE_API_TOKEN`
+   - `CLOUDFLARE_ACCOUNT_ID`
+3. In Cloudflare → Workers & Pages → create/open `heeva-ai-assistant` → Settings → Variables and Secrets, add `OPENAI_API_KEY` as a **Secret** before deploying.
+4. In GitHub → Actions → **Deploy Heeva AI Assistant** → Run workflow, choose branch `preview/github-pages`.
+5. When deployment completes, check the Worker URL's `/health` endpoint.
+6. Confirm that the Worker URL matches the URL configured in `src/components/HeevaChat.jsx`. If the account subdomain is not `a-r-ch`, update that frontend constant and push a new preview build.
+
+The API key is entered only in the Cloudflare dashboard. The Cloudflare API token and account ID are stored as GitHub Actions secrets. Never commit them or paste them into chat.

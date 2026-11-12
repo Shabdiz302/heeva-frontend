@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { contact } from '../data/site.js';
 import './heeva-chat.css';
 
-const API_URL = 'https://heeva-ai-assistant.a-r-ch.workers.dev';
+const API_URL = import.meta.env.VITE_HEEVA_CHAT_URL?.replace(/\/+$/, '');
 const QUICK_QUESTIONS = [
   { en: 'Find a course', fa: 'پیدا کردن دوره' },
   { en: 'The one free lesson', fa: 'یک جلسه رایگان' },
@@ -86,6 +86,8 @@ export default function HeevaChat() {
   };
 
   const waUrl = `https://wa.me/${contact.whatsappLink}?text=${encodeURIComponent('Hello Heeva, I need help with a course enquiry.')}`;
+
+  if (!API_URL) return null;
 
   return (
     <div className="heeva-chat-root">

@@ -5,7 +5,8 @@ const BASE_URL = import.meta.env.BASE_URL || '/';
 const BASE_PREFIX = BASE_URL === '/' ? '' : BASE_URL.replace(/\/$/, '');
 
 function stripBase(pathname) {
-  if (BASE_PREFIX && pathname.startsWith(BASE_PREFIX)) {
+  pathname = pathname.replace(/\/+$/, '') || '/';
+  if (BASE_PREFIX && (pathname === BASE_PREFIX || pathname.startsWith(`${BASE_PREFIX}/`))) {
     const remainder = pathname.slice(BASE_PREFIX.length);
     return remainder || '/';
   }

@@ -37,6 +37,8 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build static website
+        env:
+          VITE_HEEVA_CHAT_URL: ${{ vars.VITE_HEEVA_CHAT_URL }}
         run: pnpm run build
 
       - name: Configure GitHub Pages

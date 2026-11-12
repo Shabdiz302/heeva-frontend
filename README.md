@@ -56,3 +56,9 @@ The site uses published course details, teacher names, roles, biographies, and c
 ## Public repository safety
 
 Do not commit `.env` files, API credentials, database dumps, customer or student records, private teacher details, or unreviewed PHP backend source. `.env.example` contains a blank public configuration placeholder only. `node_modules`, `dist` and `.pnpm-store` are ignored by Git.
+
+## GitHub Pages preview
+
+The Pages workflow publishes from `preview/github-pages`. The build emits route entry files so course, teacher and Business links can be opened directly. The original edited Business portrait in commit `d161208` is truncated; this branch uses the previous Business page’s Royal Holloway portrait as a local JPEG until the edited original is available.
+
+Course and Business enquiry previews use topic selections only. They require a dedicated staging destination before submissions can be enabled. The chat launcher requires a verified preview Worker URL in the GitHub Pages environment variable `VITE_HEEVA_CHAT_URL`. See the [Worker setup](workers/heeva-ai-assistant/README.md) for the protected configuration.

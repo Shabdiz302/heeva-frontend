@@ -1,6 +1,5 @@
-import { contact } from '../data/site.js';
 import { assetPath } from '../utils/assets.js';
-import { Eyebrow, PageIntro } from '../components/ContentBlocks.jsx';
+import { ButtonLink, Eyebrow, PageIntro } from '../components/ContentBlocks.jsx';
 import '../styles/organisations.css';
 
 const services = [
@@ -48,7 +47,6 @@ const steps = [
   ['Review and learn', 'Review participant feedback, outputs and agreed indicators to identify the next steps.'],
 ];
 
-const enquiries = `mailto:${contact.email}?subject=${encodeURIComponent('Heeva for Organisations — enquiry')}&body=${encodeURIComponent('Hello Heeva,\n\nI would like to discuss a corporate training or consultancy enquiry.\n\nOrganisation:\nMy role:\nArea of interest:\nWhat we would like to achieve:\nPreferred timing:\n\nThank you.')}`;
 
 export default function OrganisationsPage() {
   return (
@@ -63,13 +61,13 @@ export default function OrganisationsPage() {
             <Eyebrow light>For employers and leadership teams</Eyebrow>
             <h2>Training that starts with the <em>real challenge.</em></h2>
             <p>From a focused management workshop to a tailored organisational programme, begin with a conversation about what your people and organisation need.</p>
-            <a className="button button-cream" href={enquiries}>Discuss a proposed programme <span aria-hidden="true">↗</span></a>
+            <ButtonLink to="/consultation?audience=business" variant="cream">Preview a business enquiry</ButtonLink>
           </div>
           <div className="org-hero-art" aria-hidden="true">
             <span className="org-art-orbit org-art-orbit-one" />
             <span className="org-art-orbit org-art-orbit-two" />
             <span className="org-art-spark">✳</span>
-            <div className="org-art-card"><small>HEEVA FOR ORGANISATIONS</small><b>People.<br />Leadership.<br /><em>Progress.</em></b><span>Learning & advisory</span></div>
+            <div className="org-art-card"><small>HEEVA FOR BUSINESS</small><b>People.<br />Leadership.<br /><em>Progress.</em></b><span>Learning & advisory</span></div>
           </div>
         </div>
       </section>
@@ -118,10 +116,10 @@ export default function OrganisationsPage() {
           <a className="org-profile-image-link" href="https://pure.royalholloway.ac.uk/en/persons/maryam-zahmatkesh/" target="_blank" rel="noreferrer" aria-label="Open Dr Maryam Zahmatkesh's official academic profile">
             <img
               className="org-profile-photo"
-              src={assetPath('/images/brand/maryam-zahmatkesh-business.webp')}
+              src={assetPath('/images/brand/maryam-zahmatkesh-academic.jpg')}
               alt="Professional portrait of Dr Maryam Zahmatkesh"
-              width="600"
-              height="400"
+              width="212"
+              height="227"
               loading="lazy"
               decoding="async"
             />
@@ -141,7 +139,7 @@ export default function OrganisationsPage() {
           </div>
           <p className="org-profile-note">For Heeva, this expertise informs the proposed focus of our organisational learning and advisory work: leadership capability, people management, healthcare management and organisational decision-making. Each engagement would be scoped to the organisation’s needs; no client outcomes or established corporate programme history are claimed. Maryam’s university role is stated as professional background only. Heeva is independent and does not represent or imply endorsement by Royal Holloway or Aston University.</p>
           <a className="text-link" href="https://pure.royalholloway.ac.uk/en/persons/maryam-zahmatkesh/" target="_blank" rel="noreferrer">View Dr Maryam’s academic profile <span aria-hidden="true">↗</span><span className="sr-only"> (opens in a new tab)</span></a>
-          <p className="org-photo-credit">Professional portrait prepared for Heeva for Business. Dr Maryam’s academic background can be verified through the official profile linked above.</p>
+          <p className="org-photo-credit">Portrait from Dr Maryam’s Royal Holloway academic profile.</p>
         </div>
       </section>
 
@@ -160,8 +158,7 @@ export default function OrganisationsPage() {
           <span aria-hidden="true">✳</span>
           <h3>Corporate enquiries</h3>
           <p>For leadership development, corporate training and organisational advisory enquiries.</p>
-          <a className="button" href={enquiries}>Email Heeva’s team <span aria-hidden="true">↗</span></a>
-          <small>{contact.email}</small>
+          <ButtonLink to="/consultation?audience=business">Preview a business enquiry</ButtonLink>
         </div>
       </section>
 

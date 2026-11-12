@@ -1,15 +1,15 @@
 name: Deploy Heeva AI Assistant
 
 on:
-  push:
-    branches:
-      - preview/github-pages
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
   deploy:
+    if: github.ref == 'refs/heads/preview/github-pages'
+    environment: heeva-chat-preview
     name: Deploy private AI gateway
     runs-on: ubuntu-latest
     steps:

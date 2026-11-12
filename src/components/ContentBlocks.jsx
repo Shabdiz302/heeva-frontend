@@ -33,22 +33,22 @@ export function SectionHeading({ eyebrow, title, children, light = false, align 
   );
 }
 
-export function CourseCard({ course, index = 0 }) {
-  const status = course.status || 'available';
-  const meta = status === 'coming-soon' ? 'New course · details in development' : status === 'published-check-details' ? 'Published course · check details' : `£${course.price} · ${course.sessions} sessions`;
-  const action = status === 'coming-soon' ? 'Register interest' : status === 'published-check-details' ? 'View course details' : 'Explore course';
+export function CourseCard({ course }) {
+  const status = course.status;
+  const statusLabel = status === 'coming-soon' ? 'Coming soon' : status === 'available' ? 'Available' : 'Check availability';
+  const meta = status === 'coming-soon' ? 'New course · details in development' : status === 'published-check-details' ? 'Published on Heeva' : `£${course.price} · ${course.sessions} sessions`;
+  const action = status === 'coming-soon' ? 'See planned course' : 'View course details';
   return (
     <article className={`course-card card-${course.colour}${status === 'coming-soon' ? ' course-card-coming-soon' : ''}`}>
       <img className="course-card-photo" src={course.image} alt="" aria-hidden="true" width="112" height="112" loading="lazy" decoding="async" />
       <div className="course-card-top">
         <span className="course-mark" aria-hidden="true">{course.mark}</span>
-        <span className="course-count">{String(index + 1).padStart(2, '0')}</span>
+        <span className="course-status-tag">{statusLabel}</span>
       </div>
       <span className="course-category">{categoryLabel(course.category)}</span>
       <h3>{course.title}</h3>
       <p className="course-meta">{meta}</p>
       <Link className="card-link" to={`/courses/${course.slug}`}>{action} <span aria-hidden="true">↗</span></Link>
-      {status === 'coming-soon' && <span className="course-status-tag">Coming soon</span>}
     </article>
   );
 }

@@ -153,7 +153,6 @@ img { display: block; max-width: 100%; }
 .card-peach { background: #f3e0d7; }
 .course-card-top { display: flex; justify-content: space-between; align-items: flex-start; }
 .course-mark { min-width: 39px; height: 39px; display: inline-grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,.63); color: var(--forest); font: 700 18px var(--sans-rounded); }
-.course-count { color: rgba(35,60,53,.43); font-size: 9px; letter-spacing: .12em; }
 .course-category { margin-top: 18px; color: #9f634e; font-size: 8px; letter-spacing: .14em; text-transform: uppercase; font-weight: 800; }
 .course-card h3 { position: relative; z-index: 1; min-height: 45px; margin: 7px 0 8px; max-width: 260px; color: var(--forest-deep); font: 700 17px/1.18 var(--sans-rounded); letter-spacing: -.02em; }
 .course-meta { margin: 0; color: #66776d; font-size: 9px; }
@@ -709,7 +708,7 @@ img { display: block; max-width: 100%; }
 .hero-lead { font-size: 17px; }
 .hero-note b, .hero-label b { font-size: 14px; }
 .hero-note small, .hero-label small, .highlight-inner small { font-size: 13px; }
-.hero-bottomline, .highlight-inner b, .course-count, .course-category { font-size: 12px; }
+.hero-bottomline, .highlight-inner b, .course-category { font-size: 12px; }
 .detail-facts span, .breadcrumbs, .trust-number, .faq-index { font-size: 13px; }
 .trial-note small, .trial-note > span { font-size: 12px; }
 .small-note { font-size: 13px !important; }
@@ -962,8 +961,7 @@ img { display: block; max-width: 100%; }
 
 
 /* Clear labels and readable course detail information. */
-.course-status-tag { position:absolute; top:12px; left:65px; z-index:2; padding:4px 7px; border-radius:14px; background:rgba(255,253,248,.92); color:#8a6231; font-size:9px; font-weight:800; }
-.course-card-coming-soon .course-category { margin-top:15px; }
+.course-status-tag { padding: 4px 8px; border-radius: 14px; background: #fffdf8; color: #384f44; font-size: 11px; font-weight: 800; }
 .course-information-grid { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(240px,.65fr); gap:32px; padding-block:42px; }
 .course-information-grid h2 { margin:12px 0; color:var(--forest-deep); font:400 36px/1.1 var(--serif); }
 .course-information-grid h3 { margin:25px 0 12px; color:var(--forest-deep); font:700 18px var(--sans-rounded); }

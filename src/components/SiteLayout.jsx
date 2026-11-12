@@ -15,8 +15,8 @@ const primaryNav = [
 
 function Brand({ footer = false }) {
   return (
-    <Link className={`brand${footer ? ' brand-footer' : ''}`} to="/" aria-label="Heeva Courses home">
-      <img className="brand-logo" src={assetPath('/images/brand/heeva-logo.png')} width="160" height="81" alt="Heeva Courses" />
+    <Link className={`brand${footer ? ' brand-footer' : ''}`} to="/" aria-label="Heeva home">
+      <img className="brand-logo" src={assetPath('/images/brand/heeva-logo.png')} width="160" height="81" alt="Heeva" />
     </Link>
   );
 }
@@ -25,6 +25,7 @@ export function SiteHeader() {
   const { pathname } = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const courseActive = pathname.startsWith('/courses');
+  const isBusiness = pathname === '/for-organisations';
 
   useEffect(() => {
     const onKeyDown = (event) => {
@@ -41,7 +42,7 @@ export function SiteHeader() {
       <div className="utility-bar">
         <div className="shell utility-inner">
           <span><span className="utility-spark">✳</span> A little curiosity goes a long way</span>
-          <span className="utility-note">Personalised online lessons · Start with a free consultation</span>
+          <span className="utility-note">{isBusiness ? 'Management development and advisory' : 'Personalised online lessons · One free introductory lesson'}</span>
           <Link to="/contact" className="utility-contact">Get in touch <span aria-hidden="true">↗</span></Link>
         </div>
       </div>
@@ -63,7 +64,7 @@ export function SiteHeader() {
               const active = to === '/courses' ? courseActive : pathname === to;
               return <Link key={to} to={to} aria-current={active ? 'page' : undefined} onClick={closeMenu}>{label}</Link>;
             })}
-            <Link className="button button-nav" to="/consultation" onClick={closeMenu}>Book a free consultation <span aria-hidden="true">↗</span></Link>
+            <Link className="button button-nav" to={isBusiness ? "/consultation?audience=business" : "/consultation"} onClick={closeMenu}>{isBusiness ? "Business enquiries" : "Preview a consultation"} <span aria-hidden="true">↗</span></Link>
           </nav>
         </div>
       </header>
@@ -77,7 +78,7 @@ export function SiteFooter() {
       <div className="shell footer-main">
         <div className="footer-intro">
           <Brand footer />
-          <p>Good learning starts with a conversation. Let’s find a thoughtful next step for your family.</p>
+          <p>Online learning for individuals and families. Management development and advisory for organisations.</p>
           <Link className="footer-email" to="/contact">Get in touch <span aria-hidden="true">↗</span></Link>
         </div>
         <div className="footer-col">

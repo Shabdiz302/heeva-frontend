@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { courses } from '../data/courses.js';
-import { contact } from '../data/site.js';
 import { Eyebrow, PageIntro } from '../components/ContentBlocks.jsx';
 
 function courseFromQuery() {
@@ -9,6 +8,7 @@ function courseFromQuery() {
 }
 
 export default function ConsultationPage() {
+  const isBusiness = new URLSearchParams(window.location.search).get('audience') === 'business';
   const [form, setForm] = useState({ interest: courseFromQuery(), question: '' });
   const [submitted, setSubmitted] = useState(false);
 
@@ -20,25 +20,24 @@ export default function ConsultationPage() {
 
   return (
     <>
-      <PageIntro eyebrow="Your first step is a conversation" title={<>Let’s find the right <em>starting point.</em></>}>
-        <p>Try this non-personal consultation preview. It is not connected to Heeva’s existing booking system and sends no enquiry.</p>
+      <PageIntro eyebrow={isBusiness ? "Heeva for Business" : "Heeva Courses"} title={isBusiness ? <>Preview a <em>business enquiry.</em></> : <>Let’s find the right <em>starting point.</em></>}>
+        <p>Choose a topic to try the enquiry form. Your selections stay on this page.</p>
       </PageIntro>
       <section className="shell consultation-layout page-content">
         <aside className="consultation-aside">
           <div className="consultation-aside-art" aria-hidden="true"><span>✳</span><i /><b>Talk<br />it through</b></div>
           <Eyebrow>A friendly conversation</Eyebrow>
-          <h2>Bring your questions. We’ll make space for them.</h2>
-          <p>Use the consultation to discuss interests, course suitability, current fees and next steps.</p>
+          <h2>{isBusiness ? 'What would you like your team to develop?' : 'Bring your questions. We’ll make space for them.'}</h2>
+          <p>{isBusiness ? 'Choose a training or advisory topic for your organisation.' : 'Choose a course and a topic to discuss.'}</p>
           <div className="preview-notice"><span aria-hidden="true">ⓘ</span><p><b>Preview only.</b> No personal information is requested, transmitted, or saved. The optional course and topic selections exist only in page memory and clear when you leave or reload.</p></div>
-          <div className="consultation-contact"><span>Prefer to contact Heeva directly?</span><a href={`mailto:${contact.email}`}>{contact.email} <span aria-hidden="true">↗</span></a></div>
         </aside>
         <form className="consultation-form" onSubmit={submit}>
           <div className="form-heading"><span>PREVIEW</span><h2>What would you like to discuss?</h2><p>This form is for previewing the interaction only.</p></div>
-          <label htmlFor="course-interest">Course or subject (optional)<select id="course-interest" name="interest" value={form.interest} onChange={update}><option value="">Choose a subject</option>{courses.map((course) => <option value={course.title} key={course.slug}>{course.title}</option>)}<option>Not sure yet</option></select></label>
-          <label htmlFor="consult-question">Question topic (optional)<select id="consult-question" name="question" value={form.question} onChange={update}><option value="">Choose a topic</option><option>Course suitability</option><option>Current fees</option><option>Trial terms</option><option>Booking steps</option><option>Other</option></select></label>
+          {!isBusiness && <label htmlFor="course-interest">Course or subject (optional)<select id="course-interest" name="interest" value={form.interest} onChange={update}><option value="">Choose a subject</option>{courses.map((course) => <option value={course.title} key={course.slug}>{course.title}</option>)}<option>Not sure yet</option></select></label>}
+          <label htmlFor="consult-question">Question topic (optional)<select id="consult-question" name="question" value={form.question} onChange={update}><option value="">Choose a topic</option>{(isBusiness ? ['Leadership development', 'Healthcare management', 'Human resource management', 'Organisational advisory'] : ['Course suitability', 'Current fees', 'Trial terms', 'Booking steps']).map((topic) => <option key={topic}>{topic}</option>)}<option>Other</option></select></label>
           <p className="form-privacy">Preview only. The choices above are not transmitted or saved, and this form does not ask for names, contact details, ages, or free-text personal information.</p>
           <button className="button button-dark form-submit" type="submit">Preview this selection <span aria-hidden="true">↗</span></button>
-          {submitted && <div className="form-status" role="status" aria-live="polite"><b>Preview complete.</b><span>Nothing was sent or saved. Contact Heeva directly to make a real enquiry.</span></div>}
+          {submitted && <div className="form-status" role="status" aria-live="polite"><b>Preview complete.</b><span>Your selections stayed on this page.</span></div>}
         </form>
       </section>
     </>

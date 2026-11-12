@@ -4,13 +4,14 @@ This Worker is the private server-side gateway between the GitHub Pages preview 
 
 ## Configuration
 
-1. In Cloudflare Dashboard → Workers & Pages, create/deploy the Worker named `heeva-ai-assistant` from this directory, or use Wrangler from a trusted local terminal.
+1. In Cloudflare Dashboard → Workers & Pages, create/deploy the Worker named `heeva-ai-assistant-preview` from this directory, or use Wrangler from a trusted local terminal.
 2. In the Worker settings → Variables and Secrets, add **Secret**:
    - Name: `OPENAI_API_KEY`
    - Value: your OpenAI project API key (enter it only in Cloudflare's secure dashboard; never paste it into ChatGPT or GitHub).
 3. Deploy the Worker again after adding the secret.
 4. Test `https://heeva-ai-assistant.<your-workers-dev-subdomain>.workers.dev/health`. It should return `{"ok":true,"service":"heeva-ai-assistant"}`.
-5. The frontend currently expects `https://heeva-ai-assistant.a-r-ch.workers.dev`. If the account's workers.dev subdomain differs, change `API_URL` in `src/components/HeevaChat.jsx` to the actual URL and push a new Pages preview.
+5. After testing English and Persian chat and checking the usage limits, set the GitHub Pages environment variable `VITE_HEEVA_CHAT_URL` to the verified preview Worker origin and rebuild Pages. The chat stays hidden when the variable is unset.
+6. For the manual deployment workflow, configure the Cloudflare account and a scoped deploy token as secrets in the `heeva-chat-preview` GitHub environment. Store the OpenAI project key only as a Worker secret.
 
 ## Protection and cost controls
 

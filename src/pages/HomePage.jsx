@@ -71,7 +71,7 @@ export default function HomePage() {
         </div>
         <div className="course-preview-heading"><h3>A few places to start</h3><Link className="text-link" to="/courses">See all courses <span aria-hidden="true">↗</span></Link></div>
         <div className="course-grid course-grid-four">
-          {popularCourses.map((course, index) => <CourseCard course={course} index={index} key={course.slug} />)}
+          {popularCourses.map((course) => <CourseCard course={course} key={course.slug} />)}
         </div>
       </section>
 

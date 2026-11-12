@@ -974,3 +974,13 @@ img { display: block; max-width: 100%; }
 .course-audience-card p { margin:7px 0 0; }
 .coming-soon-note { margin-top:16px !important; padding-top:14px; border-top:1px solid #d5ddd2; font-size:13px !important; }
 @media (max-width:700px) { .course-information-grid { grid-template-columns:1fr; } }
+
+
+/* Additional course categories on the homepage. */
+.category-technology-ai { background:#e3e8ef; }
+.category-business-career { background:#f0e4d8; }
+.category-wellbeing { background:#e1ebe5; }
+.category-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.category-copy small { font-size:12px; }
+@media (max-width:900px) { .category-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:600px) { .category-grid { grid-template-columns:1fr; } }

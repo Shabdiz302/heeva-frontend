@@ -8,6 +8,9 @@ const categoryDescriptions = {
   music: 'A place to explore instruments and musical learning.',
   languages: 'Online language courses with individual sessions.',
   'creative-arts': 'Time to explore drawing, watercolour and creative arts.',
+  'technology-ai': 'Build confidence with AI, coding and digital skills.',
+  'business-career': 'Practical skills for work, business and career growth.',
+  wellbeing: 'Explore movement, balance and healthy everyday habits.',
 };
 
 export default function HomePage() {
@@ -55,7 +58,7 @@ export default function HomePage() {
 
       <section className="shell section-space home-courses">
         <SectionHeading eyebrow="A world of possibilities" title={<>Where could their curiosity <em>lead?</em></>}>
-          <p>Explore the published course list, then talk with Heeva about suitability, fees and what comes next.</p>
+          <p>Discover learning in music, languages, creative arts, technology and more. Explore our courses and find a good next step with Heeva.</p>
         </SectionHeading>
         <div className="category-grid">
           {categories.filter((category) => category.id !== 'all').map((category) => (

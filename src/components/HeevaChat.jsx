@@ -127,8 +127,11 @@ export default function HeevaChat() {
             <button type="submit" disabled={sending || !text.trim()} aria-label="Send message">↑</button>
           </form>
           <div className="heeva-chat-footer">
-            <span>AI-generated answers · Please verify important details.</span>
-            <a href={waUrl} target="_blank" rel="noreferrer">Talk to our team ↗</a>
+            <span>AI via OpenAI · Don’t share children’s details or payment information.</span>
+            <span className="heeva-chat-handover">
+              <a href={waUrl} target="_blank" rel="noreferrer">WhatsApp ↗</a>
+              <a href={`mailto:${contact.email}`}>Email ↗</a>
+            </span>
           </div>
         </section>
       )}

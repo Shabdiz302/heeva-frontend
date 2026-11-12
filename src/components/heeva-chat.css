@@ -25,3 +25,5 @@
 .heeva-chat-footer{display:flex;justify-content:space-between;gap:8px;padding:0 14px 12px;color:#77857b;font-size:10px}
 .heeva-chat-footer a{color:#315d49;text-decoration:none;font-weight:700;white-space:nowrap}
 @media(max-width:540px){.heeva-chat-root{right:12px;bottom:12px}.heeva-chat-panel{right:-2px;bottom:62px;height:min(620px,calc(100dvh - 90px))}.heeva-chat-launcher{padding:10px 14px 10px 11px}}
+
+.heeva-chat-handover{display:flex;gap:10px;white-space:nowrap}.heeva-chat-footer{align-items:center}.heeva-chat-footer>span{max-width:58%;line-height:1.35}

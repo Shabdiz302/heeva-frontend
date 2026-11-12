@@ -118,3 +118,5 @@ for (const [slug, details] of Object.entries(featuredCourseDetails)) {
   const course = courses.find((item) => item.slug === slug);
   if (course) Object.assign(course, details);
 }
+
+// Course photography refresh: one distinct subject-matched image per course; the existing circular, centred crop styling is unchanged.

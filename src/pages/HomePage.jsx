@@ -96,12 +96,12 @@ export default function HomePage() {
         <div className="shell trial-grid">
           <div className="trial-art" aria-hidden="true">
             <span className="trial-sun">✳</span><span className="trial-ring" />
-            <div className="trial-note"><small>A gentle first try</small><b>Two free<br />trial sessions</b><span>Ask about current terms</span></div>
+            <div className="trial-note"><small>A gentle first try</small><b>One free<br />trial lesson</b><span>Ask about current terms</span></div>
           </div>
           <div className="trial-copy">
             <Eyebrow>Try before you decide</Eyebrow>
-            <h2>Two sessions to get a <em>feel for it.</em></h2>
-            <p>Heeva’s published course information describes two free trial sessions. Ask about the current terms and whether they apply to the course you are considering.</p>
+            <h2>One lesson to get a <em>feel for it.</em></h2>
+            <p>Heeva offers one free initial lesson so learners can meet their teacher and experience the course before deciding whether to continue.</p>
             <ButtonLink to="/consultation" variant="dark">Ask in a free consultation</ButtonLink>
           </div>
         </div>

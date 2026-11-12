@@ -4,7 +4,7 @@ import { CTASection, Eyebrow, PageIntro } from '../components/ContentBlocks.jsx'
 
 const parentTopics = [
   ['Course fit', 'Ask how the course content, format and current options relate to your learner. Suitability is discussed individually.'],
-  ['Fees and trial terms', 'Ask for current fees and the terms for Heeva’s published trial sessions before you make a decision.'],
+  ['Fees and trial terms', 'Ask for current fees and arrange Heeva’s one free initial lesson before you decide.'],
   ['Teacher onboarding', 'Heeva publishes that it has teacher onboarding and regular training. You can ask what the current process includes.'],
   ['Safeguarding', 'Ask about Heeva’s safeguarding arrangements and any checks relevant to your family before enrolment. This preview does not claim a particular check or accreditation.'],
 ];

@@ -4,8 +4,8 @@ export const faqs = [
     answer: 'It is a chance to talk about your learner’s interests, ask questions and discuss possible courses and next steps. Course suitability and fees are confirmed through that conversation.',
   },
   {
-    question: 'Does Heeva offer free trial sessions?',
-    answer: 'Heeva currently publishes two free trial sessions. Ask about the current terms and whether they apply to the course you are considering.',
+    question: 'Does Heeva offer a free trial lesson?',
+    answer: 'Yes. Heeva offers one free initial lesson. Contact Heeva to confirm availability and arrange it for your chosen course.',
   },
   {
     question: 'Are lessons online?',

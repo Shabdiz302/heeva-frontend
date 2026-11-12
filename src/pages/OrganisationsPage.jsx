@@ -116,7 +116,7 @@ export default function OrganisationsPage() {
           <a className="org-profile-image-link" href="https://pure.royalholloway.ac.uk/en/persons/maryam-zahmatkesh/" target="_blank" rel="noreferrer" aria-label="Open Dr Maryam Zahmatkesh's official academic profile">
             <img
               className="org-profile-photo"
-              src={assetPath('/images/brand/maryam-zahmatkesh-academic.jpg')}
+              src={assetPath('/images/brand/maryam-zahmatkesh-approved.jpg')}
               alt="Professional portrait of Dr Maryam Zahmatkesh"
               width="212"
               height="227"

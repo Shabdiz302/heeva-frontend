@@ -1,7 +1,9 @@
 import { Link } from '../router.jsx';
+import { courses } from '../data/courses.js';
 import { CTASection, Eyebrow } from '../components/ContentBlocks.jsx';
 
 export default function TeacherProfilePage({ teacher }) {
+  const relatedCourses = courses.filter(({ slug }) => teacher.relatedCourses?.includes(slug));
   return (
     <>
       <div className="shell breadcrumbs"><Link to="/teachers">Our teachers</Link><span aria-hidden="true">/</span><span>{teacher.name}</span></div>
@@ -17,6 +19,12 @@ export default function TeacherProfilePage({ teacher }) {
           <h1>{teacher.name}</h1>
           <p className="teacher-profile-subject">{teacher.subject}</p>
           <p>{teacher.bio}</p>
+          {relatedCourses.length > 0 && (
+            <div className="teacher-related-courses">
+              <h2>Explore related Heeva courses</h2>
+              <ul>{relatedCourses.map(({ slug, title }) => <li key={slug}><Link className="text-link" to={`/courses/${slug}`}>{title}</Link></li>)}</ul>
+            </div>
+          )}
           <p className="teacher-source-note">Biography edited for clarity from Heeva’s published teacher profile. Experience and credentials are included only where stated in that profile.</p>
           <a className="text-link" href={teacher.source} target="_blank" rel="noreferrer">View Heeva’s teacher directory <span aria-hidden="true">↗</span><span className="sr-only"> (opens in a new tab)</span></a>
         </div>

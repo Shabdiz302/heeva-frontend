@@ -815,10 +815,12 @@ img { display: block; max-width: 100%; }
   object-fit: cover;
   object-position: center 38%;
   filter: saturate(1.035) contrast(1.02);
+  transform: scale(var(--teacher-photo-scale, 1));
+  transform-origin: var(--teacher-photo-origin, center);
   transition: transform .35s ease, filter .35s ease;
 }
 .teacher-card:hover .teacher-photo img {
-  transform: scale(1.035);
+  transform: scale(calc(var(--teacher-photo-scale, 1) * 1.035));
   filter: saturate(1.07) contrast(1.03);
 }
 .teacher-profile-photo {
@@ -982,3 +984,8 @@ img { display: block; max-width: 100%; }
 .category-copy small { font-size:12px; }
 @media (max-width:900px) { .category-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media (max-width:600px) { .category-grid { grid-template-columns:1fr; } }
+
+.teacher-related-courses { margin-block: 1.25rem; }
+.teacher-related-courses h2 { margin: 0 0 .5rem; font-size: 1rem; }
+.teacher-related-courses ul { margin: 0; padding-left: 1.25rem; }
+.teacher-related-courses li + li { margin-top: .25rem; }

@@ -56,7 +56,7 @@ export function TeacherCard({ teacher, index = 0 }) {
   return (
     <article className="teacher-card">
       <Link className="teacher-card-link" to={`/teachers/${teacher.slug}`} aria-label={`View ${teacher.name}'s teacher profile`}>
-        <div className="teacher-photo">
+        <div className="teacher-photo" style={{ '--teacher-photo-origin': teacher.cardPhotoPosition, '--teacher-photo-scale': teacher.cardPhotoScale }}>
           <picture>
             <source srcSet={teacher.photo} type="image/webp" />
             <img src={teacher.originalPhoto} alt={`Portrait of ${teacher.name}, ${teacher.role}`} width="263" height="223" loading="lazy" decoding="async" style={{ objectPosition: teacher.imagePosition || 'center' }} />

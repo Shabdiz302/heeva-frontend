@@ -8,6 +8,7 @@ export const categories = [
 export const courses = [
   {
     slug: 'basic-farsi-reading-writing-part-1',
+    bookingDetails: { minimumAge: 7, farsiLevel: 'Basic', learnerFit: 'For learners who understand some spoken Farsi and are starting to read and write it.' },
     liveSlug: 'basic_farsi_reading_and_writing_part_1',
     title: 'Basic Farsi Reading & Writing (Part 1)',
     category: 'languages',
@@ -20,6 +21,7 @@ export const courses = [
   },
   {
     slug: 'piano',
+    bookingDetails: { minimumAge: 9, farsiLevel: 'Intermediate', learnerFit: 'For beginners and learners returning to piano after a break.' },
     liveSlug: 'learn_how_to_play_piano_beginner_to_advanced',
     title: 'Piano',
     category: 'music',
@@ -32,6 +34,7 @@ export const courses = [
   },
   {
     slug: 'guitar',
+    bookingDetails: { minimumAge: 9, farsiLevel: 'Intermediate', learnerFit: 'For learners starting guitar or building on basic playing skills.' },
     liveSlug: 'guitar_playing_beginner_to_advanced',
     title: 'Guitar',
     category: 'music',

@@ -64,7 +64,7 @@ export function SiteHeader() {
               const active = to === '/courses' ? courseActive : pathname === to;
               return <Link key={to} to={to} aria-current={active ? 'page' : undefined} onClick={closeMenu}>{label}</Link>;
             })}
-            <Link className="button button-nav" to={isBusiness ? "/consultation?audience=business" : "/consultation"} onClick={closeMenu}>{isBusiness ? "Business enquiries" : "Preview a consultation"} <span aria-hidden="true">↗</span></Link>
+            <Link className="button button-nav" to={isBusiness ? "/consultation?audience=business" : "/consultation"} onClick={closeMenu}>{isBusiness ? "Business enquiries" : "Request a free consultation"} <span aria-hidden="true">↗</span></Link>
           </nav>
         </div>
       </header>

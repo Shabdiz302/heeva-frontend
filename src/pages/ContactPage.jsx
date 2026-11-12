@@ -17,7 +17,7 @@ export default function ContactPage() {
           ))}
           <div className="contact-detail"><span>WhatsApp</span><a href={`https://wa.me/${contact.whatsappLink}`} target="_blank" rel="noreferrer">{contact.whatsapp} <span aria-hidden="true">↗</span><span className="sr-only"> (opens in a new tab)</span></a></div>
           <div className="contact-detail"><span>Head office</span><p>{contact.address}</p></div>
-          <ButtonLink to="/consultation">Book a free consultation</ButtonLink>
+          <ButtonLink to="/consultation">Request a free consultation</ButtonLink>
         </div>
         <aside className="contact-hours-card">
           <div className="hours-mark" aria-hidden="true">◷</div>

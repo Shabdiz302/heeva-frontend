@@ -24,7 +24,7 @@ export const faqs = [
     answer: 'You can ask Heeva about its current safeguarding arrangements, teacher onboarding and training, and any checks relevant to your family before enrolment. This site does not claim that particular checks or accreditations have been completed.',
   },
   {
-    question: 'Will the consultation form send my details?',
-    answer: 'No. This is a clearly labelled preview form. It validates the fields in your browser but does not transmit or save them.',
+    question: 'How do I request a free consultation?',
+    answer: 'Choose WhatsApp or email to contact Heeva. You can edit the message before sending it.',
   },
 ];

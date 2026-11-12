@@ -27,7 +27,7 @@ export default function HomePage() {
             <h1>Discover what makes your child <em>shine.</em></h1>
             <p className="hero-lead">A thoughtful start to online learning, shaped around your child and the things they are curious about.</p>
             <div className="hero-actions">
-              <ButtonLink to="/consultation">Book your free consultation</ButtonLink>
+              <ButtonLink to="/consultation">Request a free consultation</ButtonLink>
               <Link className="text-link" to="/courses">Explore our courses <span aria-hidden="true">↗</span></Link>
             </div>
             <div className="hero-note"><span className="note-mark" aria-hidden="true">✳</span><span><b>Start with a conversation</b><small>Talk about interests, course fit and next steps.</small></span></div>
@@ -150,14 +150,14 @@ export default function HomePage() {
           <div className="home-faq-list">
             <details><summary>How do we know which course might fit?</summary><p>Talk with Heeva during a free consultation. Suitability and course details are discussed directly.</p></details>
             <details><summary>Can we ask about fees before deciding?</summary><p>Yes. Fees are not listed in this preview; ask about current prices in your consultation.</p></details>
-            <details><summary>Does this form send our details?</summary><p>No. The consultation form is a preview and does not transmit or save personal information.</p></details>
+            <details><summary>How do we request a consultation?</summary><p>Use WhatsApp or email to send Heeva a message. You can edit it before sending.</p></details>
           </div>
         </div>
       </section>
 
       <section className="shell final-cta section-space">
         <div className="final-cta-copy"><Eyebrow>Your first step is a conversation</Eyebrow><h2>Let’s find the right <em>starting point.</em></h2></div>
-        <ButtonLink to="/consultation">Book your free consultation</ButtonLink>
+        <ButtonLink to="/consultation">Request a free consultation</ButtonLink>
       </section>
 
       <section className="home-whatsapp-support" aria-labelledby="home-whatsapp-title">

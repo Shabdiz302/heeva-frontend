@@ -1,5 +1,6 @@
 import { Link } from '../router.jsx';
 import { categoryLabel } from '../data/courses.js';
+import { firstLessons } from '../data/firstLessons.js';
 import { ButtonLink, Eyebrow } from '../components/ContentBlocks.jsx';
 
 export default function CourseDetailPage({ course }) {
@@ -7,6 +8,12 @@ export default function CourseDetailPage({ course }) {
   const status = course.status || 'available';
   const isComingSoon = status === 'coming-soon';
   const isPublishedUnconfirmed = status === 'published-check-details';
+  const isPiano = course.slug === 'piano';
+  const lessonFormat = isComingSoon
+    ? 'Online course planned. Session length, number of lessons and fees will be confirmed before bookings open.'
+    : isPublishedUnconfirmed
+      ? 'Online lessons. Check the existing Heeva course page for the current lesson length, number of sessions and fee.'
+      : `Online lessons · ${course.lessonLength} per lesson · ${course.sessions} sessions listed. Ask Heeva to confirm the current fee before booking.`;
   const enquiryPath = `/consultation?interest=${course.slug}`;
   return (
     <>
@@ -15,10 +22,29 @@ export default function CourseDetailPage({ course }) {
         <div className="shell course-detail-layout">
           <div>
             <Eyebrow>{categoryLabel(course.category)} · {isComingSoon ? 'Coming soon' : isPublishedUnconfirmed ? 'Published course · check details' : 'Available on Heeva'}</Eyebrow>
-            <h1>{course.title}</h1>
-            <p className="detail-lead">{course.description || 'A published Heeva online course. Please check the live page for current details.'}</p>
+            <h1>{isPiano ? 'Online piano lessons' : course.title}</h1>
+            {isPiano ? (
+              <>
+                <p className="detail-lead">Whether your child is sitting at a keyboard for the first time or already plays, their teacher can help them build on what they know and choose what to learn next.</p>
+                <p className="detail-lead"><strong>In the first lesson</strong><br />A complete beginner might learn to find middle C and play a short tune with one hand. If your child already plays, they can bring a piece they know so the teacher can see where to start.</p>
+                <p className="detail-lead"><strong>Lesson format</strong><br />Online lessons · {course.lessonLength} per lesson · {course.sessions} sessions listed. Ask Heeva to confirm the current fee before booking.</p>
+                <p className="detail-lead"><strong>Start with one free trial lesson</strong><br />Ask Heeva about availability for your free lesson. It’s a chance for your child to meet the teacher and try playing before you decide whether to continue.</p>
+              </>
+            ) : (
+              <>
+                <p className="detail-lead">{course.description}</p>
+                <p className="detail-lead"><strong>{isComingSoon ? 'Example first activity' : 'In the first lesson'}</strong><br />{firstLessons[course.slug]}</p>
+                <p className="detail-lead"><strong>Lesson format</strong><br />{lessonFormat}</p>
+                <p className="detail-lead">
+                  <strong>{isComingSoon ? 'Ask about availability' : 'Start with one free trial lesson'}</strong><br />
+                  {isComingSoon
+                    ? 'Ask Heeva when the course is expected to open and whether a free trial lesson will be available.'
+                    : 'Ask Heeva about availability for one free trial lesson. It’s a chance to meet the teacher and try the course before deciding whether to continue.'}
+                </p>
+              </>
+            )}
             {!isComingSoon && <a className="button" href={`https://heevacourses.com/online-courses/${course.liveSlug}`} target="_blank" rel="noreferrer">{isPublishedUnconfirmed ? 'Check current details on Heeva' : 'View details & book on Heeva'} <span aria-hidden="true">↗</span></a>}
-            <ButtonLink to={enquiryPath} variant="outline">{isComingSoon ? "Preview an expression of interest" : "Preview a course enquiry"}</ButtonLink>
+            <ButtonLink to={enquiryPath} variant="outline">{isComingSoon ? "Ask about availability" : "Request a free consultation"}</ButtonLink>
           </div>
           <div className="detail-art" aria-label={`Illustration for ${course.title}`}>
             <img className="detail-course-photo" src={course.image} alt={course.imageAlt} width="180" height="180" loading="eager" decoding="async" />
@@ -51,9 +77,9 @@ export default function CourseDetailPage({ course }) {
           </aside>
         </div>
         <div className="detail-note-grid">
-          <div><Eyebrow>{isComingSoon ? 'Be among the first to hear' : 'Continue with Heeva'}</Eyebrow><h2>{isComingSoon ? 'Interested in this course?' : 'Course details and booking.'}</h2><p>{isComingSoon ? 'Try the expression-of-interest form for this planned course. Selections stay on the preview page.' : 'The existing Heeva course page provides current registration, account, free-trial and payment information. This preview does not process a booking or payment.'}</p></div>
+          <div><Eyebrow>{isComingSoon ? 'Be among the first to hear' : 'Continue with Heeva'}</Eyebrow><h2>{isComingSoon ? 'Interested in this course?' : 'Course details and booking.'}</h2><p>{isComingSoon ? 'Contact Heeva to ask when this course will be available.' : 'The existing Heeva course page provides current registration, account, free-trial and payment information. This preview does not process a booking or payment.'}</p></div>
           <aside className="detail-consult-card"><span className="consult-spark" aria-hidden="true">✳</span><h3>{isComingSoon ? 'Register interest' : 'Questions about fit?'}</h3><p>{isComingSoon ? 'Choose a topic you would like to discuss.' : 'Ask Heeva about learner needs, current course information and free-trial terms.'}</p>
-            <ButtonLink to={enquiryPath} variant="outline">Preview enquiry</ButtonLink>
+            <ButtonLink to={enquiryPath} variant="outline">{isComingSoon ? "Ask about availability" : "Request a free consultation"}</ButtonLink>
           </aside>
         </div>
         <Link className="back-link" to="/courses"><span aria-hidden="true">←</span> Back to all courses</Link>

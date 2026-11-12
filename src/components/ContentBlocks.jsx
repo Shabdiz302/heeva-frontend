@@ -95,7 +95,7 @@ export function CTASection({ eyebrow = 'A thoughtful first step', title = 'Letâ€
           <h2>{title}</h2>
           {children && <p>{children}</p>}
         </div>
-        <ButtonLink to="/consultation" variant="cream">Book your free consultation</ButtonLink>
+        <ButtonLink to="/consultation" variant="cream">Request a free consultation</ButtonLink>
       </div>
     </section>
   );

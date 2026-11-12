@@ -49,7 +49,7 @@ export default function TeachersPage() {
           </div>
         </div>
       </section>
-      <CTASection title="Let’s find a good place to begin.">Book a free consultation to discuss course fit and the teachers who may be available.</CTASection>
+      <CTASection title="Let’s find a good place to begin.">Request a free consultation to discuss course fit and the teachers who may be available.</CTASection>
     </>
   );
 }

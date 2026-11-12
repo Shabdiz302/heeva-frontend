@@ -13,7 +13,7 @@ export default function AboutPage() {
           <Eyebrow>How we think about learning</Eyebrow>
           <h2>Make room for a more <em>personal path.</em></h2>
           <p>Heeva’s published about page describes a focus on one-to-one online classes and a preliminary consultation to help discuss a suitable course and teacher.</p>
-          <p>This new frontend is a preview. Course details and fees should be confirmed directly with Heeva, and the consultation form does not yet connect to the existing PHP platform.</p>
+          <p>This new frontend is a preview. Course details and fees should be confirmed directly with Heeva, and you can request a consultation by WhatsApp or email.</p>
           <ButtonLink to="/how-heeva-works" variant="outline">How Heeva works</ButtonLink>
         </div>
       </section>

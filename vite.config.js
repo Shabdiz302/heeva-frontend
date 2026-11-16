@@ -4,12 +4,28 @@ import { courses } from './src/data/courses.js';
 import { teachers } from './src/data/teachers.js';
 import { pageMeta } from './src/data/routes.js';
 import { defineConfig } from 'vite';
+
+const siteBase = process.env.HEEVA_BASE_PATH || '/heeva-frontend/';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  base: '/heeva-frontend/',
+  base: siteBase,
   plugins: [
     react(),
+    {
+      name: 'rewrite-preview-paths-for-root-domain',
+      apply: 'build',
+      generateBundle(_options, bundle) {
+        if (siteBase !== '/') return;
+        for (const output of Object.values(bundle)) {
+          if (output.type === 'chunk') {
+            output.code = output.code.replaceAll('/heeva-frontend/', '/');
+          } else if (typeof output.source === 'string') {
+            output.source = output.source.replaceAll('/heeva-frontend/', '/');
+          }
+        }
+      },
+    },
     {
       name: 'pages-route-entries',
       apply: 'build',

@@ -109,6 +109,7 @@ export const teachers = [
   },
   {
     slug: 'rhona-p', name: 'Rhona P.', role: 'Piano Instructor', subject: 'Piano', category: 'music',
+    relatedCourses: ["piano"],
     summary: 'Her profile lists 22 years in music education, piano and English-education degrees, and Licensed Professional Teacher status.',
     bio: 'Rhona is a piano instructor. Her profile states 22 years’ experience in online and in-person music education, a bachelor’s degree in music (piano), a degree in education (English), and Licensed Professional Teacher status. She describes her lessons as supportive and engaging.',
     photo: assetPath('/images/teachers/rhona-p-portrait.webp'), imagePosition: 'center 22%', originalPhoto: assetPath('/images/teachers/original/rhona-p.jpg'), featured: false, source: profileSource,

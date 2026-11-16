@@ -1,0 +1,197 @@
+[
+  {
+    "slug": "basic-farsi-reading-writing-part-1",
+    "title": "Basic Farsi Reading & Writing (Part 1)",
+    "status": "available"
+  },
+  {
+    "slug": "piano",
+    "title": "Piano",
+    "status": "available"
+  },
+  {
+    "slug": "guitar",
+    "title": "Guitar",
+    "status": "available"
+  },
+  {
+    "slug": "general-english",
+    "title": "General English",
+    "status": "available"
+  },
+  {
+    "slug": "watercolour-drawing",
+    "title": "Watercolour Drawing",
+    "status": "available"
+  },
+  {
+    "slug": "violin",
+    "title": "Violin",
+    "status": "available"
+  },
+  {
+    "slug": "creative-arts-for-children",
+    "title": "Creative Arts for Children",
+    "status": "available"
+  },
+  {
+    "slug": "discover-your-childs-talent-for-music",
+    "title": "Discover Your Child's Talent for Music",
+    "status": "available"
+  },
+  {
+    "slug": "advanced-drawing-chiaroscuro",
+    "title": "Advanced Drawing: Chiaroscuro with Conte Pencil",
+    "status": "published-check-details"
+  },
+  {
+    "slug": "coloured-pencil-drawing",
+    "title": "Coloured Pencil Drawing (Advanced Learners)",
+    "status": "published-check-details"
+  },
+  {
+    "slug": "easy-origami",
+    "title": "Easy Origami: The Japanese Art of Folding Paper",
+    "status": "published-check-details"
+  },
+  {
+    "slug": "drawing-for-children",
+    "title": "Learn How to Draw (Preliminary Course)",
+    "status": "published-check-details"
+  },
+  {
+    "slug": "photoshop",
+    "title": "Online Photoshop Course",
+    "status": "published-check-details"
+  },
+  {
+    "slug": "pilates-beginners",
+    "title": "Pilates for Beginners",
+    "status": "published-check-details"
+  },
+  {
+    "slug": "yoga-beginners",
+    "title": "Yoga for Beginners",
+    "status": "published-check-details"
+  },
+  {
+    "slug": "advanced-farsi",
+    "title": "Farsi Reading & Writing (Advanced Level)",
+    "status": "published-check-details"
+  },
+  {
+    "slug": "introduction-to-farsi",
+    "title": "Introduction to the Farsi Language",
+    "status": "published-check-details"
+  },
+  {
+    "slug": "english-native-teacher",
+    "title": "Learn English with a Native Teacher",
+    "status": "published-check-details"
+  },
+  {
+    "slug": "spanish-beginners",
+    "title": "Spanish for Beginners",
+    "status": "published-check-details"
+  },
+  {
+    "slug": "daf",
+    "title": "Learn How to Play the Daf (Beginner to Advanced)",
+    "status": "published-check-details"
+  },
+  {
+    "slug": "setar",
+    "title": "Learn How to Play the Setar (Beginner to Advanced)",
+    "status": "published-check-details"
+  },
+  {
+    "slug": "recorder-flute",
+    "title": "Learning to Play the Recorder Flute",
+    "status": "published-check-details"
+  },
+  {
+    "slug": "hammered-dulcimer",
+    "title": "Online Hammered Dulcimer (Beginner to Advanced)",
+    "status": "published-check-details"
+  },
+  {
+    "slug": "ai-literacy",
+    "title": "AI Literacy for Everyday Life",
+    "status": "coming-soon"
+  },
+  {
+    "slug": "generative-ai-prompting",
+    "title": "Generative AI & Prompt Engineering",
+    "status": "coming-soon"
+  },
+  {
+    "slug": "ai-for-work",
+    "title": "AI Tools for Work & Productivity",
+    "status": "coming-soon"
+  },
+  {
+    "slug": "ai-study-skills",
+    "title": "AI Study Skills for Teenagers",
+    "status": "coming-soon"
+  },
+  {
+    "slug": "creative-ai-young-learners",
+    "title": "Creative AI for Young Learners",
+    "status": "coming-soon"
+  },
+  {
+    "slug": "python-programming",
+    "title": "Python Programming for Beginners",
+    "status": "coming-soon"
+  },
+  {
+    "slug": "coding-game-design",
+    "title": "Coding & Game Design for Children",
+    "status": "coming-soon"
+  },
+  {
+    "slug": "cybersecurity-online-safety",
+    "title": "Cybersecurity & Online Safety Essentials",
+    "status": "coming-soon"
+  },
+  {
+    "slug": "data-analysis-excel",
+    "title": "Data Analysis with Excel",
+    "status": "coming-soon"
+  },
+  {
+    "slug": "digital-marketing-seo",
+    "title": "Digital Marketing & SEO Foundations",
+    "status": "coming-soon"
+  },
+  {
+    "slug": "canva-graphic-design",
+    "title": "Graphic Design & Canva for Beginners",
+    "status": "coming-soon"
+  },
+  {
+    "slug": "excel-for-work",
+    "title": "Microsoft Excel for Work",
+    "status": "coming-soon"
+  },
+  {
+    "slug": "project-management",
+    "title": "Project Management Essentials",
+    "status": "coming-soon"
+  },
+  {
+    "slug": "business-english",
+    "title": "Business English & Workplace Communication",
+    "status": "coming-soon"
+  },
+  {
+    "slug": "public-speaking",
+    "title": "Public Speaking & Presentation Skills",
+    "status": "coming-soon"
+  },
+  {
+    "slug": "personal-finance",
+    "title": "Personal Finance Foundations",
+    "status": "coming-soon"
+  }
+]

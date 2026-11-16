@@ -1,0 +1,55 @@
+name: Build Heeva student-platform staging preview
+
+on:
+  push:
+    branches:
+      - feature/student-platform-foundation
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out student-platform feature branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        run: npm install --global pnpm@11.25.0
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build for staging root domain
+        env:
+          HEEVA_BASE_PATH: /
+        run: pnpm run build
+
+      - name: Verify production-ready frontend paths and imagery
+        shell: bash
+        run: |
+          test -f dist/index.html
+          course_count=$(find dist/images/courses -type f -name '*.webp' | wc -l)
+          test "$course_count" -eq 39
+          test -f dist/images/teachers/maryam-m.webp
+          if grep -R --include='*.js' --include='*.css' --include='*.html' -n '/heeva-frontend/' dist; then
+            echo "Found GitHub Pages subdirectory paths in the root-domain build."
+            exit 1
+          fi
+          echo "Built root-domain frontend with $course_count course photographs and approved teacher imagery."
+
+      - name: Upload frontend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: heeva-student-platform-staging-frontend
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7

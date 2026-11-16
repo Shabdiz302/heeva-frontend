@@ -1,5 +1,5 @@
 import { Link } from '../router.jsx';
-import { categoryLabel } from '../data/courses.js';
+import { categoryLabel, courses } from '../data/courses.js';
 
 export function Eyebrow({ children, light = false, icon = '✳' }) {
   return <div className={`eyebrow${light ? ' eyebrow-light' : ''}`}><span aria-hidden="true">{icon}</span>{children}</div>;
@@ -53,6 +53,7 @@ export function CourseCard({ course }) {
   );
 }
 export function TeacherCard({ teacher, index = 0 }) {
+  const matchedCourses = courses.filter(({ slug }) => teacher.relatedCourses?.includes(slug));
   return (
     <article className="teacher-card">
       <Link className="teacher-card-link" to={`/teachers/${teacher.slug}`} aria-label={`View ${teacher.name}'s teacher profile`}>
@@ -61,12 +62,19 @@ export function TeacherCard({ teacher, index = 0 }) {
             <source srcSet={teacher.photo} type="image/webp" />
             <img src={teacher.originalPhoto} alt={`Portrait of ${teacher.name}, ${teacher.role}`} width="263" height="223" loading="lazy" decoding="async" style={{ objectPosition: teacher.imagePosition || 'center' }} />
           </picture>
+          <span className="teacher-photo-subject">{teacher.subject}</span>
         </div>
         <div className="teacher-card-copy">
           <div className="teacher-card-heading"><h3>{teacher.name}</h3><span className="teacher-card-index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span></div>
           <p className="teacher-role">{teacher.role}</p>
           <p className="teacher-summary">{teacher.summary}</p>
-          <span className="teacher-profile-link">View full profile <span aria-hidden="true">↗</span></span>
+          {matchedCourses.length > 0 && (
+            <div className="teacher-card-courses" aria-label="Related courses">
+              <span className="teacher-card-courses-label">Related courses</span>
+              <span className="teacher-card-course-name">{matchedCourses.slice(0, 2).map((course) => course.title).join(' · ')}{matchedCourses.length > 2 ? ` +${matchedCourses.length - 2}` : ''}</span>
+            </div>
+          )}
+          <span className="teacher-profile-link">View teacher profile <span aria-hidden="true">↗</span></span>
         </div>
       </Link>
     </article>

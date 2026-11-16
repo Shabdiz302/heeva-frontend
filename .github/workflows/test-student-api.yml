@@ -1,0 +1,35 @@
+name: Test Heeva Student API foundation
+
+on:
+  push:
+    branches:
+      - feature/student-platform-foundation
+  pull_request:
+    branches:
+      - preview/github-pages
+      - feature/student-platform-foundation
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/student-api
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Test JavaScript syntax
+        run: |
+          node --check src/server.js
+          node --check src/security.js
+          node --check src/migrate.js
+      - name: Run unit tests
+        run: node --test

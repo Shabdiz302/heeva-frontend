@@ -1,0 +1,53 @@
+name: Build Heeva staging website bundle
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/preview/github-pages'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the approved preview branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        run: npm install --global pnpm@11.25.0
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build for the staging root domain
+        env:
+          HEEVA_BASE_PATH: /
+        run: pnpm run build
+
+      - name: Verify course and teacher image assets
+        shell: bash
+        run: |
+          test -f dist/index.html
+          course_count=$(find dist/images/courses -type f -name '*.webp' | wc -l)
+          test "$course_count" -eq 39
+          test -f dist/images/teachers/maryam-m.webp
+          if grep -R --include='*.js' --include='*.css' --include='*.html' -n '/heeva-frontend/' dist; then
+            echo "Preview subdirectory paths remain in the staging build."
+            exit 1
+          fi
+          echo "Verified $course_count course photographs and Maryam's approved profile image."
+
+      - name: Upload staging website artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: heeva-staging-webroot
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7

@@ -1,6 +1,9 @@
 name: Build Heeva staging website bundle
 
 on:
+  push:
+    branches:
+      - preview/github-pages
   workflow_dispatch:
 
 permissions:

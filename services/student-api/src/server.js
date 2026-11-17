@@ -165,7 +165,7 @@ async function handle(req, res) {
 
   if (method === "GET" && path === "/api/courses") {
     return json(res, 200, { courses: catalog.map(({ slug, title, status }) => ({
-      slug, title, status, enrolmentOpen: status !== "coming-soon"
+      slug, title, status, enrolmentOpen: status === "available"
     })) });
   }
 
@@ -179,8 +179,8 @@ async function handle(req, res) {
     const preferredLanguage = body.preferredLanguage === "fa" ? "fa" : "en";
     if (firstName.length < 1 || firstName.length > 80 || lastName.length < 1 || lastName.length > 80 ||
         !isValidEmail(email) || !validatePassword(password) || phone.length > 40 ||
-        body.termsAccepted !== true || body.privacyAccepted !== true) {
-      return json(res, 400, { error: "Please check your details. Use a password of at least 12 characters with upper-case, lower-case and numeric characters, and accept the privacy policy and terms." });
+        body.termsAccepted !== true || body.privacyAccepted !== true || body.adultAccountConfirmed !== true) {
+      return json(res, 400, { error: "Please check your details. Use a password of at least 12 characters with upper-case, lower-case and numeric characters, and accept the privacy policy and terms, and confirm you are an adult account holder." });
     }
     if (!rateLimit(`register:${email}`, 4, 60 * 60 * 1000)) {
       return json(res, 429, { error: "Too many registration attempts. Please try again later." });
@@ -293,7 +293,7 @@ async function handle(req, res) {
     const body = await readJson(req);
     const course = coursesBySlug.get(String(body.courseSlug || ""));
     if (!course) return json(res, 400, { error: "Please select a valid Heeva course." });
-    if (course.status === "coming-soon") return json(res, 409, { error: "This course is coming soon and is not open for enrolment yet." });
+    if (course.status !== "available") return json(res, 409, { error: "This course is not currently confirmed as available for enrolment." });
     const inserted = await pool.query(
       `INSERT INTO student_enrolment_requests(id, student_id, course_slug, course_title_snapshot)
        VALUES($1,$2,$3,$4)
@@ -319,7 +319,7 @@ async function handle(req, res) {
     const body = await readJson(req);
     const course = coursesBySlug.get(String(body.courseSlug || ""));
     if (!course) return json(res, 400, { error: "Please select an available course for your introductory lesson." });
-    if (course.status === "coming-soon") return json(res, 409, { error: "This course is coming soon and is not open for an introductory lesson yet." });
+    if (course.status !== "available") return json(res, 409, { error: "This course is not currently confirmed as available for an introductory lesson." });
     const inserted = await pool.query(
       `INSERT INTO student_trial_lesson_requests(student_id, course_slug, course_title_snapshot)
        VALUES($1,$2,$3) ON CONFLICT(student_id) DO NOTHING

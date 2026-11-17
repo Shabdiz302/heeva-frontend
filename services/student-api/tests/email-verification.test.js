@@ -28,6 +28,8 @@ test("verification email is sent only from backend configuration", () => {
   assert.match(server, /EMAIL_REPLY_TO/);
   assert.match(server, /reply_to: \[EMAIL_REPLY_TO\]/);
   assert.match(server, /Authorization: `Bearer \$\{RESEND_API_KEY\}`/);
+  assert.match(server, /User-Agent: "Heeva-Student-Platform\\/1\\.0"/);
+  assert.match(server, /"Accept": "application\\/json"/);
   assert.match(server, /https:\/\/api\.resend\.com\/emails/);
 });
 

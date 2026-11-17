@@ -125,26 +125,31 @@ function escapeHtml(value) {
 
 async function sendVerificationEmail(email, firstName, code) {
   const safeName = escapeHtml(firstName || "there");
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      from: EMAIL_FROM,
-      to: [email],
-      subject: "Your Heeva verification code",
-      text: `Hello ${firstName || "there"}, your Heeva verification code is ${code}. It expires in 10 minutes. If you did not request this, you can ignore this email.`,
-      html: `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#243c35"><h2>Verify your Heeva email</h2><p>Hello ${safeName},</p><p>Use this code to verify your email address:</p><p style="font-size:30px;font-weight:bold;letter-spacing:8px;padding:16px;background:#f2f0e7;text-align:center">${code}</p><p>This code expires in 10 minutes. Do not share it with anyone.</p><p>If you did not request this email, you can ignore it.</p></div>`
-    }),
-    signal: AbortSignal.timeout(12000)
-  });
-  if (!response.ok) {
-    console.error("Verification email provider returned HTTP", response.status);
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        from: EMAIL_FROM,
+        to: [email],
+        subject: "Your Heeva verification code",
+        text: `Hello ${firstName || "there"}, your Heeva verification code is ${code}. It expires in 10 minutes. If you did not request this, you can ignore this email.`,
+        html: `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#243c35"><h2>Verify your Heeva email</h2><p>Hello ${safeName},</p><p>Use this code to verify your email address:</p><p style="font-size:30px;font-weight:bold;letter-spacing:8px;padding:16px;background:#f2f0e7;text-align:center">${code}</p><p>This code expires in 10 minutes. Do not share it with anyone.</p><p>If you did not request this email, you can ignore it.</p></div>`
+      }),
+      signal: AbortSignal.timeout(12000)
+    });
+    if (!response.ok) {
+      console.error("Verification email provider returned HTTP", response.status);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Verification email delivery failed:", error.name || "Error");
     return false;
   }
-  return true;
 }
 
 async function storeVerificationCode(client, studentId) {

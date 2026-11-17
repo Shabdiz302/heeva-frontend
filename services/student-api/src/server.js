@@ -606,6 +606,282 @@ async function handle(req, res) {
     return json(res, 201, { learner: publicLearner(inserted.rows[0]) });
   }
 
+
+  if (method === "POST" && path === "/api/staff/auth/login") {
+    const body = await readJson(req);
+    const email = normalizeEmail(body.email);
+    const password = typeof body.password === "string" ? body.password : "";
+    if (!isValidEmail(email) || !password || password.length > 128) {
+      return json(res,400,{error:"Enter your staff email and password."});
+    }
+    if (!rateLimit("staff-login:"+email,8,15*60*1000)) {
+      return json(res,429,{error:"Too many staff sign-in attempts. Please wait and try again."});
+    }
+    const found = await pool.query(
+      "SELECT id,email,display_name,password_hash,role,teacher_slug FROM staff_users WHERE email=$1 AND status='active' LIMIT 1",
+      [email]
+    );
+    const staff = found.rows[0];
+    if (!staff || !(await verifyPassword(password,staff.password_hash))) {
+      return json(res,401,{error:"Staff email or password is incorrect."});
+    }
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      await client.query("DELETE FROM staff_sessions WHERE staff_user_id=$1 AND expires_at<NOW()",[staff.id]);
+      await createStaffSession(client,staff.id,res);
+      await client.query("UPDATE staff_users SET last_login_at=NOW() WHERE id=$1",[staff.id]);
+      await auditStaffAction(client,staff.id,"staff.login","staff_user",staff.id);
+      await client.query("COMMIT");
+      return json(res,200,{staff:{id:staff.id,email:staff.email,displayName:staff.display_name,role:staff.role,teacherSlug:staff.teacher_slug}});
+    } catch(error) {
+      await client.query("ROLLBACK");
+      clearStaffSessionCookie(res);
+      throw error;
+    } finally { client.release(); }
+  }
+
+  if (method === "POST" && path === "/api/staff/auth/logout") {
+    const token = getCookie(req,STAFF_COOKIE_NAME);
+    if (token) await pool.query("DELETE FROM staff_sessions WHERE token_hash=$1",[hashSessionToken(token)]);
+    clearStaffSessionCookie(res);
+    return json(res,200,{ok:true});
+  }
+
+  if (path.startsWith("/api/staff/")) {
+    const staff = await currentStaff(req);
+    if (!staff) return json(res,401,{error:"Staff sign-in required."});
+
+    if (method === "GET" && path === "/api/staff/auth/me") {
+      return json(res,200,{staff:{id:staff.id,email:staff.email,displayName:staff.display_name,role:staff.role,teacherSlug:staff.teacher_slug}});
+    }
+
+    if (method === "GET" && path === "/api/staff/teachers") {
+      return json(res,200,{teachers:teacherCatalog});
+    }
+
+    if (method === "GET" && path === "/api/staff/dashboard") {
+      const teacherArgs = staff.role === "teacher" ? [staff.teacher_slug] : [];
+      const teacherWhere = staff.role === "teacher" ? " AND e.teacher_slug=$1" : "";
+      const [requests,enrolments,upcoming,resources] = await Promise.all([
+        staff.role === "admin"
+          ? pool.query("SELECT COUNT(*)::int AS count FROM student_enrolment_requests WHERE status IN ('requested','approved','payment_pending')")
+          : pool.query("SELECT COUNT(*)::int AS count FROM student_course_enrolments e WHERE e.teacher_slug=$1 AND e.status IN ('active','paused')",teacherArgs),
+        pool.query("SELECT COUNT(*)::int AS count FROM student_course_enrolments e WHERE e.status IN ('active','paused')"+teacherWhere,teacherArgs),
+        staff.role === "admin"
+          ? pool.query("SELECT COUNT(*)::int AS count FROM student_course_lessons WHERE status='scheduled' AND scheduled_at>=NOW()")
+          : pool.query("SELECT COUNT(*)::int AS count FROM student_course_lessons l JOIN student_course_enrolments e ON e.id=l.course_enrolment_id WHERE l.status='scheduled' AND l.scheduled_at>=NOW() AND e.teacher_slug=$1",teacherArgs),
+        staff.role === "admin"
+          ? pool.query("SELECT COUNT(*)::int AS count FROM student_course_resources WHERE status='published'")
+          : pool.query("SELECT COUNT(*)::int AS count FROM student_course_resources r JOIN student_course_enrolments e ON e.id=r.course_enrolment_id WHERE r.status='published' AND e.teacher_slug=$1",teacherArgs)
+      ]);
+      return json(res,200,{counts:{
+        pendingRequests:requests.rows[0].count,
+        activeEnrolments:enrolments.rows[0].count,
+        upcomingLessons:upcoming.rows[0].count,
+        publishedResources:resources.rows[0].count
+      }});
+    }
+
+    if (method === "GET" && path === "/api/staff/enrolment-requests") {
+      if (staff.role !== "admin") return json(res,403,{error:"Only administrators can approve enrolment requests."});
+      const result = await pool.query(
+        "SELECT e.id,e.student_id AS student_id,s.first_name AS account_first_name,s.last_name AS account_last_name,s.email,"+
+        "lp.id AS learner_id,lp.display_name AS learner_name,e.course_slug AS course_slug,"+
+        "e.course_title_snapshot AS course_title,e.status,e.created_at AS created_at "+
+        "FROM student_enrolment_requests e JOIN students s ON s.id=e.student_id "+
+        "JOIN learner_profiles lp ON lp.id=e.learner_id "+
+        "WHERE e.status IN ('requested','approved','payment_pending') ORDER BY e.created_at ASC"
+      );
+      return json(res,200,{requests:result.rows});
+    }
+
+    if (method === "GET" && path === "/api/staff/course-enrolments") {
+      const result = await pool.query(
+        "SELECT e.id,e.learner_id AS learner_id,lp.display_name AS learner_name,s.email,"+
+        "e.course_slug AS course_slug,e.course_title_snapshot AS course_title,"+
+        "e.total_lessons AS total_lessons,e.teacher_slug AS teacher_slug,e.status,"+
+        "e.started_at AS started_at,COUNT(l.id) FILTER (WHERE l.status='completed')::int AS completed_lessons "+
+        "FROM student_course_enrolments e JOIN learner_profiles lp ON lp.id=e.learner_id "+
+        "JOIN students s ON s.id=e.student_id LEFT JOIN student_course_lessons l ON l.course_enrolment_id=e.id "+
+        "WHERE e.status IN ('active','paused')"+
+        (staff.role === "teacher" ? " AND e.teacher_slug=$1" : "")+
+        " GROUP BY e.id,lp.display_name,s.email ORDER BY e.started_at DESC",
+        staff.role === "teacher" ? [staff.teacher_slug] : []
+      );
+      return json(res,200,{enrolments:result.rows});
+    }
+
+    const activateMatch = path.match(/^\/api\/staff\/enrolment-requests\/([0-9a-f-]{36})\/activate$/i);
+    if (method === "POST" && activateMatch) {
+      if (staff.role !== "admin") return json(res,403,{error:"Only administrators can activate enrolments."});
+      const requestId = activateMatch[1];
+      const body = await readJson(req);
+      const totalLessons = Number(body.totalLessons);
+      const teacherSlug = body.teacherSlug ? String(body.teacherSlug) : null;
+      if (!Number.isInteger(totalLessons) || totalLessons < 1 || totalLessons > 500) {
+        return json(res,400,{error:"Enter a lesson package between 1 and 500 lessons."});
+      }
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+        const found = await client.query(
+          "SELECT e.*,lp.display_name AS learner_name FROM student_enrolment_requests e "+
+          "JOIN learner_profiles lp ON lp.id=e.learner_id WHERE e.id=$1 FOR UPDATE OF e",
+          [requestId]
+        );
+        if (!found.rowCount) { await client.query("ROLLBACK"); return json(res,404,{error:"Enrolment request not found."}); }
+        const request = found.rows[0];
+        if (!["requested","approved","payment_pending"].includes(request.status)) {
+          await client.query("ROLLBACK");
+          return json(res,409,{error:"This request is not awaiting activation."});
+        }
+        if (teacherSlug) {
+          const teacher = teachersBySlug.get(teacherSlug);
+          if (!teacher || !teacher.courseSlugs.includes(request.course_slug)) {
+            await client.query("ROLLBACK");
+            return json(res,400,{error:"The selected teacher is not listed for this course."});
+          }
+        }
+        const inserted = await client.query(
+          "INSERT INTO student_course_enrolments(id,student_id,learner_id,enrolment_request_id,course_slug,course_title_snapshot,total_lessons,teacher_slug,status) "+
+          "VALUES($1,$2,$3,$4,$5,$6,$7,$8,'active') RETURNING id",
+          [newId(),request.student_id,request.learner_id,request.id,request.course_slug,request.course_title_snapshot,totalLessons,teacherSlug]
+        );
+        await client.query("UPDATE student_enrolment_requests SET status='active',updated_at=NOW() WHERE id=$1",[request.id]);
+        await auditStaffAction(client,staff.id,"enrolment.activated","course_enrolment",inserted.rows[0].id,{
+          requestId:request.id,learnerName:request.learner_name,totalLessons,teacherSlug
+        });
+        await client.query("COMMIT");
+        return json(res,201,{ok:true,courseEnrolmentId:inserted.rows[0].id});
+      } catch(error) {
+        await client.query("ROLLBACK");
+        if (error.code === "23505") return json(res,409,{error:"This enrolment request has already been activated."});
+        throw error;
+      } finally { client.release(); }
+    }
+
+    const lessonsCollection = path.match(/^\/api\/staff\/course-enrolments\/([0-9a-f-]{36})\/lessons$/i);
+    if (method === "POST" && lessonsCollection) {
+      const enrolmentId = lessonsCollection[1];
+      const body = await readJson(req);
+      const title = String(body.title || "").trim();
+      const lessonNumber = Number(body.lessonNumber);
+      const scheduledAt = body.scheduledAt ? new Date(body.scheduledAt) : null;
+      if (!title || title.length > 180 || !Number.isInteger(lessonNumber) || (scheduledAt && Number.isNaN(scheduledAt.getTime()))) {
+        return json(res,400,{error:"Enter a lesson title, valid lesson number and optional valid date/time."});
+      }
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+        const found = await client.query("SELECT id,teacher_slug,total_lessons FROM student_course_enrolments WHERE id=$1 FOR UPDATE",[enrolmentId]);
+        if (!found.rowCount) { await client.query("ROLLBACK"); return json(res,404,{error:"Course enrolment not found."}); }
+        const enrolment = found.rows[0];
+        if (!staffCanManageEnrolment(staff,enrolment)) { await client.query("ROLLBACK"); return json(res,403,{error:"You cannot manage lessons for this course."}); }
+        if (lessonNumber < 1 || lessonNumber > enrolment.total_lessons) { await client.query("ROLLBACK"); return json(res,400,{error:"Lesson number must be within the purchased lesson package."}); }
+        const inserted = await client.query(
+          "INSERT INTO student_course_lessons(id,course_enrolment_id,lesson_number,title,scheduled_at) "+
+          "VALUES($1,$2,$3,$4,$5) RETURNING id,lesson_number AS lesson_number,title,status,scheduled_at AS scheduled_at",
+          [newId(),enrolmentId,lessonNumber,title,scheduledAt]
+        );
+        await auditStaffAction(client,staff.id,"lesson.scheduled","course_lesson",inserted.rows[0].id,{enrolmentId,lessonNumber});
+        await client.query("COMMIT");
+        return json(res,201,{lesson:inserted.rows[0]});
+      } catch(error) {
+        await client.query("ROLLBACK");
+        if (error.code === "23505") return json(res,409,{error:"That lesson number already exists for this course."});
+        throw error;
+      } finally { client.release(); }
+    }
+
+    const lessonUpdate = path.match(/^\/api\/staff\/lessons\/([0-9a-f-]{36})$/i);
+    if (method === "PUT" && lessonUpdate) {
+      const lessonId = lessonUpdate[1];
+      const body = await readJson(req);
+      const status = String(body.status || "");
+      const note = String(body.tutorNote || "").trim();
+      if (!["scheduled","completed","cancelled","missed"].includes(status) || note.length > 2000) {
+        return json(res,400,{error:"Select a valid lesson status and keep notes under 2,000 characters."});
+      }
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+        const found = await client.query(
+          "SELECT l.id,l.course_enrolment_id,e.teacher_slug FROM student_course_lessons l "+
+          "JOIN student_course_enrolments e ON e.id=l.course_enrolment_id WHERE l.id=$1 FOR UPDATE OF l",
+          [lessonId]
+        );
+        if (!found.rowCount) { await client.query("ROLLBACK"); return json(res,404,{error:"Lesson not found."}); }
+        if (!staffCanManageEnrolment(staff,found.rows[0])) { await client.query("ROLLBACK"); return json(res,403,{error:"You cannot update this lesson."}); }
+        const updated = await client.query(
+          "UPDATE student_course_lessons SET status=$1,completed_at=CASE WHEN $1='completed' THEN COALESCE(completed_at,NOW()) ELSE NULL END,"+
+          "tutor_note=$2,updated_at=NOW() WHERE id=$3 RETURNING id,status,completed_at AS completed_at",
+          [status,note || null,lessonId]
+        );
+        await auditStaffAction(client,staff.id,"lesson.updated","course_lesson",lessonId,{status});
+        await client.query("COMMIT");
+        return json(res,200,{lesson:updated.rows[0]});
+      } catch(error) { await client.query("ROLLBACK"); throw error; }
+      finally { client.release(); }
+    }
+
+    const resourceUpload = path.match(/^\/api\/staff\/course-enrolments\/([0-9a-f-]{36})\/resources$/i);
+    if (method === "POST" && resourceUpload) {
+      const enrolmentId = resourceUpload[1];
+      const mimeType = String(req.headers["content-type"] || "").toLowerCase().split(";")[0].trim();
+      const extensions = {
+        "application/pdf":".pdf",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document":".docx",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation":".pptx",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":".xlsx",
+        "text/plain":".txt"
+      };
+      if (!extensions[mimeType]) return json(res,415,{error:"Only PDF, DOCX, PPTX, XLSX and TXT files are accepted."});
+      let filename;
+      try { filename = decodeURIComponent(String(req.headers["x-file-name"] || "lesson-material")).replace(/[\\\/\r\n"]/g,"_"); }
+      catch { return json(res,400,{error:"Invalid file name."}); }
+      if (!filename || filename.length > 240 || !filename.toLowerCase().endsWith(extensions[mimeType])) {
+        return json(res,400,{error:"File name must match the selected file type."});
+      }
+      const title = String(req.headers["x-resource-title"] || filename).trim();
+      const description = String(req.headers["x-resource-description"] || "").trim();
+      if (!title || title.length > 180 || description.length > 500) return json(res,400,{error:"Enter a valid document title and description."});
+      const lessonId = req.headers["x-lesson-id"] ? String(req.headers["x-lesson-id"]) : null;
+      const client = await pool.connect();
+      let storagePath = null;
+      try {
+        await client.query("BEGIN");
+        const found = await client.query("SELECT id,teacher_slug FROM student_course_enrolments WHERE id=$1 FOR UPDATE",[enrolmentId]);
+        if (!found.rowCount) { await client.query("ROLLBACK"); return json(res,404,{error:"Course enrolment not found."}); }
+        if (!staffCanManageEnrolment(staff,found.rows[0])) { await client.query("ROLLBACK"); return json(res,403,{error:"You cannot upload materials to this course."}); }
+        if (lessonId) {
+          const lesson = await client.query("SELECT id FROM student_course_lessons WHERE id=$1 AND course_enrolment_id=$2",[lessonId,enrolmentId]);
+          if (!lesson.rowCount) { await client.query("ROLLBACK"); return json(res,400,{error:"The selected lesson does not belong to this course."}); }
+        }
+        const file = await readBinary(req,20*1024*1024);
+        await mkdir(PRIVATE_RESOURCES_DIR,{recursive:true,mode:0o700});
+        const resourceId = newId();
+        const storageKey = resourceId + extensions[mimeType];
+        storagePath = resolve(PRIVATE_RESOURCES_DIR,storageKey);
+        await writeFile(storagePath,file,{flag:"wx",mode:0o600});
+        const inserted = await client.query(
+          "INSERT INTO student_course_resources(id,course_enrolment_id,lesson_id,title,description,original_filename,storage_key,mime_type,file_size_bytes,status,published_at) "+
+          "VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,'published',NOW()) RETURNING id,title,original_filename AS filename,file_size_bytes AS file_size_bytes",
+          [resourceId,enrolmentId,lessonId,title,description || null,filename,storageKey,mimeType,file.length]
+        );
+        await auditStaffAction(client,staff.id,"resource.published","course_resource",resourceId,{enrolmentId,filename,mimeType});
+        await client.query("COMMIT");
+        return json(res,201,{resource:inserted.rows[0]});
+      } catch(error) {
+        await client.query("ROLLBACK");
+        if (storagePath) await unlink(storagePath).catch(()=>{});
+        throw error;
+      } finally { client.release(); }
+    }
+
+    return json(res,404,{error:"Staff route not found."});
+  }
+
   if (method === "GET" && path === "/api/student/enrolments") {
     const result = await pool.query(
       `SELECT e.id, e.learner_id AS "learnerId", lp.display_name AS "learnerName",

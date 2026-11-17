@@ -2,7 +2,6 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
-import pg from "pg";
 
 const server = await readFile(new URL("../src/server.js", import.meta.url), "utf8");
 
@@ -18,6 +17,7 @@ function lessonUpdateSql() {
 test("real PostgreSQL accepts completed and cancelled lesson status updates", {
   skip: !process.env.DATABASE_URL && "DATABASE_URL is required for PostgreSQL integration",
 }, async () => {
+  const { default: pg } = await import("pg");
   const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
   await client.connect();
   try {

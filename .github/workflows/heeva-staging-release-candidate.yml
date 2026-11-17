@@ -1,0 +1,35 @@
+name: Heeva staging API release candidate
+
+# This workflow ONLY builds and validates an image. It cannot deploy to a server.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build staging API container (no deployment)
+    if: github.ref == 'refs/heads/feature/student-portal-staging'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the approved staging branch
+        uses: actions/checkout@v4
+      - name: Validate Student API syntax
+        working-directory: services/student-api
+        run: |
+          node --check src/server.js
+          node --check src/security.js
+          node --check src/migrate.js
+      - name: Build candidate container image
+        run: |
+          docker build \
+            -t heeva-student-api:candidate-${GITHUB_SHA} \
+            -f services/student-api/Dockerfile \
+            services/student-api
+      - name: Record candidate identity
+        run: |
+          printf 'Git commit: %s\n' "$GITHUB_SHA"
+          docker image inspect "heeva-student-api:candidate-${GITHUB_SHA}" \
+            --format 'Image ID: {{.Id}}'
+          printf '%s\n' 'No VPS connection, database migration, or deployment was performed.'

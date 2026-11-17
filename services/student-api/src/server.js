@@ -5,7 +5,9 @@ import { fileURLToPath } from "node:url";
 import pg from "pg";
 import {
   createSessionToken, hashPassword, hashSessionToken, isValidEmail,
-  newId, normalizeEmail, validatePassword, verifyPassword
+  newId, normalizeEmail, validatePassword, verifyPassword,
+  createEmailVerificationCode, createEmailVerificationSalt,
+  hashEmailVerificationCode, verifyEmailVerificationCode
 } from "./security.js";
 
 const { Pool } = pg;
@@ -108,6 +110,60 @@ setInterval(() => {
   for (const [key, value] of attempts) if (now - value.start > 60 * 60 * 1000) attempts.delete(key);
 }, 10 * 60 * 1000).unref();
 
+const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
+const EMAIL_FROM = process.env.EMAIL_FROM || "";
+
+function emailVerificationConfigured() {
+  return RESEND_API_KEY.length > 0 && EMAIL_FROM.length > 0;
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[character]);
+}
+
+async function sendVerificationEmail(email, firstName, code) {
+  const safeName = escapeHtml(firstName || "there");
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      from: EMAIL_FROM,
+      to: [email],
+      subject: "Your Heeva verification code",
+      text: `Hello ${firstName || "there"}, your Heeva verification code is ${code}. It expires in 10 minutes. If you did not request this, you can ignore this email.`,
+      html: `<div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#243c35"><h2>Verify your Heeva email</h2><p>Hello ${safeName},</p><p>Use this code to verify your email address:</p><p style="font-size:30px;font-weight:bold;letter-spacing:8px;padding:16px;background:#f2f0e7;text-align:center">${code}</p><p>This code expires in 10 minutes. Do not share it with anyone.</p><p>If you did not request this email, you can ignore it.</p></div>`
+    }),
+    signal: AbortSignal.timeout(12000)
+  });
+  if (!response.ok) {
+    console.error("Verification email provider returned HTTP", response.status);
+    return false;
+  }
+  return true;
+}
+
+async function storeVerificationCode(client, studentId) {
+  const code = createEmailVerificationCode();
+  const salt = createEmailVerificationSalt();
+  const codeHash = hashEmailVerificationCode(code, salt);
+  await client.query(
+    `INSERT INTO student_email_verification_codes
+       (student_id, code_salt, code_hash, expires_at, attempts, sent_count, last_sent_at)
+     VALUES($1,$2,$3,NOW() + INTERVAL '10 minutes',0,1,NOW())
+     ON CONFLICT(student_id) DO UPDATE SET
+       code_salt=EXCLUDED.code_salt, code_hash=EXCLUDED.code_hash,
+       expires_at=EXCLUDED.expires_at, attempts=0, sent_count=1,
+       last_sent_at=NOW(), created_at=NOW()`,
+    [studentId, salt, codeHash]
+  );
+  return code;
+}
+
 function publicStudent(row) {
   return {
     id: row.id,
@@ -185,6 +241,9 @@ async function handle(req, res) {
   }
 
   if (method === "POST" && path === "/api/auth/register") {
+    if (!emailVerificationConfigured()) {
+      return json(res, 503, { error: "Email verification is not configured yet. Please try again later." });
+    }
     const body = await readJson(req);
     const firstName = String(body.firstName || "").trim();
     const lastName = String(body.lastName || "").trim();
@@ -197,13 +256,15 @@ async function handle(req, res) {
         !isValidEmail(email) || !validatePassword(password) || phone.length > 40 ||
         body.termsAccepted !== true || body.privacyAccepted !== true || body.adultAccountConfirmed !== true ||
         !["parent_guardian", "adult_learner"].includes(accountType)) {
-      return json(res, 400, { error: "Please check your details. Use a password of at least 12 characters with upper-case, lower-case and numeric characters, and accept the privacy policy and terms, and confirm you are an adult account holder." });
+      return json(res, 400, { error: "Check your details. Passwords must be at least 8 characters and include upper-case, lower-case and a number. Accept the privacy policy and terms, and confirm you are an adult account holder." });
     }
     if (!rateLimit(`register:${email}`, 4, 60 * 60 * 1000)) {
       return json(res, 429, { error: "Too many registration attempts. Please try again later." });
     }
     const passwordHash = await hashPassword(password);
     const client = await pool.connect();
+    let insertedStudent;
+    let verificationCode;
     try {
       await client.query("BEGIN");
       const inserted = await client.query(
@@ -212,22 +273,145 @@ async function handle(req, res) {
          RETURNING id, first_name, last_name, email, phone, preferred_language, account_type, created_at`,
         [newId(), firstName, lastName, email, passwordHash, phone || null, preferredLanguage, accountType]
       );
-      let learner = null;
+      insertedStudent = inserted.rows[0];
       if (accountType === "adult_learner") {
-        const learnerResult = await client.query(
+        await client.query(
           `INSERT INTO learner_profiles(id, account_id, display_name, age_band, relationship_type, preferred_language)
-           VALUES($1,$2,$3,'adult','self',$4)
-           RETURNING id, display_name, age_band, relationship_type, preferred_language, created_at`,
-          [newId(), inserted.rows[0].id, firstName, preferredLanguage]
+           VALUES($1,$2,$3,'adult','self',$4)`,
+          [newId(), insertedStudent.id, firstName, preferredLanguage]
         );
-        learner = publicLearner(learnerResult.rows[0]);
       }
-      await createSession(client, inserted.rows[0].id, res);
+      verificationCode = await storeVerificationCode(client, insertedStudent.id);
       await client.query("COMMIT");
-      return json(res, 201, { student: publicStudent(inserted.rows[0]), learner });
     } catch (error) {
       await client.query("ROLLBACK");
       if (error.code === "23505") return json(res, 409, { error: "An account with this email address already exists." });
+      throw error;
+    } finally {
+      client.release();
+    }
+
+    const emailSent = await sendVerificationEmail(email, firstName, verificationCode);
+    return json(res, 201, {
+      requiresEmailVerification: true,
+      emailSent,
+      email,
+      message: emailSent
+        ? "A six-digit verification code has been sent to your email address. It expires in 10 minutes."
+        : "Your account has been created, but the verification email could not be sent. Please use resend verification."
+    });
+  }
+
+  if (method === "POST" && path === "/api/auth/resend-verification") {
+    const body = await readJson(req);
+    const email = normalizeEmail(body.email);
+    if (!isValidEmail(email)) return json(res, 400, { error: "Enter a valid email address." });
+    if (!emailVerificationConfigured()) {
+      return json(res, 503, { error: "Email verification is not configured yet." });
+    }
+    if (!rateLimit(`verify-resend:${email}`, 5, 24 * 60 * 60 * 1000)) {
+      return json(res, 429, { error: "Too many verification emails requested. Try again later." });
+    }
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      const found = await client.query(
+        `SELECT s.id, s.first_name, s.email, s.email_verified_at,
+                v.sent_count, v.last_sent_at
+           FROM students s
+           LEFT JOIN student_email_verification_codes v ON v.student_id=s.id
+          WHERE s.email=$1 LIMIT 1 FOR UPDATE OF s`,
+        [email]
+      );
+      if (!found.rowCount || found.rows[0].email_verified_at) {
+        await client.query("COMMIT");
+        return json(res, 200, { ok: true, message: "If the account needs verification, a code will be sent." });
+      }
+      const row = found.rows[0];
+      if (row.last_sent_at && Date.now() - new Date(row.last_sent_at).getTime() < 60_000) {
+        await client.query("ROLLBACK");
+        return json(res, 429, { error: "Please wait at least one minute before requesting another code." });
+      }
+      if (row.sent_count >= 5 && row.last_sent_at &&
+          Date.now() - new Date(row.last_sent_at).getTime() < 24 * 60 * 60 * 1000) {
+        await client.query("ROLLBACK");
+        return json(res, 429, { error: "You have reached the daily verification email limit. Try again tomorrow." });
+      }
+      const code = createEmailVerificationCode();
+      const salt = createEmailVerificationSalt();
+      const hash = hashEmailVerificationCode(code, salt);
+      await client.query(
+        `INSERT INTO student_email_verification_codes
+           (student_id,code_salt,code_hash,expires_at,attempts,sent_count,last_sent_at)
+         VALUES($1,$2,$3,NOW()+INTERVAL '10 minutes',0,1,NOW())
+         ON CONFLICT(student_id) DO UPDATE SET
+           code_salt=EXCLUDED.code_salt, code_hash=EXCLUDED.code_hash,
+           expires_at=EXCLUDED.expires_at, attempts=0,
+           sent_count=CASE WHEN student_email_verification_codes.last_sent_at < NOW()-INTERVAL '24 hours'
+                           THEN 1 ELSE student_email_verification_codes.sent_count+1 END,
+           last_sent_at=NOW(), created_at=NOW()`,
+        [row.id, salt, hash]
+      );
+      await client.query("COMMIT");
+      const sent = await sendVerificationEmail(row.email, row.first_name, code);
+      if (!sent) return json(res, 502, { error: "We could not send the verification email. Please try again later." });
+      return json(res, 200, { ok: true, message: "A new verification code has been sent. It expires in 10 minutes." });
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  if (method === "POST" && path === "/api/auth/verify-email") {
+    const body = await readJson(req);
+    const email = normalizeEmail(body.email);
+    const code = String(body.code || "").trim();
+    if (!isValidEmail(email) || !/^\d{6}$/.test(code)) {
+      return json(res, 400, { error: "Enter the email address and six-digit verification code." });
+    }
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      const found = await client.query(
+        `SELECT s.id, s.first_name, s.last_name, s.email, s.phone,
+                s.preferred_language, s.account_type, s.created_at,
+                v.code_salt, v.code_hash, v.expires_at, v.attempts
+           FROM students s
+           JOIN student_email_verification_codes v ON v.student_id=s.id
+          WHERE s.email=$1 AND s.email_verified_at IS NULL
+          FOR UPDATE OF s, v`,
+        [email]
+      );
+      if (!found.rowCount) {
+        await client.query("ROLLBACK");
+        return json(res, 400, { error: "The code is invalid or has expired. Request a new code." });
+      }
+      const row = found.rows[0];
+      if (row.attempts >= 5 || new Date(row.expires_at).getTime() <= Date.now()) {
+        await client.query("ROLLBACK");
+        return json(res, 400, { error: "The code has expired or the attempt limit was reached. Request a new code." });
+      }
+      if (!verifyEmailVerificationCode(code, row.code_salt, row.code_hash)) {
+        await client.query(
+          "UPDATE student_email_verification_codes SET attempts=attempts+1 WHERE student_id=$1",
+          [row.id]
+        );
+        await client.query("COMMIT");
+        return json(res, 400, { error: "That verification code is incorrect. Check the code and try again." });
+      }
+      await client.query(
+        "UPDATE students SET email_verified_at=COALESCE(email_verified_at,NOW()) WHERE id=$1",
+        [row.id]
+      );
+      await client.query("DELETE FROM student_email_verification_codes WHERE student_id=$1", [row.id]);
+      await createSession(client, row.id, res);
+      await client.query("COMMIT");
+      return json(res, 200, { student: publicStudent(row), emailVerified: true });
+    } catch (error) {
+      await client.query("ROLLBACK");
+      clearSessionCookie(res);
       throw error;
     } finally {
       client.release();
@@ -245,12 +429,15 @@ async function handle(req, res) {
       return json(res, 429, { error: "Too many sign-in attempts. Please wait and try again." });
     }
     const found = await pool.query(
-      "SELECT id, first_name, last_name, email, phone, preferred_language, account_type, created_at, password_hash FROM students WHERE email = $1 AND status = 'active' LIMIT 1",
+      "SELECT id, first_name, last_name, email, phone, preferred_language, account_type, email_verified_at, created_at, password_hash FROM students WHERE email = $1 AND status = 'active' LIMIT 1",
       [email]
     );
     const student = found.rows[0];
     if (!student || !(await verifyPassword(password, student.password_hash))) {
       return json(res, 401, { error: "Email or password is incorrect." });
+    }
+    if (!student.email_verified_at) {
+      return json(res, 403, { code: "EMAIL_NOT_VERIFIED", error: "Please verify your email address before signing in. You can request a new verification code." });
     }
     const client = await pool.connect();
     try {

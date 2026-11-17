@@ -48,7 +48,7 @@ test("teachers can only manage courses assigned to their own teacher slug", () =
 test("lesson operations validate package limits and record completion", () => {
   assert.match(server, /lessonNumber > enrolment\.total_lessons/);
   assert.match(server, /status IN/);
-  assert.match(server, /completed_at=CASE WHEN \$1='completed'/);
+  assert.match(server, /status=\$1::varchar,completed_at=CASE WHEN \$1::varchar='completed'/);
 });
 
 test("private resource publishing enforces allowed types and file size", () => {

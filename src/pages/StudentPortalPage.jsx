@@ -507,11 +507,11 @@ export default function StudentPortalPage() {
           <h2>{registering ? 'Create an account' : 'Sign in to Heeva'}</h2>
           <Notice type="warning">Staging preview only. Use test details, a test email and a unique password. Do not enter real children's personal information or payment details.</Notice>
           <Notice type="error">{error}</Notice>
-          {registering && verificationPending ? (
+          {verificationPending ? (
             <form className="student-form" onSubmit={verifyEmail}>
               <p className="student-empty">We sent a six-digit code to <strong>{registrationEmail}</strong>. Enter it below to verify your email and activate your account. The code expires after 10 minutes.</p>
               <label className="student-field">Email verification code
-                <input inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} value={verificationCode} onChange={(e) => setVerificationCode(e.target.value.replace(/\\D/g, '').slice(0, 6))} required />
+                <input inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} value={verificationCode} onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))} required />
               </label>
               <button className="button student-submit" type="submit" disabled={busy || verificationCode.length !== 6}>{busy ? 'Verifying…' : 'Verify email and continue'} <span aria-hidden="true">↗</span></button>
               <button className="text-link student-resend-button" type="button" onClick={resendVerification} disabled={busy}>Resend verification code</button>

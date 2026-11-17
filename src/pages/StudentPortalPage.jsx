@@ -135,10 +135,17 @@ export default function StudentPortalPage() {
     setTrialLessons(dashboard.trialLessons || []);
     setCourses(catalogue.courses || []);
     const firstLearnerId = dashboard.learners?.[0]?.id || '';
-    setSelectedLearnerId((current) => current || firstLearnerId);
-    setTrialLearnerId((current) => current || dashboard.learners?.find((item) =>
+    const availableTrialLearners = (dashboard.learners || []).filter((item) =>
       !(dashboard.trialLessons || []).some((trial) => trial.learnerId === item.id)
-    )?.id || firstLearnerId);
+    );
+    setSelectedLearnerId((current) =>
+      dashboard.learners?.some((item) => item.id === current) ? current : firstLearnerId
+    );
+    setTrialLearnerId((current) =>
+      availableTrialLearners.some((item) => item.id === current)
+        ? current
+        : (availableTrialLearners[0]?.id || '')
+    );
   }
 
   useEffect(() => {
@@ -163,10 +170,11 @@ export default function StudentPortalPage() {
         setTrialLessons(dashboard.trialLessons || []);
         setCourses(catalogue.courses || []);
         const firstLearnerId = dashboard.learners?.[0]?.id || '';
-        setSelectedLearnerId(firstLearnerId);
-        setTrialLearnerId(dashboard.learners?.find((item) =>
+        const availableTrialLearners = (dashboard.learners || []).filter((item) =>
           !(dashboard.trialLessons || []).some((trial) => trial.learnerId === item.id)
-        )?.id || firstLearnerId);
+        );
+        setSelectedLearnerId(firstLearnerId);
+        setTrialLearnerId(availableTrialLearners[0]?.id || '');
       } catch (err) {
         if (active) {
           setError(err.message);

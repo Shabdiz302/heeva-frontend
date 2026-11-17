@@ -48,6 +48,8 @@ test("lesson operations validate package limits and record completion", () => {
 test("private resource publishing enforces allowed types and file size", () => {
   assert.match(server, /application\/pdf/);
   assert.match(server, /readBinary\(req,20\*1024\*1024\)/);
+  assert.match(server, /validResourceSignature\(file,mimeType\)/);
+  assert.match(server, /file contents do not match/);
   assert.match(server, /status,published_at/);
   assert.match(server, /staffCanManageEnrolment\(staff,found\.rows\[0\]\)/);
 });

@@ -52,6 +52,7 @@ The teacher directory shown in the frontend uses the published Heeva teacher bio
 - `APP_ORIGINS` containing the exact HTTPS site origin, for example `https://staging.heevacourses.com`
 - `RESEND_API_KEY` with a send-only Resend API key
 - `EMAIL_FROM` using a sender address on a domain verified in Resend
+- `EMAIL_REPLY_TO` set to the Google Workspace customer-support address (for Heeva, `info@heevacourses.com`)
 
 The API is designed to sit behind the staging Apache TLS virtual host, with API containers published only on host loopback. PostgreSQL must not publish a host port.
 

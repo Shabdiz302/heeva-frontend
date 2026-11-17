@@ -269,6 +269,19 @@ async function readBinary(req, maxBytes) {
   return Buffer.concat(chunks);
 }
 
+function validResourceSignature(buffer, mimeType) {
+  if (mimeType === "application/pdf") return buffer.subarray(0,5).toString("ascii") === "%PDF-";
+  if (mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+      mimeType === "application/vnd.openxmlformats-officedocument.presentationml.presentation" ||
+      mimeType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
+    return buffer.length >= 4 && buffer[0] === 0x50 && buffer[1] === 0x4b &&
+      [0x03,0x05,0x07].includes(buffer[2]) && [0x04,0x06,0x08].includes(buffer[3]);
+  }
+  if (mimeType === "text/plain") return !buffer.includes(0x00) &&
+    new TextDecoder("utf-8",{fatal:true}).decode(buffer).length > 0;
+  return false;
+}
+
 function staffCanManageEnrolment(staff, enrolment) {
   return staff.role === "admin" ||
     (staff.role === "teacher" && staff.teacher_slug && enrolment.teacher_slug === staff.teacher_slug);
@@ -879,6 +892,12 @@ async function handle(req, res) {
           if (!lesson.rowCount) { await client.query("ROLLBACK"); return json(res,400,{error:"The selected lesson does not belong to this course."}); }
         }
         const file = await readBinary(req,20*1024*1024);
+        let signatureValid = false;
+        try { signatureValid = validResourceSignature(file,mimeType); } catch { signatureValid = false; }
+        if (!signatureValid) {
+          await client.query("ROLLBACK");
+          return json(res,415,{error:"The file contents do not match the selected document type."});
+        }
         await mkdir(PRIVATE_RESOURCES_DIR,{recursive:true,mode:0o700});
         const resourceId = newId();
         const storageKey = resourceId + extensions[mimeType];

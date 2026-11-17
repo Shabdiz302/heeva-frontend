@@ -136,7 +136,9 @@ async function sendVerificationEmail(email, firstName, code) {
       method: "POST",
       headers: {
         Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "User-Agent": "Heeva-Student-Platform/1.0"
       },
       body: JSON.stringify({
         from: EMAIL_FROM,

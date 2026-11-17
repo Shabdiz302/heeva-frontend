@@ -16,6 +16,10 @@ This service is a separate student platform API. It does not connect to or impor
 - Minimal learner data for this staging phase: display name, broad age band and preferred language
 - Learner-specific course enrolment requests (requests do not grant paid/active enrolments)
 - One introductory-lesson request per learner, enforced by the learner ID primary key
+- Confirmed course enrolments with explicit lesson-package totals
+- Individual lesson records with scheduled/completed/cancelled/missed states
+- Student dashboard totals: lessons completed, lessons remaining, progress percentage and next scheduled lesson
+- Private, authenticated downloads for published PDF/DOCX/PPTX/XLSX/TXT course materials
 - Read-only 39-course catalogue snapshot
 - PostgreSQL migrations and health endpoint
 
@@ -25,7 +29,7 @@ Existing staging adult accounts are retained. Migration `002_parent_learner_prof
 
 - Password recovery (requires a verified outbound email provider and a separate reset flow)
 - Full child safeguarding workflow, identity/parental-responsibility verification or child login
-- Admin/teacher roles and admin APIs
+- Admin/teacher roles and admin APIs to approve course requests, assign lesson packages, record lessons and publish lesson resources
 - Timetable availability and confirmed lesson scheduling
 - PayPal orders, captures, webhooks, refunds and financial ledger
 - Live payment or course-access activation
@@ -68,3 +72,26 @@ Email verification uses the Resend REST API from the backend only. Never expose 
 The application sends a six-digit code that expires after 10 minutes. Only a salted hash is stored. Verification attempts are capped at five per code; resend requests are throttled to one per minute and five per rolling 24-hour period. A new code invalidates the preceding code.
 
 The API uses the Resend `POST /emails` endpoint with bearer authentication. No email provider credential is committed to this repository.
+
+## Customer learning dashboard and private lesson files
+
+Migration `004_customer_learning_dashboard` adds three distinct records:
+
+- `student_course_enrolments`: a confirmed course and the total number of lessons included in that learner's package. The total is mandatory; it is never guessed from a course catalogue entry.
+- `student_course_lessons`: each lesson's number, title, scheduled time and outcome. Only lessons marked `completed` count toward progress. Remaining lessons are calculated as package total minus completed lessons.
+- `student_course_resources`: published offline lesson materials attached to a confirmed course enrolment. Files are stored outside the public website and downloaded only through an authenticated API route after ownership is checked.
+
+The customer dashboard keeps course requests separate from confirmed enrolments. A requested course does not create a lesson allowance, a progress percentage or downloadable access.
+
+### Private resource storage
+
+Mount a private server directory at `/app/private-resources` inside the API container (read-only for the API). The expected storage key is a relative path below this directory, for example `piano/lesson-01-practice.pdf`. Do not put lesson files under the public website's `/var/www` directory or commit customer-specific files to GitHub.
+
+Only publish a resource after:
+1. The learner's course enrolment is confirmed.
+2. The resource file is placed in private storage and its MIME type and byte size are checked.
+3. A `student_course_resources` row is created with status `published`, the correct `course_enrolment_id`, relative `storage_key`, original filename, MIME type and exact file size.
+
+The authenticated download route checks that the signed-in account owns the course enrolment, requires the resource to be published, blocks path traversal/symlink escapes and sends the file as an attachment.
+
+**Important staging limitation:** the student-facing dashboard and read/download API are implemented, but there is not yet an administrator interface/API to approve course requests, define lesson packages, mark lessons completed or publish files. Until that is built, the dashboard correctly shows an empty "My courses" state rather than inventing lesson counts or progress. This admin workflow is the next required development phase.

@@ -116,16 +116,30 @@ function publicStudent(row) {
     email: row.email,
     phone: row.phone,
     preferredLanguage: row.preferred_language,
+    accountType: row.account_type || "adult_learner",
     createdAt: row.created_at
   };
 }
+
+function publicLearner(row) {
+  return {
+    id: row.id,
+    displayName: row.display_name,
+    ageBand: row.age_band,
+    relationshipType: row.relationship_type,
+    preferredLanguage: row.preferred_language,
+    createdAt: row.created_at
+  };
+}
+
+const childAgeBands = new Set(["under_8", "8_12", "13_17"]);
 
 async function currentStudent(req) {
   const token = getCookie(req, COOKIE_NAME);
   if (!token || token.length > 100) return null;
   const result = await pool.query(
     `SELECT s.id, s.first_name, s.last_name, s.email, s.phone,
-            s.preferred_language, s.created_at, ss.id AS session_id
+            s.preferred_language, s.account_type, s.created_at, ss.id AS session_id
        FROM student_sessions ss
        JOIN students s ON s.id = ss.student_id
       WHERE ss.token_hash = $1 AND ss.expires_at > NOW() AND s.status = 'active'
@@ -177,9 +191,11 @@ async function handle(req, res) {
     const password = body.password;
     const phone = String(body.phone || "").trim();
     const preferredLanguage = body.preferredLanguage === "fa" ? "fa" : "en";
+    const accountType = body.accountType === "parent_guardian" ? "parent_guardian" : "adult_learner";
     if (firstName.length < 1 || firstName.length > 80 || lastName.length < 1 || lastName.length > 80 ||
         !isValidEmail(email) || !validatePassword(password) || phone.length > 40 ||
-        body.termsAccepted !== true || body.privacyAccepted !== true || body.adultAccountConfirmed !== true) {
+        body.termsAccepted !== true || body.privacyAccepted !== true || body.adultAccountConfirmed !== true ||
+        !["parent_guardian", "adult_learner"].includes(accountType)) {
       return json(res, 400, { error: "Please check your details. Use a password of at least 12 characters with upper-case, lower-case and numeric characters, and accept the privacy policy and terms, and confirm you are an adult account holder." });
     }
     if (!rateLimit(`register:${email}`, 4, 60 * 60 * 1000)) {
@@ -190,14 +206,24 @@ async function handle(req, res) {
     try {
       await client.query("BEGIN");
       const inserted = await client.query(
-        `INSERT INTO students(id, first_name, last_name, email, password_hash, phone, preferred_language, terms_accepted_at, privacy_accepted_at)
-         VALUES($1,$2,$3,$4,$5,$6,$7,NOW(),NOW())
-         RETURNING id, first_name, last_name, email, phone, preferred_language, created_at`,
-        [newId(), firstName, lastName, email, passwordHash, phone || null, preferredLanguage]
+        `INSERT INTO students(id, first_name, last_name, email, password_hash, phone, preferred_language, account_type, terms_accepted_at, privacy_accepted_at)
+         VALUES($1,$2,$3,$4,$5,$6,$7,$8,NOW(),NOW())
+         RETURNING id, first_name, last_name, email, phone, preferred_language, account_type, created_at`,
+        [newId(), firstName, lastName, email, passwordHash, phone || null, preferredLanguage, accountType]
       );
+      let learner = null;
+      if (accountType === "adult_learner") {
+        const learnerResult = await client.query(
+          `INSERT INTO learner_profiles(id, account_id, display_name, age_band, relationship_type, preferred_language)
+           VALUES($1,$2,$3,'adult','self',$4)
+           RETURNING id, display_name, age_band, relationship_type, preferred_language, created_at`,
+          [newId(), inserted.rows[0].id, firstName, preferredLanguage]
+        );
+        learner = publicLearner(learnerResult.rows[0]);
+      }
       await createSession(client, inserted.rows[0].id, res);
       await client.query("COMMIT");
-      return json(res, 201, { student: publicStudent(inserted.rows[0]) });
+      return json(res, 201, { student: publicStudent(inserted.rows[0]), learner });
     } catch (error) {
       await client.query("ROLLBACK");
       if (error.code === "23505") return json(res, 409, { error: "An account with this email address already exists." });
@@ -218,7 +244,7 @@ async function handle(req, res) {
       return json(res, 429, { error: "Too many sign-in attempts. Please wait and try again." });
     }
     const found = await pool.query(
-      "SELECT id, first_name, last_name, email, phone, preferred_language, created_at, password_hash FROM students WHERE email = $1 AND status = 'active' LIMIT 1",
+      "SELECT id, first_name, last_name, email, phone, preferred_language, account_type, created_at, password_hash FROM students WHERE email = $1 AND status = 'active' LIMIT 1",
       [email]
     );
     const student = found.rows[0];
@@ -279,11 +305,51 @@ async function handle(req, res) {
     return json(res, 200, { profile: publicStudent(updated.rows[0]) });
   }
 
+  if (method === "GET" && path === "/api/student/learners") {
+    const result = await pool.query(
+      `SELECT id, display_name, age_band, relationship_type, preferred_language, created_at
+         FROM learner_profiles WHERE account_id=$1 AND status='active'
+        ORDER BY created_at ASC`,
+      [student.id]
+    );
+    return json(res, 200, { learners: result.rows.map(publicLearner) });
+  }
+
+  if (method === "POST" && path === "/api/student/learners") {
+    const body = await readJson(req);
+    if (student.account_type !== "parent_guardian") {
+      return json(res, 403, { error: "Only a parent or guardian account can add a child learner profile." });
+    }
+    const displayName = String(body.displayName || "").trim();
+    const ageBand = String(body.ageBand || "");
+    const preferredLanguage = body.preferredLanguage === "fa" ? "fa" : "en";
+    if (displayName.length < 1 || displayName.length > 80 ||
+        !childAgeBands.has(ageBand) || body.guardianAuthorityConfirmed !== true) {
+      return json(res, 400, { error: "Enter a learner name, select an age band and confirm that you have authority to create this learner profile." });
+    }
+    if (!rateLimit(`learner:${student.id}`, 12, 60 * 60 * 1000)) {
+      return json(res, 429, { error: "Too many learner profiles have been created recently. Please try again later." });
+    }
+    const inserted = await pool.query(
+      `INSERT INTO learner_profiles(
+          id, account_id, display_name, age_band, relationship_type,
+          preferred_language, guardian_authority_confirmed_at
+        )
+        VALUES($1,$2,$3,$4,'child',$5,NOW())
+        RETURNING id, display_name, age_band, relationship_type, preferred_language, created_at`,
+      [newId(), student.id, displayName, ageBand, preferredLanguage]
+    );
+    return json(res, 201, { learner: publicLearner(inserted.rows[0]) });
+  }
+
   if (method === "GET" && path === "/api/student/enrolments") {
     const result = await pool.query(
-      `SELECT id, course_slug AS "courseSlug", course_title_snapshot AS "courseTitle",
-              status, created_at AS "createdAt"
-         FROM student_enrolment_requests WHERE student_id=$1 ORDER BY created_at DESC`,
+      `SELECT e.id, e.learner_id AS "learnerId", lp.display_name AS "learnerName",
+              e.course_slug AS "courseSlug", e.course_title_snapshot AS "courseTitle",
+              e.status, e.created_at AS "createdAt"
+         FROM student_enrolment_requests e
+         JOIN learner_profiles lp ON lp.id=e.learner_id
+        WHERE e.student_id=$1 ORDER BY e.created_at DESC`,
       [student.id]
     );
     return json(res, 200, { enrolments: result.rows });
@@ -292,55 +358,92 @@ async function handle(req, res) {
   if (method === "POST" && path === "/api/student/enrolments") {
     const body = await readJson(req);
     const course = coursesBySlug.get(String(body.courseSlug || ""));
+    const learnerId = String(body.learnerId || "");
     if (!course) return json(res, 400, { error: "Please select a valid Heeva course." });
     if (course.status !== "available") return json(res, 409, { error: "This course is not currently confirmed as available for enrolment." });
-    const inserted = await pool.query(
-      `INSERT INTO student_enrolment_requests(id, student_id, course_slug, course_title_snapshot)
-       VALUES($1,$2,$3,$4)
-       ON CONFLICT(student_id, course_slug) DO NOTHING
-       RETURNING id, course_slug AS "courseSlug", course_title_snapshot AS "courseTitle", status, created_at AS "createdAt"`,
-      [newId(), student.id, course.slug, course.title]
+    const learner = await pool.query(
+      "SELECT id FROM learner_profiles WHERE id=$1 AND account_id=$2 AND status='active'",
+      [learnerId, student.id]
     );
-    if (!inserted.rowCount) return json(res, 409, { error: "You have already requested this course." });
+    if (!learner.rowCount) return json(res, 404, { error: "Select a learner profile belonging to your account." });
+    const inserted = await pool.query(
+      `INSERT INTO student_enrolment_requests(id, student_id, learner_id, course_slug, course_title_snapshot)
+       VALUES($1,$2,$3,$4,$5)
+       ON CONFLICT(learner_id, course_slug) DO NOTHING
+       RETURNING id, learner_id AS "learnerId", course_slug AS "courseSlug",
+                 course_title_snapshot AS "courseTitle", status, created_at AS "createdAt"`,
+      [newId(), student.id, learnerId, course.slug, course.title]
+    );
+    if (!inserted.rowCount) return json(res, 409, { error: "This learner has already requested this course." });
     return json(res, 201, { enrolment: inserted.rows[0] });
   }
 
   if (method === "GET" && path === "/api/student/trial-lesson") {
     const result = await pool.query(
-      `SELECT course_slug AS "courseSlug", course_title_snapshot AS "courseTitle",
-              status, requested_at AS "requestedAt", scheduled_at AS "scheduledAt"
-         FROM student_trial_lesson_requests WHERE student_id=$1`,
+      `SELECT t.learner_id AS "learnerId", lp.display_name AS "learnerName",
+              t.course_slug AS "courseSlug", t.course_title_snapshot AS "courseTitle",
+              t.status, t.requested_at AS "requestedAt", t.scheduled_at AS "scheduledAt"
+         FROM student_trial_lesson_requests t
+         JOIN learner_profiles lp ON lp.id=t.learner_id
+        WHERE t.student_id=$1 ORDER BY t.requested_at DESC`,
       [student.id]
     );
-    return json(res, 200, { trialLesson: result.rows[0] || null });
+    return json(res, 200, { trialLessons: result.rows });
   }
 
   if (method === "POST" && path === "/api/student/trial-lesson") {
     const body = await readJson(req);
     const course = coursesBySlug.get(String(body.courseSlug || ""));
+    const learnerId = String(body.learnerId || "");
     if (!course) return json(res, 400, { error: "Please select an available course for your introductory lesson." });
     if (course.status !== "available") return json(res, 409, { error: "This course is not currently confirmed as available for an introductory lesson." });
-    const inserted = await pool.query(
-      `INSERT INTO student_trial_lesson_requests(student_id, course_slug, course_title_snapshot)
-       VALUES($1,$2,$3) ON CONFLICT(student_id) DO NOTHING
-       RETURNING course_slug AS "courseSlug", course_title_snapshot AS "courseTitle", status, requested_at AS "requestedAt"`,
-      [student.id, course.slug, course.title]
+    const learner = await pool.query(
+      "SELECT id FROM learner_profiles WHERE id=$1 AND account_id=$2 AND status='active'",
+      [learnerId, student.id]
     );
-    if (!inserted.rowCount) return json(res, 409, { error: "One introductory lesson has already been requested for this account." });
+    if (!learner.rowCount) return json(res, 404, { error: "Select a learner profile belonging to your account." });
+    const inserted = await pool.query(
+      `INSERT INTO student_trial_lesson_requests(student_id, learner_id, course_slug, course_title_snapshot)
+       VALUES($1,$2,$3,$4) ON CONFLICT(learner_id) DO NOTHING
+       RETURNING learner_id AS "learnerId", course_slug AS "courseSlug",
+                 course_title_snapshot AS "courseTitle", status, requested_at AS "requestedAt"`,
+      [student.id, learnerId, course.slug, course.title]
+    );
+    if (!inserted.rowCount) return json(res, 409, { error: "One introductory lesson has already been requested for this learner." });
     return json(res, 201, { trialLesson: inserted.rows[0] });
   }
 
   if (method === "GET" && path === "/api/student/dashboard") {
-    const [enrolments, trial] = await Promise.all([
-      pool.query(`SELECT id, course_slug AS "courseSlug", course_title_snapshot AS "courseTitle", status, created_at AS "createdAt"
-                    FROM student_enrolment_requests WHERE student_id=$1 ORDER BY created_at DESC`, [student.id]),
-      pool.query(`SELECT course_slug AS "courseSlug", course_title_snapshot AS "courseTitle", status, requested_at AS "requestedAt", scheduled_at AS "scheduledAt"
-                    FROM student_trial_lesson_requests WHERE student_id=$1`, [student.id])
+    const [learners, enrolments, trialLessons] = await Promise.all([
+      pool.query(
+        `SELECT id, display_name, age_band, relationship_type, preferred_language, created_at
+           FROM learner_profiles WHERE account_id=$1 AND status='active' ORDER BY created_at ASC`,
+        [student.id]
+      ),
+      pool.query(
+        `SELECT e.id, e.learner_id AS "learnerId", lp.display_name AS "learnerName",
+                e.course_slug AS "courseSlug", e.course_title_snapshot AS "courseTitle",
+                e.status, e.created_at AS "createdAt"
+           FROM student_enrolment_requests e
+           JOIN learner_profiles lp ON lp.id=e.learner_id
+          WHERE e.student_id=$1 ORDER BY e.created_at DESC`,
+        [student.id]
+      ),
+      pool.query(
+        `SELECT t.learner_id AS "learnerId", lp.display_name AS "learnerName",
+                t.course_slug AS "courseSlug", t.course_title_snapshot AS "courseTitle",
+                t.status, t.requested_at AS "requestedAt", t.scheduled_at AS "scheduledAt"
+           FROM student_trial_lesson_requests t
+           JOIN learner_profiles lp ON lp.id=t.learner_id
+          WHERE t.student_id=$1 ORDER BY t.requested_at DESC`,
+        [student.id]
+      )
     ]);
     return json(res, 200, {
       student: publicStudent(student),
+      learners: learners.rows.map(publicLearner),
       enrolments: enrolments.rows,
-      trialLesson: trial.rows[0] || null
+      trialLessons: trialLessons.rows
     });
   }
 

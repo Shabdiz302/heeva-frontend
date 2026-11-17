@@ -175,7 +175,10 @@ export default function StaffWorkspacePage() {
           scheduledAt: draft.scheduledAt ? new Date(draft.scheduledAt).toISOString() : null,
         }),
       });
-      setLessonDrafts((old) => ({ ...old, [enrolment.id]: { ...old[enrolment.id], title: '', scheduledAt: '' } }));
+      setLessonDrafts((old) => ({ ...old, [enrolment.id]: {
+        ...old[enrolment.id], lessonNumber: String(Math.min(Number(draft.lessonNumber) + 1, enrolment.total_lessons)),
+        title: '', scheduledAt: ''
+      } }));
       const result = await staffApi('/api/staff/course-enrolments/' + enrolment.id + '/lessons');
       setLessonsByEnrolment((old) => ({ ...old, [enrolment.id]: result.lessons || [] }));
       setNotice('Lesson added to the course timetable.');

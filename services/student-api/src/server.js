@@ -857,8 +857,14 @@ async function handle(req, res) {
       if (!filename || filename.length > 240 || !filename.toLowerCase().endsWith(extensions[mimeType])) {
         return json(res,400,{error:"File name must match the selected file type."});
       }
-      const title = String(req.headers["x-resource-title"] || filename).trim();
-      const description = String(req.headers["x-resource-description"] || "").trim();
+      let title;
+      let description;
+      try {
+        title = decodeURIComponent(String(req.headers["x-resource-title"] || filename)).trim();
+        description = decodeURIComponent(String(req.headers["x-resource-description"] || "")).trim();
+      } catch {
+        return json(res,400,{error:"Document title or description contains invalid encoding."});
+      }
       if (!title || title.length > 180 || description.length > 500) return json(res,400,{error:"Enter a valid document title and description."});
       const lessonId = req.headers["x-lesson-id"] ? String(req.headers["x-lesson-id"]) : null;
       const client = await pool.connect();

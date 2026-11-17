@@ -18,7 +18,7 @@ if ((role === "teacher" && !teacherSlugArg) || (role === "admin" && teacherSlugA
 
 const chunks = [];
 for await (const chunk of process.stdin) chunks.push(chunk);
-const password = Buffer.concat(chunks).toString("utf8").replace(/[\\r\\n]+$/, "");
+const password = Buffer.concat(chunks).toString("utf8").replace(/[\r\n]+$/, "");
 if (!validatePassword(password)) {
   throw new Error("Password must be at least 8 characters and include upper-case, lower-case and a number.");
 }
@@ -27,9 +27,8 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 1, conn
 try {
   const passwordHash = await hashPassword(password);
   const result = await pool.query(
-    `INSERT INTO staff_users(id,email,display_name,password_hash,role,teacher_slug)
-     VALUES($1,$2,$3,$4,$5,$6)
-     RETURNING id,email,display_name,role,teacher_slug`,
+    "INSERT INTO staff_users(id,email,display_name,password_hash,role,teacher_slug) VALUES($1,$2,$3,$4,$5,$6) " +
+    "RETURNING id,email,display_name,role,teacher_slug",
     [newId(), email, displayName, passwordHash, role, teacherSlugArg || null]
   );
   console.log("Staff account created:", JSON.stringify(result.rows[0]));

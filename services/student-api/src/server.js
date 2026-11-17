@@ -1,4 +1,4 @@
-import { readFile, realpath } from "node:fs/promises";
+import { mkdir, readFile, realpath, unlink, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { dirname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -15,6 +15,8 @@ const here = dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 3100);
 const SESSION_DAYS = Math.min(Math.max(Number(process.env.SESSION_TTL_DAYS || 30), 1), 30);
 const COOKIE_NAME = "__Host-heeva_preview_session";
+const STAFF_COOKIE_NAME = "__Host-heeva_staff_session";
+const STAFF_SESSION_HOURS = 8;
 const APP_ORIGINS = new Set((process.env.APP_ORIGINS || "https://staging.heevacourses.com")
   .split(",").map((item) => item.trim()).filter(Boolean));
 const DATABASE_URL = process.env.DATABASE_URL;
@@ -35,6 +37,8 @@ pool.on("error", (error) => console.error("Unexpected database pool error:", err
 
 const catalog = JSON.parse(await readFile(resolve(here, "../data/courses.json"), "utf8"));
 const coursesBySlug = new Map(catalog.map((course) => [course.slug, course]));
+const teacherCatalog = JSON.parse(await readFile(resolve(here, "../data/teachers.json"), "utf8"));
+const teachersBySlug = new Map(teacherCatalog.map((teacher) => [teacher.slug, teacher]));
 const attempts = new Map();
 
 function json(res, status, body, extraHeaders = {}) {
@@ -211,6 +215,63 @@ async function currentStudent(req) {
     [hashSessionToken(token)]
   );
   return result.rows[0] || null;
+}
+
+
+function setStaffSessionCookie(res, token, maxAgeSeconds) {
+  res.setHeader("Set-Cookie", STAFF_COOKIE_NAME + "=" + token +
+    "; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=" + maxAgeSeconds);
+}
+
+function clearStaffSessionCookie(res) {
+  res.setHeader("Set-Cookie", STAFF_COOKIE_NAME +
+    "=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0");
+}
+
+async function currentStaff(req) {
+  const token = getCookie(req, STAFF_COOKIE_NAME);
+  if (!token || token.length > 100) return null;
+  const result = await pool.query(
+    "SELECT u.id,u.email,u.display_name,u.role,u.teacher_slug,ss.id AS session_id " +
+    "FROM staff_sessions ss JOIN staff_users u ON u.id=ss.staff_user_id " +
+    "WHERE ss.token_hash=$1 AND ss.expires_at>NOW() AND u.status='active' LIMIT 1",
+    [hashSessionToken(token)]
+  );
+  return result.rows[0] || null;
+}
+
+async function createStaffSession(client, staffId, res) {
+  const ttl = STAFF_SESSION_HOURS * 3600;
+  const token = createSessionToken();
+  await client.query(
+    "INSERT INTO staff_sessions(id,staff_user_id,token_hash,expires_at) VALUES($1,$2,$3,$4)",
+    [newId(),staffId,hashSessionToken(token),new Date(Date.now()+ttl*1000)]
+  );
+  setStaffSessionCookie(res,token,ttl);
+}
+
+async function auditStaffAction(client, staffId, action, entityType, entityId, details = {}) {
+  await client.query(
+    "INSERT INTO staff_audit_log(id,staff_user_id,action,entity_type,entity_id,details) VALUES($1,$2,$3,$4,$5,$6::jsonb)",
+    [newId(),staffId,action,entityType,entityId||null,JSON.stringify(details)]
+  );
+}
+
+async function readBinary(req, maxBytes) {
+  const chunks = [];
+  let size = 0;
+  for await (const chunk of req) {
+    size += chunk.length;
+    if (size > maxBytes) throw Object.assign(new Error("File exceeds the 20 MB upload limit."),{status:413});
+    chunks.push(chunk);
+  }
+  if (!size) throw Object.assign(new Error("The uploaded file is empty."),{status:400});
+  return Buffer.concat(chunks);
+}
+
+function staffCanManageEnrolment(staff, enrolment) {
+  return staff.role === "admin" ||
+    (staff.role === "teacher" && staff.teacher_slug && enrolment.teacher_slug === staff.teacher_slug);
 }
 
 async function createSession(client, studentId, res) {

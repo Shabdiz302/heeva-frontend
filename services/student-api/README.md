@@ -17,6 +17,9 @@ This service is a separate student platform API. It does not connect to or impor
 - Learner-specific course enrolment requests (requests do not grant paid/active enrolments)
 - One introductory-lesson request per learner, enforced by the learner ID primary key
 - Confirmed course enrolments with explicit lesson-package totals
+- Separate staff accounts/sessions with admin and teacher roles
+- Staff operations: approve course requests, activate lesson packages, assign teachers, schedule lessons, record lesson outcomes and publish private resources
+- Staff audit log for administrative changes
 - Individual lesson records with scheduled/completed/cancelled/missed states
 - Student dashboard totals: lessons completed, lessons remaining, progress percentage and next scheduled lesson
 - Private, authenticated downloads for published PDF/DOCX/PPTX/XLSX/TXT course materials
@@ -29,7 +32,7 @@ Existing staging adult accounts are retained. Migration `002_parent_learner_prof
 
 - Password recovery (requires a verified outbound email provider and a separate reset flow)
 - Full child safeguarding workflow, identity/parental-responsibility verification or child login
-- Admin/teacher roles and admin APIs to approve course requests, assign lesson packages, record lessons and publish lesson resources
+- Staff account self-service and password reset, multi-factor staff sign-in, and admin review/audit-log viewer
 - Timetable availability and confirmed lesson scheduling
 - PayPal orders, captures, webhooks, refunds and financial ledger
 - Live payment or course-access activation
@@ -95,3 +98,43 @@ Only publish a resource after:
 The authenticated download route checks that the signed-in account owns the course enrolment, requires the resource to be published, blocks path traversal/symlink escapes and sends the file as an attachment.
 
 **Important staging limitation:** the student-facing dashboard and read/download API are implemented, but there is not yet an administrator interface/API to approve course requests, define lesson packages, mark lessons completed or publish files. Until that is built, the dashboard correctly shows an empty "My courses" state rather than inventing lesson counts or progress. This admin workflow is the next required development phase.
+
+## Staff workspace
+
+The private staff interface is available in the staging frontend at:
+
+- `/staff/login`
+- `/staff/dashboard`
+
+Staff accounts use a separate `staff_users` table, a separate staff-session table and a separate secure HttpOnly cookie. A customer/student session cannot authenticate to staff endpoints. Staff roles are `admin` and `teacher`.
+
+Administrators can:
+- Review customer course-enrolment requests.
+- Activate a request only after entering the exact agreed lesson package total (1–500 lessons).
+- Assign a teacher only where the Heeva teacher catalogue lists that teacher for the requested course.
+- View active enrolments, schedule individual lessons, record lesson outcomes, and publish private course documents.
+- Each management action is written to `staff_audit_log`.
+
+Teachers can see and manage only enrolments whose `teacher_slug` matches their own staff account. Teachers cannot approve new enrolment requests.
+
+### Provisioning the first administrator
+
+Apply migration `005_staff_management` before creating any staff account. Staff accounts are not customer registrations and are not created by the public registration form.
+
+The provisioning script reads the password from standard input, so the password is not stored in GitHub or passed as a command-line argument. On the VPS, use the private API environment file and the family API container after the image includes this script. Example process:
+
+1. Read the administrator password silently in a shell variable (do not echo it and do not paste it into chat).
+2. Pipe it to `node src/create-staff-user.js admin@example.com "Heeva Administrator" admin` inside the API container.
+3. The script enforces the same minimum 8-character password policy and stores only the password hash.
+
+Teacher staff accounts use role `teacher` plus a valid Heeva teacher slug from `data/teachers.json`.
+
+Never add staff credentials to frontend code, a public GitHub repository, or customer accounts. Limit VPS access to trusted operators.
+
+### Private resource storage and persistence
+
+The API stores uploaded course files below `PRIVATE_RESOURCES_DIR` (default `/app/private-resources`). The API accepts PDF, DOCX, PPTX, XLSX and TXT, up to 20 MB. Files are stored under generated UUID filenames, not their customer-supplied names. Downloads are authenticated and require a published resource attached to the signed-in customer's own active/completed enrolment.
+
+For a container deployment, bind-mount a persistent host directory at `/app/private-resources`. The host directory must be writable by the non-root Node container user (UID/GID 1000) and must not be under the public website's `/var/www` tree. Mount the directory read/write for staff upload. Back it up separately from PostgreSQL because database metadata does not contain the file bytes.
+
+The first staff workspace is a staging management tool, not a complete production administration system. Before launch, add staff password reset/deactivation, stronger persistent rate limiting, documented teacher onboarding and permissions, safeguarding review, file scanning and tested restore procedures.

@@ -5,9 +5,9 @@ import { PageIntro, Eyebrow } from '../components/ContentBlocks.jsx';
 import './student-portal.css';
 
 async function api(path, options = {}) {
-  const rawBase = import.meta.env.BASE_URL || '/';
-  const base = rawBase.endsWith('/') ? rawBase.slice(0, -1) : rawBase;
-  const requestPath = `${base}${path.startsWith('/') ? path : `/${path}`}`;
+  // The portal is served below /student-preview/, but Apache exposes the
+  // same-origin API at the staging host root: /api/.
+  const requestPath = path.startsWith('/') ? path : `/${path}`;
   const response = await fetch(requestPath, {
     credentials: 'same-origin',
     ...options,

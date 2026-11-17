@@ -794,6 +794,20 @@ async function handle(req, res) {
       } finally { client.release(); }
     }
 
+    const lessonsList = path.match(/^\/api\/staff\/course-enrolments\/([0-9a-f-]{36})\/lessons$/i);
+    if (method === "GET" && lessonsList) {
+      const enrolmentId = lessonsList[1];
+      const enrolment = await pool.query("SELECT id,teacher_slug FROM student_course_enrolments WHERE id=$1",[enrolmentId]);
+      if (!enrolment.rowCount) return json(res,404,{error:"Course enrolment not found."});
+      if (!staffCanManageEnrolment(staff,enrolment.rows[0])) return json(res,403,{error:"You cannot view lessons for this course."});
+      const result = await pool.query(
+        "SELECT id,lesson_number AS lesson_number,title,status,scheduled_at AS scheduled_at,completed_at AS completed_at,tutor_note AS tutor_note "+
+        "FROM student_course_lessons WHERE course_enrolment_id=$1 ORDER BY lesson_number",
+        [enrolmentId]
+      );
+      return json(res,200,{lessons:result.rows});
+    }
+
     const lessonUpdate = path.match(/^\/api\/staff\/lessons\/([0-9a-f-]{36})$/i);
     if (method === "PUT" && lessonUpdate) {
       const lessonId = lessonUpdate[1];

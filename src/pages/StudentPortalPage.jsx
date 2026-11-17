@@ -472,18 +472,6 @@ export default function StudentPortalPage() {
             ) : <p className="student-empty">No upcoming lessons have been scheduled yet. Your timetable will appear here when Heeva confirms your lesson times.</p>}
           </section>
 
-          {pendingRequests.length > 0 && (
-            <section className="student-panel student-panel-wide">
-              <Eyebrow>Awaiting confirmation</Eyebrow><h3>Course requests</h3>
-              <ul className="student-record-list">
-                {pendingRequests.map((item) => (
-                  <li key={item.id}><div><strong>{item.courseTitle}</strong><small>For {item.learnerName} · {new Date(item.createdAt).toLocaleDateString()}</small></div><span className="student-status">{item.status.replaceAll('_',' ')}</span></li>
-                ))}
-              </ul>
-              <p className="student-fineprint">A course request is not yet a confirmed enrolment. Lesson totals and progress appear once Heeva activates the enrolment.</p>
-            </section>
-          )}
-
           <div className="student-dashboard-grid">
             <section className="student-panel">
               <Eyebrow>Account holder</Eyebrow><h3>Account details</h3>

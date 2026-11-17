@@ -14,6 +14,12 @@ test("staff identity and sessions are separate from customer sessions", () => {
   assert.match(server, /Staff sign-in required/);
 });
 
+test("staff login routes bypass the customer-session gate and use staff authentication", () => {
+  assert.match(server, /const isStaffRoute = path\.startsWith\("\/api\/staff\/"\)/);
+  assert.match(server, /const student = isStaffRoute \? null : await currentStudent\(req\)/);
+  assert.match(server, /if \(!student && !isStaffRoute\) return json\(res, 401/);
+  assert.ok(server.indexOf('path === "/api/staff/auth/login"') > server.indexOf("const isStaffRoute"));
+});
 test("customer sessions cannot call staff management routes", () => {
   assert.match(server, /if \(path\.startsWith\("\/api\/staff\/"\)\)/);
   assert.match(server, /if \(!staff\) return json\(res,401/);

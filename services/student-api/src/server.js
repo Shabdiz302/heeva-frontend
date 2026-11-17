@@ -191,7 +191,7 @@ async function handle(req, res) {
     const password = body.password;
     const phone = String(body.phone || "").trim();
     const preferredLanguage = body.preferredLanguage === "fa" ? "fa" : "en";
-    const accountType = body.accountType === "parent_guardian" ? "parent_guardian" : "adult_learner";
+    const accountType = body.accountType || "adult_learner";
     if (firstName.length < 1 || firstName.length > 80 || lastName.length < 1 || lastName.length > 80 ||
         !isValidEmail(email) || !validatePassword(password) || phone.length > 40 ||
         body.termsAccepted !== true || body.privacyAccepted !== true || body.adultAccountConfirmed !== true ||
@@ -299,7 +299,7 @@ async function handle(req, res) {
     }
     const updated = await pool.query(
       `UPDATE students SET first_name=$1, last_name=$2, phone=$3, preferred_language=$4, updated_at=NOW()
-       WHERE id=$5 RETURNING id, first_name, last_name, email, phone, preferred_language, created_at`,
+       WHERE id=$5 RETURNING id, first_name, last_name, email, phone, preferred_language, account_type, created_at`,
       [firstName, lastName, phone || null, preferredLanguage, student.id]
     );
     return json(res, 200, { profile: publicStudent(updated.rows[0]) });

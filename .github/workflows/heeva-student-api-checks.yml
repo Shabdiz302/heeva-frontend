@@ -43,3 +43,9 @@ jobs:
         run: npm install --omit=dev --no-audit --no-fund
       - name: Run API tests against temporary PostgreSQL
         run: npm test
+      - name: Apply schema to isolated CI database
+        run: npm run migrate
+      - name: Run authenticated lesson-completion HTTP test
+        env:
+          HEEVA_HTTP_INTEGRATION_TEST: 'true'
+        run: node --test tests/lesson-status-http.integration.test.js

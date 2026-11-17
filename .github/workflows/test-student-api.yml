@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - feature/student-platform-foundation
+      - feature/student-portal-staging
   pull_request:
     branches:
       - preview/github-pages
       - feature/student-platform-foundation
+      - feature/student-portal-staging
   workflow_dispatch:
 
 permissions:

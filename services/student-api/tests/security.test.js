@@ -16,9 +16,11 @@ test("validates email addresses", () => {
   assert.equal(isValidEmail("x".repeat(250) + "@x.com"), false);
 });
 
-test("requires a strong password", () => {
+test("requires a strong password with a minimum length of eight characters", () => {
   assert.equal(validatePassword("StrongPassword123"), true);
+  assert.equal(validatePassword("Strong1A"), true);
   assert.equal(validatePassword("short1A"), false);
+  assert.equal(validatePassword("Strong1"), false);
   assert.equal(validatePassword("alllowercase123"), false);
   assert.equal(validatePassword("ALLUPPERCASE123"), false);
 });

@@ -117,6 +117,7 @@ setInterval(() => {
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 const EMAIL_FROM = process.env.EMAIL_FROM || "";
+const EMAIL_REPLY_TO = process.env.EMAIL_REPLY_TO || "";
 
 function emailVerificationConfigured() {
   return RESEND_API_KEY.length > 0 && EMAIL_FROM.length > 0;
@@ -139,6 +140,7 @@ async function sendVerificationEmail(email, firstName, code) {
       },
       body: JSON.stringify({
         from: EMAIL_FROM,
+        ...(EMAIL_REPLY_TO ? { reply_to: [EMAIL_REPLY_TO] } : {}),
         to: [email],
         subject: "Your Heeva verification code",
         text: `Hello ${firstName || "there"}, your Heeva verification code is ${code}. It expires in 10 minutes. If you did not request this, you can ignore this email.`,

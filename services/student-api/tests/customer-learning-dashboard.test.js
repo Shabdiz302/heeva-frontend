@@ -25,7 +25,7 @@ test("lesson completion is tracked separately from scheduled and cancelled lesso
 test("course materials are private, published-only, and linked to a learner's own enrolment", () => {
   assert.match(migration, /CREATE TABLE IF NOT EXISTS student_course_resources/);
   assert.match(migration, /'published'/);
-  assert.ok(server.includes("path.match(/^\\/api\\/student\\/resources/"));
+  assert.ok(server.includes("/api/student/resources/"));
   assert.match(server, /e\.student_id=\$2/);
   assert.match(server, /r\.status='published'/);
   assert.match(server, /Content-Disposition/);

@@ -58,3 +58,42 @@
   .student-trial-form { grid-template-columns:1fr; }
   .student-trial-form .button { width:100%; }
 }
+
+
+.student-form-subheading { margin:4px 0 0; color:var(--forest-deep); font:400 22px/1.15 var(--serif); }
+.student-account-type { display:grid; gap:11px; margin:0; padding:15px; border:1px solid var(--line); border-radius:5px; }
+.student-account-type legend { padding-inline:5px; color:var(--forest-deep); font-size:11px; font-weight:800; }
+.student-account-type label { display:flex; align-items:flex-start; gap:9px; color:#627168; font-size:11px; line-height:1.55; }
+.student-account-type input { margin-top:2px; accent-color:var(--forest); }
+.student-learner-list { display:grid; gap:0; margin:4px 0 10px; padding:0; list-style:none; }
+.student-learner-list li { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); }
+.student-learner-avatar { width:37px; height:37px; display:grid; flex:0 0 37px; place-items:center; border-radius:50%; background:#e8ecdf; color:var(--forest); font:400 18px var(--serif); }
+.student-learner-details strong,.student-learner-details small { display:block; }
+.student-learner-details strong { color:var(--forest-deep); font-size:12px; }
+.student-learner-details small { margin-top:4px; color:var(--muted); font-size:10px; text-transform:capitalize; }
+.student-enrolment-form { grid-template-columns:1fr 1fr auto; align-items:end; }
+.student-enrolment-form .button,.student-trial-form .button { white-space:nowrap; }
+.student-teacher-matches { margin-top:2px; }
+.student-teacher-matches > h3 { margin-bottom:8px; }
+.student-teacher-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin-top:18px; }
+.student-teacher-card { display:grid; grid-template-columns:108px minmax(0,1fr); gap:14px; padding:12px; border:1px solid var(--line); border-radius:5px; background:#fffefa; }
+.student-teacher-photo { display:block; overflow:hidden; aspect-ratio:4/5; border-radius:4px; background:#e8ecdf; }
+.student-teacher-photo picture,.student-teacher-photo img { display:block; width:100%; height:100%; }
+.student-teacher-photo img { object-fit:cover; object-position:center 28%; }
+.student-teacher-copy { min-width:0; }
+.student-match-label { display:block; color:#a46650; font-size:8px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; line-height:1.5; }
+.student-teacher-copy h4 { margin:6px 0 3px; color:var(--forest-deep); font:400 21px/1.05 var(--serif); }
+.student-teacher-role { margin:0 0 7px !important; color:#63746a !important; font-size:9px !important; font-weight:700; }
+.student-teacher-copy p { margin:0 0 9px; color:var(--muted); font-size:10px; line-height:1.55; }
+.student-teacher-copy .text-link { font-size:9px; }
+@media (max-width:900px) {
+  .student-enrolment-form { grid-template-columns:1fr 1fr; }
+  .student-enrolment-form .button { grid-column:1/-1; }
+  .student-teacher-grid { grid-template-columns:1fr; }
+}
+@media (max-width:600px) {
+  .student-enrolment-form { grid-template-columns:1fr; }
+  .student-enrolment-form .button { grid-column:auto; width:100%; }
+  .student-teacher-card { grid-template-columns:88px minmax(0,1fr); gap:11px; padding:9px; }
+  .student-teacher-copy h4 { font-size:18px; }
+}

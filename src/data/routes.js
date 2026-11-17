@@ -9,4 +9,7 @@ export const pageMeta = {
   '/consultation': ['Free consultation | Heeva Courses', 'Request a free consultation with Heeva by WhatsApp or email.'],
   '/faq': ['Frequently asked questions | Heeva Courses', 'Answers about online courses, free consultations, course details, safeguarding questions and contacting Heeva.'],
   '/contact': ['Contact Heeva | Heeva Courses', 'Published contact information for Heeva Courses Ltd. in London.'],
+  '/student/login': ['Student sign in | Heeva Courses', 'Sign in to the separate Heeva staging student portal.'],
+  '/student/register': ['Create an account | Heeva Courses', 'Create a parent, guardian or adult learner account on the separate Heeva staging platform.'],
+  '/student/dashboard': ['Student dashboard | Heeva Courses', 'Review your staging account, course requests and introductory lesson request.'],
 };

@@ -95,6 +95,9 @@ export default function StudentPortalPage() {
     displayName: '', ageBand: '8_12', preferredLanguage: 'en', guardianAuthorityConfirmed: false,
   });
   const [busy, setBusy] = useState(false);
+  const [verificationPending, setVerificationPending] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [registrationEmail, setRegistrationEmail] = useState('');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [account, setAccount] = useState(null);
@@ -200,8 +203,57 @@ export default function StudentPortalPage() {
       const payload = mode === 'register'
         ? { ...form, adultAccountConfirmed: form.adultAccountConfirmed }
         : { email: form.email, password: form.password };
-      await api(endpoint, { method: 'POST', body: JSON.stringify(payload) });
+      const result = await api(endpoint, { method: 'POST', body: JSON.stringify(payload) });
+      if (mode === 'register' && result.requiresEmailVerification) {
+        setRegistrationEmail(result.email || form.email);
+        setVerificationPending(true);
+        setVerificationCode('');
+        setNotice(result.message || 'Enter the verification code sent to your email.');
+      } else {
+        navigate('/student/dashboard');
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function verifyEmail(event) {
+    event.preventDefault();
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      await api('/api/auth/verify-email', {
+        method: 'POST',
+        body: JSON.stringify({ email: registrationEmail, code: verificationCode }),
+      });
       navigate('/student/dashboard');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function resendVerification() {
+    const email = registrationEmail || form.email;
+    if (!email) {
+      setError('Enter your email address first.');
+      return;
+    }
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      const result = await api('/api/auth/resend-verification', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      });
+      setRegistrationEmail(email);
+      setVerificationPending(true);
+      setNotice(result.message || 'A new verification code has been requested.');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -455,7 +507,16 @@ export default function StudentPortalPage() {
           <h2>{registering ? 'Create an account' : 'Sign in to Heeva'}</h2>
           <Notice type="warning">Staging preview only. Use test details, a test email and a unique password. Do not enter real children's personal information or payment details.</Notice>
           <Notice type="error">{error}</Notice>
-          {registering ? (
+          {registering && verificationPending ? (
+            <form className="student-form" onSubmit={verifyEmail}>
+              <p className="student-empty">We sent a six-digit code to <strong>{registrationEmail}</strong>. Enter it below to verify your email and activate your account. The code expires after 10 minutes.</p>
+              <label className="student-field">Email verification code
+                <input inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} value={verificationCode} onChange={(e) => setVerificationCode(e.target.value.replace(/\\D/g, '').slice(0, 6))} required />
+              </label>
+              <button className="button student-submit" type="submit" disabled={busy || verificationCode.length !== 6}>{busy ? 'Verifying…' : 'Verify email and continue'} <span aria-hidden="true">↗</span></button>
+              <button className="text-link student-resend-button" type="button" onClick={resendVerification} disabled={busy}>Resend verification code</button>
+            </form>
+          ) : registering ? (
             <form className="student-form" onSubmit={submitAuth}>
               <fieldset className="student-account-type">
                 <legend>What type of account do you need?</legend>
@@ -473,7 +534,7 @@ export default function StudentPortalPage() {
                   <option value="en">English</option><option value="fa">فارسی</option>
                 </select>
               </label>
-              <Field label="Password (12+ characters, upper/lowercase and a number)" type="password" autoComplete="new-password" value={form.password} onChange={(e) => update('password', e.target.value)} minLength={12} maxLength={128} required />
+              <Field label="Password (at least 8 characters, upper/lowercase and a number)" type="password" autoComplete="new-password" value={form.password} onChange={(e) => update('password', e.target.value)} minLength={8} maxLength={128} required />
               <label className="student-check"><input type="checkbox" checked={form.adultAccountConfirmed} onChange={(e) => update('adultAccountConfirmed', e.target.checked)} required />I confirm I am 18 or over and am creating this account as a parent/guardian or adult learner.</label>
               <label className="student-check"><input type="checkbox" checked={form.termsAccepted} onChange={(e) => update('termsAccepted', e.target.checked)} required />I agree to the <a href={policies.terms} target="_blank" rel="noreferrer">Terms of Service</a>.</label>
               <label className="student-check"><input type="checkbox" checked={form.privacyAccepted} onChange={(e) => update('privacyAccepted', e.target.checked)} required />I have read the <a href={policies.privacy} target="_blank" rel="noreferrer">Privacy Policy</a>.</label>
@@ -484,7 +545,8 @@ export default function StudentPortalPage() {
               <Field label="Email address" type="email" autoComplete="email" value={form.email} onChange={(e) => update('email', e.target.value)} required />
               <Field label="Password" type="password" autoComplete="current-password" value={form.password} onChange={(e) => update('password', e.target.value)} required />
               <button className="button student-submit" type="submit" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'} <span aria-hidden="true">↗</span></button>
-              <p className="student-fineprint">Password recovery is not yet available on this staging build.</p>
+              <button className="text-link student-resend-button" type="button" onClick={resendVerification} disabled={busy}>Resend email verification code</button>
+              <p className="student-fineprint">Email verification is required before sign-in. Password recovery is not yet available on this staging build.</p>
             </form>
           )}
           <p className="student-auth-switch">

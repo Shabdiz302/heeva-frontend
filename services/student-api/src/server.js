@@ -18,6 +18,7 @@ const COOKIE_NAME = "__Host-heeva_preview_session";
 const APP_ORIGINS = new Set((process.env.APP_ORIGINS || "https://staging.heevacourses.com")
   .split(",").map((item) => item.trim()).filter(Boolean));
 const DATABASE_URL = process.env.DATABASE_URL;
+const PRIVATE_RESOURCES_DIR = resolve(process.env.PRIVATE_RESOURCES_DIR || "/app/private-resources");
 if (!DATABASE_URL) throw new Error("DATABASE_URL is required");
 if (process.env.COOKIE_SECURE !== "true") {
   throw new Error("COOKIE_SECURE=true is required; student authentication must only run behind HTTPS");
@@ -617,8 +618,57 @@ async function handle(req, res) {
     return json(res, 201, { trialLesson: inserted.rows[0] });
   }
 
+  const resourceDownloadMatch = path.match(/^\/api\/student\/resources\/([0-9a-f-]{36})\/download$/i);
+  if (method === "GET" && resourceDownloadMatch) {
+    const resourceId = resourceDownloadMatch[1];
+    const result = await pool.query(
+      `SELECT r.original_filename, r.storage_key, r.mime_type, r.file_size_bytes
+         FROM student_course_resources r
+         JOIN student_course_enrolments e ON e.id=r.course_enrolment_id
+        WHERE r.id=$1 AND e.student_id=$2
+          AND e.status IN ('active', 'completed')
+          AND r.status='published'`,
+      [resourceId, student.id]
+    );
+    if (!result.rowCount) return json(res, 404, { error: "Lesson resource not found." });
+
+    const resource = result.rows[0];
+    const storageKey = String(resource.storage_key || "");
+    if (!/^[a-zA-Z0-9][a-zA-Z0-9._/-]{0,239}$/.test(storageKey) ||
+        storageKey.split("/").some((part) => !part || part === "." || part === "..")) {
+      console.error("Rejected unsafe resource storage key.");
+      return json(res, 404, { error: "Lesson resource not found." });
+    }
+    const filePath = resolve(PRIVATE_RESOURCES_DIR, storageKey);
+    if (!filePath.startsWith(PRIVATE_RESOURCES_DIR + "/")) {
+      return json(res, 404, { error: "Lesson resource not found." });
+    }
+    let file;
+    try {
+      file = await readFile(filePath);
+    } catch (error) {
+      if (error.code === "ENOENT") return json(res, 404, { error: "The lesson file is not available yet." });
+      throw error;
+    }
+    if (file.length !== Number(resource.file_size_bytes)) {
+      console.error("Private lesson resource size did not match its catalogue record.");
+      return json(res, 409, { error: "The lesson file is being updated. Please try again later." });
+    }
+    const safeFilename = String(resource.original_filename).replace(/[\\r\\n"]/g, "_");
+    res.writeHead(200, {
+      "Content-Type": resource.mime_type,
+      "Content-Length": file.length,
+      "Content-Disposition": `attachment; filename="${safeFilename}"; filename*=UTF-8''${encodeURIComponent(resource.original_filename)}`,
+      "Cache-Control": "private, no-store",
+      "X-Content-Type-Options": "nosniff",
+      "Referrer-Policy": "no-referrer",
+      "X-Frame-Options": "DENY"
+    });
+    return res.end(file);
+  }
+
   if (method === "GET" && path === "/api/student/dashboard") {
-    const [learners, enrolments, trialLessons] = await Promise.all([
+    const [learners, enrolments, trialLessons, courseEnrolments, courseResources, pendingRequests] = await Promise.all([
       pool.query(
         `SELECT id, display_name, age_band, relationship_type, preferred_language, created_at
            FROM learner_profiles WHERE account_id=$1 AND status='active' ORDER BY created_at ASC`,
@@ -641,13 +691,65 @@ async function handle(req, res) {
            JOIN learner_profiles lp ON lp.id=t.learner_id
           WHERE t.student_id=$1 ORDER BY t.requested_at DESC`,
         [student.id]
+      ),
+      pool.query(
+        `SELECT e.id, e.learner_id AS "learnerId", lp.display_name AS "learnerName",
+                e.course_slug AS "courseSlug", e.course_title_snapshot AS "courseTitle",
+                e.total_lessons AS "totalLessons", e.teacher_slug AS "teacherSlug",
+                e.status, e.started_at AS "startedAt",
+                COUNT(l.id) FILTER (WHERE l.status='completed')::int AS "completedLessons",
+                GREATEST(e.total_lessons - COUNT(l.id) FILTER (WHERE l.status='completed'), 0)::int AS "remainingLessons",
+                CASE WHEN e.total_lessons > 0
+                  THEN LEAST(100, ROUND(100.0 * COUNT(l.id) FILTER (WHERE l.status='completed') / e.total_lessons))::int
+                  ELSE 0 END AS "progressPercent",
+                MIN(l.scheduled_at) FILTER (
+                  WHERE l.status='scheduled' AND l.scheduled_at >= NOW()
+                ) AS "nextLessonAt"
+           FROM student_course_enrolments e
+           JOIN learner_profiles lp ON lp.id=e.learner_id
+           LEFT JOIN student_course_lessons l ON l.course_enrolment_id=e.id
+          WHERE e.student_id=$1 AND e.status IN ('active','paused','completed')
+          GROUP BY e.id, lp.display_name
+          ORDER BY e.started_at DESC`,
+        [student.id]
+      ),
+      pool.query(
+        `SELECT r.id, r.course_enrolment_id AS "courseEnrolmentId",
+                e.learner_id AS "learnerId", lp.display_name AS "learnerName",
+                e.course_slug AS "courseSlug", e.course_title_snapshot AS "courseTitle",
+                r.lesson_id AS "lessonId", r.title, r.description,
+                r.original_filename AS "filename", r.mime_type AS "mimeType",
+                r.file_size_bytes AS "fileSizeBytes", r.created_at AS "createdAt"
+           FROM student_course_resources r
+           JOIN student_course_enrolments e ON e.id=r.course_enrolment_id
+           JOIN learner_profiles lp ON lp.id=e.learner_id
+          WHERE e.student_id=$1 AND e.status IN ('active','completed')
+            AND r.status='published'
+          ORDER BY e.course_title_snapshot, r.created_at DESC`,
+        [student.id]
+      ),
+      pool.query(
+        `SELECT e.id, e.learner_id AS "learnerId", lp.display_name AS "learnerName",
+                e.course_slug AS "courseSlug", e.course_title_snapshot AS "courseTitle",
+                e.status, e.created_at AS "createdAt"
+           FROM student_enrolment_requests e
+           JOIN learner_profiles lp ON lp.id=e.learner_id
+          WHERE e.student_id=$1 AND e.status IN ('requested','approved','payment_pending')
+          ORDER BY e.created_at DESC`,
+        [student.id]
       )
     ]);
     return json(res, 200, {
       student: publicStudent(student),
       learners: learners.rows.map(publicLearner),
       enrolments: enrolments.rows,
-      trialLessons: trialLessons.rows
+      pendingRequests: pendingRequests.rows,
+      trialLessons: trialLessons.rows,
+      courseEnrolments: courseEnrolments.rows,
+      courseResources: courseResources.rows.map((resource) => ({
+        ...resource,
+        downloadUrl: `/student-preview-api/api/student/resources/${resource.id}/download`
+      }))
     });
   }
 

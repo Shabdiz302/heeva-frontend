@@ -4,7 +4,8 @@ import { PageIntro, Eyebrow } from '../components/ContentBlocks.jsx';
 import './staff-workspace.css';
 
 async function staffApi(path, options = {}) {
-  const response = await fetch('/student-preview-api' + path, {
+  const apiBase = import.meta.env.VITE_STUDENT_API_BASE || '/student-preview-api';
+  const response = await fetch(apiBase + path, {
     credentials: 'same-origin',
     ...options,
     headers: {

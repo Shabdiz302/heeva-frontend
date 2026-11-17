@@ -554,8 +554,12 @@ async function handle(req, res) {
     return json(res, 200, { student: publicStudent(student) });
   }
 
-  const student = await currentStudent(req);
-  if (!student) return json(res, 401, { error: "Please sign in." });
+  // Staff endpoints use their own staff_sessions cookie and must not be
+  // blocked by the customer-session gate. Staff routes still authenticate
+  // independently in the /api/staff/* handler below.
+  const isStaffRoute = path.startsWith("/api/staff/");
+  const student = isStaffRoute ? null : await currentStudent(req);
+  if (!student && !isStaffRoute) return json(res, 401, { error: "Please sign in." });
 
   if (method === "GET" && path === "/api/student/profile") {
     return json(res, 200, { profile: publicStudent(student) });

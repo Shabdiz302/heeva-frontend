@@ -1,6 +1,6 @@
-import { readFile } from "node:fs/promises";
+import { readFile, realpath } from "node:fs/promises";
 import { createServer } from "node:http";
-import { dirname, resolve } from "node:path";
+import { dirname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import pg from "pg";
 import {
@@ -640,14 +640,23 @@ async function handle(req, res) {
       return json(res, 404, { error: "Lesson resource not found." });
     }
     const filePath = resolve(PRIVATE_RESOURCES_DIR, storageKey);
-    if (!filePath.startsWith(PRIVATE_RESOURCES_DIR + "/")) {
+    if (!filePath.startsWith(PRIVATE_RESOURCES_DIR + sep)) {
       return json(res, 404, { error: "Lesson resource not found." });
     }
     let file;
     try {
-      file = await readFile(filePath);
+      const [privateRoot, actualFile] = await Promise.all([
+        realpath(PRIVATE_RESOURCES_DIR),
+        realpath(filePath)
+      ]);
+      if (!actualFile.startsWith(privateRoot + sep)) {
+        return json(res, 404, { error: "Lesson resource not found." });
+      }
+      file = await readFile(actualFile);
     } catch (error) {
-      if (error.code === "ENOENT") return json(res, 404, { error: "The lesson file is not available yet." });
+      if (error.code === "ENOENT" || error.code === "ENOTDIR") {
+        return json(res, 404, { error: "The lesson file is not available yet." });
+      }
       throw error;
     }
     if (file.length !== Number(resource.file_size_bytes)) {

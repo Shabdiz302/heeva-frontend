@@ -9,7 +9,8 @@ import './student-portal.css';
 
 async function api(path, options = {}) {
   const apiPath = path.startsWith('/') ? path : `/${path}`;
-  const response = await fetch(`/student-preview-api${apiPath}`, {
+  const apiBase = import.meta.env.VITE_STUDENT_API_BASE || '/student-preview-api';
+  const response = await fetch(`${apiBase}${apiPath}`, {
     credentials: 'same-origin',
     ...options,
     headers: {

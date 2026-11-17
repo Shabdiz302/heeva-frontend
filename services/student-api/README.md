@@ -5,6 +5,9 @@ This service is a separate student platform API. It does not connect to or impor
 ## Implemented in this staging foundation
 
 - Adult learner and parent/guardian account registration and sign-in
+- Mandatory six-digit email verification before a new account can sign in
+- Verification codes are salted-hashed in PostgreSQL, expire after 10 minutes, allow at most five attempts, and have resend throttling
+- Password minimum length of 8 characters (with upper-case, lower-case and numeric characters)
 - Password hashing with Node.js scrypt
 - Opaque, random, hashed server-side sessions in a Secure, HttpOnly cookie
 - Session logout and current-account endpoint
@@ -20,7 +23,7 @@ Existing staging adult accounts are retained. Migration `002_parent_learner_prof
 
 ## Deliberately not enabled yet
 
-- Email verification and password recovery (requires a verified outbound email provider)
+- Password recovery (requires a verified outbound email provider and a separate reset flow)
 - Full child safeguarding workflow, identity/parental-responsibility verification or child login
 - Admin/teacher roles and admin APIs
 - Timetable availability and confirmed lesson scheduling
@@ -40,6 +43,8 @@ The teacher directory shown in the frontend uses the published Heeva teacher bio
 - `DATABASE_URL`
 - `COOKIE_SECURE=true`
 - `APP_ORIGINS` containing the exact HTTPS site origin, for example `https://staging.heevacourses.com`
+- `RESEND_API_KEY` with a send-only Resend API key
+- `EMAIL_FROM` using a sender address on a domain verified in Resend
 
 The API is designed to sit behind the staging Apache TLS virtual host, with API containers published only on host loopback. PostgreSQL must not publish a host port.
 
@@ -51,4 +56,15 @@ Take a PostgreSQL backup before applying migrations to an existing staging datab
 
 ## Security notes before any production use
 
-The staging API still needs email verification, password reset, persistent rate limiting, a verified parent/guardian workflow, child privacy and safeguarding review, an admin workflow, audit logging, and a tested backup/restore process. Configure a production origin and review privacy/terms copy before collecting real customer data.
+The staging API still needs password reset, persistent rate limiting beyond the current per-process resend/login controls, independent parent/guardian verification, child privacy and safeguarding review, an admin workflow, audit logging, and a tested backup/restore process. Configure a production origin and review privacy/terms copy before collecting real customer data.
+
+## Transactional email setup
+
+Email verification uses the Resend REST API from the backend only. Never expose `RESEND_API_KEY` to the browser, frontend build arguments, GitHub source files or logs. Create a Resend API key with sending-only permissions and verify the sending domain before configuring:
+
+- `RESEND_API_KEY`
+- `EMAIL_FROM` (for example, `Heeva Courses <accounts@your-verified-domain>`)
+
+The application sends a six-digit code that expires after 10 minutes. Only a salted hash is stored. Verification attempts are capped at five per code; resend requests are throttled to one per minute and five per rolling 24-hour period. A new code invalidates the preceding code.
+
+The API uses the Resend `POST /emails` endpoint with bearer authentication. No email provider credential is committed to this repository.

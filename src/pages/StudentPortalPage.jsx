@@ -5,7 +5,8 @@ import { PageIntro, Eyebrow } from '../components/ContentBlocks.jsx';
 import './student-portal.css';
 
 async function api(path, options = {}) {
-  const base = (import.meta.env.BASE_URL || '/').replace(/\\/+$/, '');
+  const rawBase = import.meta.env.BASE_URL || '/';
+  const base = rawBase.endsWith('/') ? rawBase.slice(0, -1) : rawBase;
   const requestPath = `${base}${path.startsWith('/') ? path : `/${path}`}`;
   const response = await fetch(requestPath, {
     credentials: 'same-origin',

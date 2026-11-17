@@ -302,6 +302,14 @@ async function handle(req, res) {
        WHERE id=$5 RETURNING id, first_name, last_name, email, phone, preferred_language, account_type, created_at`,
       [firstName, lastName, phone || null, preferredLanguage, student.id]
     );
+    if (student.account_type === "adult_learner") {
+      await pool.query(
+        `UPDATE learner_profiles
+            SET display_name=$1, preferred_language=$2, updated_at=NOW()
+          WHERE account_id=$3 AND relationship_type='self' AND status='active'`,
+        [firstName, preferredLanguage, student.id]
+      );
+    }
     return json(res, 200, { profile: publicStudent(updated.rows[0]) });
   }
 

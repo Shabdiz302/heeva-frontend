@@ -86,7 +86,7 @@ export function SiteFooter() {
           <Link to="/courses">All courses</Link>
           <Link to="/teachers">Our teachers</Link>
           <Link to="/how-heeva-works">How Heeva works</Link>
-          <a href="https://heevacourses.com/student/login" target="_blank" rel="noreferrer">Student login <span aria-hidden="true">↗</span><span className="sr-only"> (opens in a new tab)</span></a>
+          <Link to="/student/login">Student portal sign in</Link>
         </div>
         <div className="footer-col">
           <h2>For families</h2>
@@ -99,7 +99,7 @@ export function SiteFooter() {
           <Link to="/about">About Heeva</Link>
           <Link to="/for-organisations">Heeva for Business</Link>
           <Link to="/contact">Contact</Link>
-          <a href="https://heevacourses.com/student/registration" target="_blank" rel="noreferrer">Create a student account <span aria-hidden="true">↗</span><span className="sr-only"> (opens in a new tab)</span></a>
+          <Link to="/student/register">Create a staging account</Link>
           <a href={policies.privacy} target="_blank" rel="noreferrer">Privacy policy <span aria-hidden="true">↗</span></a>
           <a href={policies.terms} target="_blank" rel="noreferrer">Terms of service <span aria-hidden="true">↗</span></a>
         </div>

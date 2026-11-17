@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { createServer } from "node:net";
 import { randomUUID } from "node:crypto";
-import pg from "pg";
 import { hashPassword } from "../src/security.js";
 
 const enabled = process.env.HEEVA_HTTP_INTEGRATION_TEST === "true";
@@ -39,6 +38,7 @@ test("authenticated staff API completes a lesson and updates the remaining balan
   const databaseName = new URL(process.env.DATABASE_URL).pathname.slice(1);
   assert.equal(databaseName, "heeva_ci", "Refusing to insert fixtures outside the dedicated CI database");
 
+  const { default: pg } = await import("pg");
   const db = new pg.Client({ connectionString: process.env.DATABASE_URL });
   await db.connect();
   const id = {

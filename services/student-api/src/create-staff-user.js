@@ -1,7 +1,12 @@
+import { readFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { hashPassword, isValidEmail, normalizeEmail, validatePassword, newId } from "./security.js";
 import pg from "pg";
 
 const { Pool } = pg;
+const here = dirname(fileURLToPath(import.meta.url));
+const teachers = JSON.parse(await readFile(resolve(here, "../data/teachers.json"), "utf8"));
 const [emailArg, nameArg, roleArg = "admin", teacherSlugArg = ""] = process.argv.slice(2);
 const email = normalizeEmail(emailArg);
 const displayName = String(nameArg || "").trim();
@@ -14,6 +19,9 @@ if (!isValidEmail(email) || displayName.length < 2 || displayName.length > 120) 
 if (!["admin", "teacher"].includes(role)) throw new Error("Role must be admin or teacher.");
 if ((role === "teacher" && !teacherSlugArg) || (role === "admin" && teacherSlugArg)) {
   throw new Error("Teacher accounts require a teacher slug; admin accounts must not have one.");
+}
+if (role === "teacher" && !teachers.some((teacher) => teacher.slug === teacherSlugArg)) {
+  throw new Error("The teacher slug must match an entry in the Heeva teacher catalogue.");
 }
 
 const chunks = [];

@@ -82,6 +82,21 @@ function TeacherMatches({ enrolments }) {
   );
 }
 
+function formatFileSize(value) {
+  const bytes = Number(value || 0);
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatLessonDate(value) {
+  if (!value) return "Not scheduled";
+  return new Date(value).toLocaleString(undefined, {
+    weekday: "short", day: "numeric", month: "short",
+    hour: "numeric", minute: "2-digit"
+  });
+}
+
 export default function StudentPortalPage() {
   const { pathname, navigate } = useRouter();
   const mode = pathname.endsWith('/register') ? 'register'
@@ -104,6 +119,9 @@ export default function StudentPortalPage() {
   const [courses, setCourses] = useState([]);
   const [learners, setLearners] = useState([]);
   const [enrolments, setEnrolments] = useState([]);
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const [courseEnrolments, setCourseEnrolments] = useState([]);
+  const [courseResources, setCourseResources] = useState([]);
   const [trialLessons, setTrialLessons] = useState([]);
   const [selectedLearnerId, setSelectedLearnerId] = useState('');
   const [selectedCourse, setSelectedCourse] = useState('');
@@ -135,6 +153,9 @@ export default function StudentPortalPage() {
     });
     setLearners(dashboard.learners || []);
     setEnrolments(dashboard.enrolments || []);
+    setPendingRequests(dashboard.pendingRequests || []);
+    setCourseEnrolments(dashboard.courseEnrolments || []);
+    setCourseResources(dashboard.courseResources || []);
     setTrialLessons(dashboard.trialLessons || []);
     setCourses(catalogue.courses || []);
     const firstLearnerId = dashboard.learners?.[0]?.id || '';
@@ -170,6 +191,9 @@ export default function StudentPortalPage() {
         });
         setLearners(dashboard.learners || []);
         setEnrolments(dashboard.enrolments || []);
+        setPendingRequests(dashboard.pendingRequests || []);
+        setCourseEnrolments(dashboard.courseEnrolments || []);
+        setCourseResources(dashboard.courseResources || []);
         setTrialLessons(dashboard.trialLessons || []);
         setCourses(catalogue.courses || []);
         const firstLearnerId = dashboard.learners?.[0]?.id || '';
@@ -356,8 +380,8 @@ export default function StudentPortalPage() {
   if (mode === 'dashboard') {
     return (
       <>
-        <PageIntro eyebrow="Student portal" title={<>Your learning, <em>in one place.</em></>}>
-          <p>Manage your family learner profiles, course requests and introductory lesson requests.</p>
+        <PageIntro eyebrow="Heeva learning space" title={<>Your learning, <em>in one place.</em></>}>
+          <p>See your enrolled courses, lesson allowance, learning progress and downloadable course materials.</p>
         </PageIntro>
         <section className="shell student-portal student-dashboard">
           <div className="student-dashboard-heading">
@@ -366,6 +390,99 @@ export default function StudentPortalPage() {
           </div>
           <Notice type="error">{error}</Notice>
           <Notice type="success">{notice}</Notice>
+
+          <section className="student-learning-overview" aria-label="Learning overview">
+            <div className="student-overview-heading">
+              <div><Eyebrow>Your learning at a glance</Eyebrow><h3>Learning overview</h3></div>
+              <span className="student-overview-note">Live account summary</span>
+            </div>
+            <div className="student-overview-stats">
+              <article><span className="student-stat-icon">▤</span><div><strong>{courseEnrolments.length}</strong><small>Enrolled courses</small></div></article>
+              <article><span className="student-stat-icon">◷</span><div><strong>{courseEnrolments.reduce((sum,item)=>sum+Number(item.remainingLessons||0),0)}</strong><small>Lessons remaining</small></div></article>
+              <article><span className="student-stat-icon">✓</span><div><strong>{courseEnrolments.reduce((sum,item)=>sum+Number(item.completedLessons||0),0)}</strong><small>Lessons completed</small></div></article>
+              <article><span className="student-stat-icon">↗</span><div><strong>{courseEnrolments.length ? Math.round(courseEnrolments.reduce((sum,item)=>sum+Number(item.progressPercent||0),0)/courseEnrolments.length) + '%' : '—'}</strong><small>Average progress</small></div></article>
+            </div>
+          </section>
+
+          <section className="student-course-section">
+            <div className="student-section-heading">
+              <div><Eyebrow>Your programme</Eyebrow><h3>My courses</h3><p>Confirmed courses and your lesson allowance.</p></div>
+            </div>
+            {courseEnrolments.length ? (
+              <div className="student-course-grid">
+                {courseEnrolments.map((item) => {
+                  const course = siteCourses.find((entry) => entry.slug === item.courseSlug);
+                  const assignedTeacher = item.teacherSlug ? teachers.find((entry) => entry.slug === item.teacherSlug) : null;
+                  const resources = courseResources.filter((resource) => resource.courseEnrolmentId === item.id);
+                  return (
+                    <article className="student-course-card" key={item.id}>
+                      <div className="student-course-image">
+                        {course?.image ? <img src={courseImage(course.image)} alt="" loading="lazy" decoding="async" /> : <span aria-hidden="true">✳</span>}
+                        <span className={`student-course-state state-${item.status}`}>{item.status.replaceAll('_',' ')}</span>
+                      </div>
+                      <div className="student-course-body">
+                        <div className="student-course-learner">{item.learnerName}</div>
+                        <h4>{item.courseTitle}</h4>
+                        {assignedTeacher ? (
+                          <div className="student-assigned-teacher"><span>Teacher</span><strong>{assignedTeacher.name}</strong></div>
+                        ) : <p className="student-unassigned-note">Your teacher will be confirmed by the Heeva team.</p>}
+                        <div className="student-progress-heading"><strong>Learning progress</strong><span>{item.progressPercent}%</span></div>
+                        <div className="student-progress-track" role="progressbar" aria-label={`${item.courseTitle} progress`} aria-valuemin="0" aria-valuemax="100" aria-valuenow={item.progressPercent}>
+                          <span style={{width:`${item.progressPercent}%`}} />
+                        </div>
+                        <div className="student-lesson-balance">
+                          <div><strong>{item.remainingLessons}</strong><small>Lessons left</small></div>
+                          <div><strong>{item.completedLessons}/{item.totalLessons}</strong><small>Completed</small></div>
+                          <div><strong>{item.totalLessons}</strong><small>Total lessons</small></div>
+                        </div>
+                        <div className="student-next-lesson"><span>Next lesson</span><strong>{item.nextLessonAt ? formatLessonDate(item.nextLessonAt) : 'Not scheduled yet'}</strong></div>
+                        {resources.length ? (
+                          <div className="student-course-materials">
+                            <strong>Offline lesson materials</strong>
+                            {resources.map((resource) => (
+                              <a className="student-download-link" href={resource.downloadUrl} key={resource.id}>
+                                <span className="student-file-icon">FILE</span>
+                                <span><b>{resource.title}</b><small>{resource.filename} · {formatFileSize(resource.fileSizeBytes)}</small></span>
+                                <span className="student-download-arrow" aria-hidden="true">↓</span>
+                              </a>
+                            ))}
+                          </div>
+                        ) : <div className="student-no-materials">Lesson documents will appear here when your teacher publishes them.</div>}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="student-empty-course-state">
+                <span className="student-empty-course-icon">▤</span>
+                <div><h4>Your courses will appear here</h4><p>When Heeva confirms your enrolment and lesson package, you will see the course, lesson allowance, progress and downloadable materials here.</p></div>
+              </div>
+            )}
+          </section>
+
+          <section className="student-panel student-panel-wide student-upcoming-panel">
+            <div className="student-section-heading"><div><Eyebrow>Keep on track</Eyebrow><h3>Upcoming lessons</h3></div></div>
+            {courseEnrolments.filter((item) => item.nextLessonAt).length ? (
+              <ul className="student-record-list">
+                {courseEnrolments.filter((item) => item.nextLessonAt).sort((a,b)=>new Date(a.nextLessonAt)-new Date(b.nextLessonAt)).map((item) => (
+                  <li key={item.id}><div><strong>{item.courseTitle}</strong><small>{item.learnerName} · {formatLessonDate(item.nextLessonAt)}</small></div><span className="student-status">Scheduled</span></li>
+                ))}
+              </ul>
+            ) : <p className="student-empty">No upcoming lessons have been scheduled yet. Your timetable will appear here when Heeva confirms your lesson times.</p>}
+          </section>
+
+          {pendingRequests.length > 0 && (
+            <section className="student-panel student-panel-wide">
+              <Eyebrow>Awaiting confirmation</Eyebrow><h3>Course requests</h3>
+              <ul className="student-record-list">
+                {pendingRequests.map((item) => (
+                  <li key={item.id}><div><strong>{item.courseTitle}</strong><small>For {item.learnerName} · {new Date(item.createdAt).toLocaleDateString()}</small></div><span className="student-status">{item.status.replaceAll('_',' ')}</span></li>
+                ))}
+              </ul>
+              <p className="student-fineprint">A course request is not yet a confirmed enrolment. Lesson totals and progress appear once Heeva activates the enrolment.</p>
+            </section>
+          )}
 
           <div className="student-dashboard-grid">
             <section className="student-panel">

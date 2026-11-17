@@ -1,4 +1,4 @@
-import { createHash, randomBytes, randomUUID, scrypt as scryptCallback, timingSafeEqual } from "node:crypto";
+import { createHash, randomBytes, randomInt, randomUUID, scrypt as scryptCallback, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 
 const scrypt = promisify(scryptCallback);
@@ -20,7 +20,7 @@ export function isValidEmail(value) {
 
 export function validatePassword(value) {
   return typeof value === "string" &&
-    value.length >= 12 &&
+    value.length >= 8 &&
     value.length <= 128 &&
     /[a-z]/.test(value) &&
     /[A-Z]/.test(value) &&
@@ -70,4 +70,22 @@ export function safeEqualText(a, b) {
   const left = Buffer.from(String(a ?? ""));
   const right = Buffer.from(String(b ?? ""));
   return left.length === right.length && timingSafeEqual(left, right);
+}
+
+export function createEmailVerificationCode() {
+  return String(randomInt(100000, 1000000));
+}
+
+export function createEmailVerificationSalt() {
+  return randomBytes(16).toString("hex");
+}
+
+export function hashEmailVerificationCode(code, salt) {
+  return createHash("sha256").update(`${salt}:${code}`).digest("hex");
+}
+
+export function verifyEmailVerificationCode(code, salt, expectedHash) {
+  const actual = Buffer.from(hashEmailVerificationCode(code, salt), "hex");
+  const expected = Buffer.from(String(expectedHash || ""), "hex");
+  return actual.length === 32 && expected.length === 32 && timingSafeEqual(actual, expected);
 }

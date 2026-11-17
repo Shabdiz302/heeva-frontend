@@ -13,6 +13,8 @@ COPY --chown=node:node src ./src
 COPY --chown=node:node migrations ./migrations
 COPY --chown=node:node data ./data
 
+RUN mkdir -p /app/private-resources && chown node:node /app/private-resources
+
 USER node
 
 EXPOSE 3100

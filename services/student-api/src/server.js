@@ -196,10 +196,11 @@ async function currentStudent(req) {
   if (!token || token.length > 100) return null;
   const result = await pool.query(
     `SELECT s.id, s.first_name, s.last_name, s.email, s.phone,
-            s.preferred_language, s.account_type, s.created_at, ss.id AS session_id
+            s.preferred_language, s.account_type, s.email_verified_at, s.created_at, ss.id AS session_id
        FROM student_sessions ss
        JOIN students s ON s.id = ss.student_id
       WHERE ss.token_hash = $1 AND ss.expires_at > NOW() AND s.status = 'active'
+        AND s.email_verified_at IS NOT NULL
       LIMIT 1`,
     [hashSessionToken(token)]
   );

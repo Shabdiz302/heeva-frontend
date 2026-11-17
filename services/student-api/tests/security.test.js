@@ -53,7 +53,7 @@ test("email verification codes are six digits and stored as salted hashes", () =
   const code = createEmailVerificationCode();
   const salt = createEmailVerificationSalt();
   const hash = hashEmailVerificationCode(code, salt);
-  assert.match(code, /^\\d{6}$/);
+  assert.match(code, /^\d{6}$/);
   assert.notEqual(hash, code);
   assert.equal(verifyEmailVerificationCode(code, salt, hash), true);
   assert.equal(verifyEmailVerificationCode("000000", salt, hash), code === "000000");

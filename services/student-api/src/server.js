@@ -133,6 +133,7 @@ function publicLearner(row) {
 }
 
 const childAgeBands = new Set(["under_8", "8_12", "13_17"]);
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 async function currentStudent(req) {
   const token = getCookie(req, COOKIE_NAME);
@@ -369,6 +370,7 @@ async function handle(req, res) {
     const learnerId = String(body.learnerId || "");
     if (!course) return json(res, 400, { error: "Please select a valid Heeva course." });
     if (course.status !== "available") return json(res, 409, { error: "This course is not currently confirmed as available for enrolment." });
+    if (!UUID_PATTERN.test(learnerId)) return json(res, 400, { error: "Please select a valid learner profile." });
     const learner = await pool.query(
       "SELECT id FROM learner_profiles WHERE id=$1 AND account_id=$2 AND status='active'",
       [learnerId, student.id]
@@ -405,6 +407,7 @@ async function handle(req, res) {
     const learnerId = String(body.learnerId || "");
     if (!course) return json(res, 400, { error: "Please select an available course for your introductory lesson." });
     if (course.status !== "available") return json(res, 409, { error: "This course is not currently confirmed as available for an introductory lesson." });
+    if (!UUID_PATTERN.test(learnerId)) return json(res, 400, { error: "Please select a valid learner profile." });
     const learner = await pool.query(
       "SELECT id FROM learner_profiles WHERE id=$1 AND account_id=$2 AND status='active'",
       [learnerId, student.id]

@@ -25,6 +25,8 @@ test("verification codes are stored as salted hashes with expiry and attempt lim
 test("verification email is sent only from backend configuration", () => {
   assert.match(server, /RESEND_API_KEY/);
   assert.match(server, /EMAIL_FROM/);
+  assert.match(server, /EMAIL_REPLY_TO/);
+  assert.match(server, /reply_to: \[EMAIL_REPLY_TO\]/);
   assert.match(server, /Authorization: `Bearer \$\{RESEND_API_KEY\}`/);
   assert.match(server, /https:\/\/api\.resend\.com\/emails/);
 });

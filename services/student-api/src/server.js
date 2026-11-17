@@ -849,7 +849,7 @@ async function handle(req, res) {
         if (!found.rowCount) { await client.query("ROLLBACK"); return json(res,404,{error:"Lesson not found."}); }
         if (!staffCanManageEnrolment(staff,found.rows[0])) { await client.query("ROLLBACK"); return json(res,403,{error:"You cannot update this lesson."}); }
         const updated = await client.query(
-          "UPDATE student_course_lessons SET status=$1,completed_at=CASE WHEN $1='completed' THEN COALESCE(completed_at,NOW()) ELSE NULL END,"+
+          "UPDATE student_course_lessons SET status=$1::varchar,completed_at=CASE WHEN $1::varchar='completed' THEN COALESCE(completed_at,NOW()) ELSE NULL END,"+
           "tutor_note=$2,updated_at=NOW() WHERE id=$3 RETURNING id,status,completed_at AS completed_at",
           [status,note || null,lessonId]
         );

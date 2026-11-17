@@ -5,9 +5,10 @@ import { PageIntro, Eyebrow } from '../components/ContentBlocks.jsx';
 import './student-portal.css';
 
 async function api(path, options = {}) {
-  // The portal is served below /student-preview/, but Apache exposes the
-  // same-origin API at the staging host root: /api/.
-  const requestPath = path.startsWith('/') ? path : `/${path}`;
+  // Route this portal preview to its isolated candidate API on port 3101.
+  // The existing staging API route at /api/ remains separate.
+  const apiPath = path.startsWith('/') ? path : `/${path}`;
+  const requestPath = `/student-preview-api${apiPath}`;
   const response = await fetch(requestPath, {
     credentials: 'same-origin',
     ...options,

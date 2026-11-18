@@ -23,8 +23,12 @@ jobs:
           PINNED_HOST_KEY: ${{ vars.HEEVA_SSH_KNOWN_HOSTS }}
         run: |
           set -euo pipefail
-          if [[ -z "${DEPLOY_PRIVATE_KEY}" || -z "${PINNED_HOST_KEY}" ]]; then
-            echo "::error::Missing heeva-staging environment secret or known-hosts variable"
+          if [[ -z "${DEPLOY_PRIVATE_KEY}" ]]; then
+            echo "::error::HEEVA_DEPLOY_SSH_KEY is missing or empty in heeva-staging Environment secrets."
+            exit 1
+          fi
+          if [[ -z "${PINNED_HOST_KEY}" ]]; then
+            echo "::error::HEEVA_SSH_KNOWN_HOSTS is missing or empty in heeva-staging Environment variables."
             exit 1
           fi
           umask 077

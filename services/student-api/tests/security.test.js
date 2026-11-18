@@ -2,7 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   createSessionToken, hashPassword, hashSessionToken, isValidEmail,
-  normalizeEmail, validatePassword, verifyPassword
+  normalizeEmail, validatePassword, verifyPassword,
+  createEmailVerificationCode, createEmailVerificationSalt,
+  hashEmailVerificationCode, verifyEmailVerificationCode
 } from "../src/security.js";
 import catalog from "../data/courses.json" with { type: "json" };
 
@@ -16,9 +18,11 @@ test("validates email addresses", () => {
   assert.equal(isValidEmail("x".repeat(250) + "@x.com"), false);
 });
 
-test("requires a strong password", () => {
+test("requires a strong password with a minimum length of eight characters", () => {
   assert.equal(validatePassword("StrongPassword123"), true);
+  assert.equal(validatePassword("Strong1A"), true);
   assert.equal(validatePassword("short1A"), false);
+  assert.equal(validatePassword("Strong1"), false);
   assert.equal(validatePassword("alllowercase123"), false);
   assert.equal(validatePassword("ALLUPPERCASE123"), false);
 });
@@ -43,4 +47,15 @@ test("catalogue has unique slugs and one free-lesson rule is supported separatel
   assert.equal(new Set(catalog.map((course) => course.slug)).size, 39);
   assert.ok(catalog.some((course) => course.slug === "piano"));
   assert.ok(catalog.some((course) => course.status === "coming-soon"));
+});
+
+test("email verification codes are six digits and stored as salted hashes", () => {
+  const code = createEmailVerificationCode();
+  const salt = createEmailVerificationSalt();
+  const hash = hashEmailVerificationCode(code, salt);
+  assert.match(code, /^\d{6}$/);
+  assert.notEqual(hash, code);
+  assert.equal(verifyEmailVerificationCode(code, salt, hash), true);
+  assert.equal(verifyEmailVerificationCode("000000", salt, hash), code === "000000");
+  assert.equal(verifyEmailVerificationCode(code, createEmailVerificationSalt(), hash), false);
 });

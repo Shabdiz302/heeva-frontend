@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/student-platform-foundation
+      - feature/student-portal-staging
   workflow_dispatch:
 
 permissions:

@@ -1,0 +1,59 @@
+name: Heeva staging SSH gate verification
+
+# Authentication-only diagnostic. No checkout, release, Podman, Apache, database, or sudo.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-gate:
+    name: Verify restricted SSH key (no deployment)
+    if: github.ref == 'refs/heads/feature/student-portal-staging'
+    runs-on: ubuntu-latest
+    environment:
+      name: heeva-staging
+    timeout-minutes: 5
+    steps:
+      - name: Verify forced command using pinned VPS host key
+        shell: bash
+        env:
+          DEPLOY_PRIVATE_KEY: ${{ secrets.HEEVA_DEPLOY_SSH_KEY }}
+          PINNED_HOST_KEY: ${{ vars.HEEVA_SSH_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${DEPLOY_PRIVATE_KEY}" || -z "${PINNED_HOST_KEY}" ]]; then
+            echo "::error::Missing heeva-staging environment secret or known-hosts variable"
+            exit 1
+          fi
+          umask 077
+          key_file="$(mktemp)"
+          known_hosts_file="$(mktemp)"
+          trap 'rm -f "$key_file" "$known_hosts_file"' EXIT
+          printf '%s\n' "$DEPLOY_PRIVATE_KEY" > "$key_file"
+          printf '%s\n' "$PINNED_HOST_KEY" > "$known_hosts_file"
+          if ! ssh-keygen -y -f "$key_file" >/dev/null; then
+            echo "::error::SSH private key was not accepted"
+            exit 1
+          fi
+          expected='mail.heevacourses.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICnr3BQHyrL94uVAEIcSNqFFOIlcsM9KTzwDdme+MyKa'
+          if [[ "$(cat "$known_hosts_file")" != "$expected" ]]; then
+            echo "::error::Pinned known_hosts value does not match the previously verified VPS identity"
+            exit 1
+          fi
+          response="$(ssh -F /dev/null -p 22 -i "$key_file" \
+            -o BatchMode=yes -o IdentitiesOnly=yes \
+            -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$known_hosts_file" \
+            -o ConnectTimeout=8 \
+            heeva-deploy@mail.heevacourses.com 'echo SHOULD_NOT_RUN')"
+          expected_response=$'Heeva staging deployment gate connected.\nDeployment operations are not enabled.'
+          if [[ "$response" != "$expected_response" ]]; then
+            echo "::error::SSH gate response unexpected. No deployment attempted."
+            exit 1
+          fi
+          echo "PASS: Verified VPS host key, deployment SSH key and forced-command gate."
+          echo "PASS: Arbitrary remote command was not executed."
+          echo "No deployment was performed."

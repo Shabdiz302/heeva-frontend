@@ -1,0 +1,51 @@
+name: Heeva Student API checks
+
+on:
+  pull_request:
+    branches: [feature/student-portal-staging]
+    paths:
+      - 'services/student-api/**'
+      - '.github/workflows/heeva-student-api-checks.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Node tests and isolated PostgreSQL SQL check
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: heeva_ci
+          POSTGRES_PASSWORD: heeva_ci_password
+          POSTGRES_DB: heeva_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U heeva_ci -d heeva_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://heeva_ci:heeva_ci_password@127.0.0.1:5432/heeva_ci
+    defaults:
+      run:
+        working-directory: services/student-api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install API dependencies
+        run: npm install --omit=dev --no-audit --no-fund
+      - name: Run API tests against temporary PostgreSQL
+        run: npm test
+      - name: Apply schema to isolated CI database
+        run: npm run migrate
+      - name: Run authenticated lesson-completion HTTP test
+        env:
+          HEEVA_HTTP_INTEGRATION_TEST: 'true'
+        run: node --test tests/lesson-status-http.integration.test.js

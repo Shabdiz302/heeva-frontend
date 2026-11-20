@@ -366,6 +366,39 @@ async function handle(req, res) {
       message:emailSent?"Check your email for a six-digit verification code.":"Registration saved, but email delivery failed. Contact Heeva support."});
   }
 
+
+  if(method === "POST" && path === "/api/teacher-applications/resend-code"){
+    if(!emailVerificationConfigured())return json(res,503,{error:"Email delivery is unavailable."});
+    const body=await readJson(req);
+    const email=normalizeEmail(body.email);
+    if(!isValidEmail(email))return json(res,400,{error:"Enter a valid email address."});
+    if(!rateLimit("teacher-resend:"+email,3,60*60*1000))
+      return json(res,429,{error:"Too many resend requests. Please try again later."});
+    const client=await pool.connect();
+    let code=null;
+    let displayName="";
+    try{
+      await client.query("BEGIN");
+      const found=await client.query(
+        "SELECT a.staff_user_id,u.display_name FROM marketplace_teacher_applications a " +
+        "JOIN staff_users u ON u.id=a.staff_user_id " +
+        "WHERE u.email=$1 AND a.status='pending_email' AND a.last_code_sent_at<NOW()-INTERVAL '60 seconds' FOR UPDATE OF a",
+        [email]);
+      if(found.rowCount){
+        const salt=createEmailVerificationSalt();
+        code=createEmailVerificationCode();
+        const digest=hashEmailVerificationCode(code,salt);
+        displayName=found.rows[0].display_name;
+        await client.query(
+          "UPDATE marketplace_teacher_applications SET code_salt=$2,code_hash=$3,code_expires_at=NOW()+INTERVAL '10 minutes',code_attempts=0,last_code_sent_at=NOW() WHERE staff_user_id=$1",
+          [found.rows[0].staff_user_id,salt,digest]);
+      }
+      await client.query("COMMIT");
+    }catch(error){await client.query("ROLLBACK");throw error;}finally{client.release();}
+    if(code)await sendVerificationEmail(email,displayName,code);
+    return json(res,200,{ok:true,message:"If the application is awaiting verification, a fresh code will be sent when eligible."});
+  }
+
   if (method === "POST" && path === "/api/teacher-applications/verify-email") {
     const body=await readJson(req);
     const email=normalizeEmail(body.email);

@@ -40,3 +40,14 @@ test("teacher prices are proposals, restricted to GBP and positive sensible boun
   assert.match(migration, /BETWEEN 100 AND 100000/);
   assert.match(server, /rate<100 \|\| rate>100000/);
 });
+
+test("portraits are private, size-limited and only available through staff authentication", () => {
+  assert.match(migration, /photo_storage_key VARCHAR/);
+  assert.match(migration, /photo_size_bytes INTEGER CHECK/);
+  assert.match(server, /const ownPortrait = path === "\/api\/staff\/marketplace\/portrait" && staff.role === "teacher"/);
+  assert.match(server, /reviewPortraitMatch = staff.role === "admin"/);
+  assert.match(server, /readBinary\(req,5\*1024\*1024\)/);
+  assert.match(server, /"image\/jpeg":".jpg","image\/png":".png","image\/webp":".webp"/);
+  assert.match(server, /"Cache-Control":"private, no-store"/);
+  assert.match(server, /marketplace.portrait.uploaded/);
+});

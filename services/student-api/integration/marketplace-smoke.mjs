@@ -67,8 +67,29 @@ try {
       [newId(),email, email.split("@")[0],hashed,role]
     );
   }
+  const applicantId = newId();
+  await pool.query(
+    "INSERT INTO staff_users(id,email,display_name,password_hash,role,status) VALUES($1,$2,$3,$4,'teacher','suspended')",
+    [applicantId,"market-applicant@example.invalid","Market Applicant",hashed]
+  );
+  await pool.query(
+    "INSERT INTO marketplace_teacher_applications(staff_user_id,status,terms_accepted_at,privacy_accepted_at,adult_confirmed_at,email_verified_at,code_salt,code_hash,code_expires_at) " +
+    "VALUES($1,'pending_admin',NOW(),NOW(),NOW(),NOW(),'test','test',NOW())",[applicantId]
+  );
   await ready();
+  const blockedLogin = await call("/api/staff/auth/login","POST","",{
+    email:"market-applicant@example.invalid",password:"OnlyForTesting123!"
+  });
+  assert.equal(blockedLogin.response.status,401);
   const admin = await login("market-admin@example.invalid");
+  const requests = (await call("/api/staff/marketplace/applications","GET",admin)).data.applications;
+  assert.ok(requests.find(a=>a.id===applicantId&&a.status==="pending_admin"));
+  const accepted=await call("/api/staff/marketplace/applications/"+applicantId+"/decision",
+    "POST",admin,{decision:"approved",feedback:"Test approval"});
+  assert.equal(accepted.response.status,200,JSON.stringify(accepted.data));
+  const applicant=await login("market-applicant@example.invalid");
+  assert.ok(applicant);
+  assert.equal((await call("/api/staff/marketplace/applications","GET",applicant)).response.status,404);
   const tutorOne = await login("market-tutor-one@example.invalid");
   const tutorTwo = await login("market-tutor-two@example.invalid");
 

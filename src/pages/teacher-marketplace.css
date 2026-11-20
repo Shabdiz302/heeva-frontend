@@ -31,3 +31,7 @@
 .marketplace-review-actions label {flex:1 1 300px}
 @media(max-width:700px){.marketplace-header{display:block}.marketplace-header .marketplace-status{margin-top:13px}.marketplace-grid,.marketplace-steps{grid-template-columns:1fr 1fr}.marketplace-actions button{width:100%}}
 @media(max-width:480px){.marketplace-grid{grid-template-columns:1fr}.marketplace-review-heading{display:block}.marketplace-steps span{font-size:11px;padding:8px}}
+
+.marketplace-portrait { display:block; width:160px; height:160px; object-fit:cover; border-radius:16px; border:1px solid #d3e0e4; margin:14px 0; background:#eef4f6; }
+.marketplace-upload-label { display:grid; gap:9px; width:100%; max-width:440px; margin:12px 0; font-size:13px; font-weight:700; }
+.marketplace-upload-label input { width:100%; padding:12px; border-radius:9px; border:1px solid #cedae1; background:white; }

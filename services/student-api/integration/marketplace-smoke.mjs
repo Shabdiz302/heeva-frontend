@@ -34,6 +34,8 @@ const server = spawn(process.execPath, ["src/server.js"], {
     EMAIL_FROM: "Teacher Testing <test@example.invalid>",
     NODE_ENV: "test",
     HEEVA_TEST_EMAIL_OUT: emailOut,
+    HEEVA_STUDENT_COOKIE_NAME: "__Host-heeva_marketplace_student",
+    HEEVA_STAFF_COOKIE_NAME: "__Host-heeva_marketplace_staff",
     HEEVA_CLAMSCAN_PATH: scannerPath,
     NODE_OPTIONS: "--import=" + new URL("./mock-mail.mjs",import.meta.url).href,
   },
@@ -56,7 +58,7 @@ async function login(email) {
   const r = await call("/api/staff/auth/login", "POST", "", { email, password: "OnlyForTesting123!" });
   assert.equal(r.response.status, 200, JSON.stringify(r.data));
   const cookie = r.response.headers.get("set-cookie")?.split(";")[0];
-  assert.ok(cookie?.startsWith("__Host-heeva_staff_session="));
+  assert.ok(cookie?.startsWith("__Host-heeva_marketplace_staff="));
   return cookie;
 }
 async function ready() {

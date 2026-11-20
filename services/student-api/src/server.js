@@ -690,7 +690,7 @@ async function handle(req, res) {
       const portrait = result.rows[0];
       if (!portrait?.photo_storage_key) return json(res,404,{error:"No portrait uploaded."});
       const storageKey = String(portrait.photo_storage_key);
-      if (!/^[0-9a-f-]{36}\\.(jpg|png|webp)$/.test(storageKey)) return json(res,409,{error:"Invalid portrait storage reference."});
+      if (!/^[0-9a-f-]{36}\.(jpg|png|webp)$/.test(storageKey)) return json(res,409,{error:"Invalid portrait storage reference."});
       const storagePath = resolve(PRIVATE_RESOURCES_DIR,"teacher-portraits",storageKey);
       const file = await readFile(storagePath).catch((error)=>{
         if (error.code === "ENOENT") return null;

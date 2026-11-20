@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from '../router.jsx';
 import { PageIntro, Eyebrow } from '../components/ContentBlocks.jsx';
 import './staff-workspace.css';
+import { TeacherMarketplacePanel, MarketplaceReviewPanel } from './TeacherMarketplacePanel.jsx';
 
 async function staffApi(path, options = {}) {
   const apiBase = import.meta.env.VITE_STUDENT_API_BASE || '/student-preview-api';
@@ -280,6 +281,8 @@ export default function StaffWorkspacePage() {
         <nav className="staff-view-nav" aria-label="Staff workspace sections">
           <button type="button" className={activeView === 'overview' ? 'is-active' : ''} aria-current={activeView === 'overview' ? 'page' : undefined} onClick={() => setActiveView('overview')}><span aria-hidden="true">◫</span> Overview</button>
           {staff.role === 'admin' && <button type="button" className={activeView === 'requests' ? 'is-active' : ''} aria-current={activeView === 'requests' ? 'page' : undefined} onClick={() => setActiveView('requests')}><span aria-hidden="true">✉</span> Enrolment requests <span className="staff-nav-count">{requestCount}</span></button>}
+          {staff.role === 'admin' && <button type="button" className={activeView === 'marketplace-review' ? 'is-active' : ''} aria-current={activeView === 'marketplace-review' ? 'page' : undefined} onClick={() => setActiveView('marketplace-review')}>Teacher applications</button>}
+          {staff.role === 'teacher' && <button type="button" className={activeView === 'teacher-profile' ? 'is-active' : ''} aria-current={activeView === 'teacher-profile' ? 'page' : undefined} onClick={() => setActiveView('teacher-profile')}>My marketplace profile</button>}
           <button type="button" className={activeView === 'courses' ? 'is-active' : ''} aria-current={activeView === 'courses' ? 'page' : undefined} onClick={() => setActiveView('courses')}><span aria-hidden="true">▦</span> Courses &amp; lessons <span className="staff-nav-count">{enrolments.length}</span></button>
         </nav>
         {activeView === 'overview' && <div className="staff-overview">
@@ -297,6 +300,8 @@ export default function StaffWorkspacePage() {
         </div>
         </div>}
 
+        {activeView === 'teacher-profile' && staff.role === 'teacher' && <TeacherMarketplacePanel api={staffApi} staff={staff} />}
+        {activeView === 'marketplace-review' && staff.role === 'admin' && <MarketplaceReviewPanel api={staffApi} />}
         {activeView === 'requests' && staff.role === 'admin' && (
           <section className="staff-card">
             <div className="staff-section-head"><div><Eyebrow>New customer activity</Eyebrow><h3>Enrolment requests</h3></div><span className="staff-count">{requestCount} awaiting action</span></div>

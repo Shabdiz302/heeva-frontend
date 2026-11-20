@@ -179,3 +179,49 @@ export function MarketplaceReviewPanel({api}) {
     </article>)}
   </section>;
 }
+
+
+export function TeacherApplicationsPanel({api}) {
+  const [applications,setApplications]=useState([]);
+  const [feedback,setFeedback]=useState({});
+  const [error,setError]=useState('');
+  const [notice,setNotice]=useState('');
+  const [busy,setBusy]=useState(false);
+  const refresh=async()=>{const r=await api('/api/staff/marketplace/applications');setApplications(r.applications||[])};
+  useEffect(()=>{let mounted=true;api('/api/staff/marketplace/applications')
+    .then(r=>{if(mounted)setApplications(r.applications||[])})
+    .catch(e=>{if(mounted)setError(e.message)});
+    return()=>{mounted=false};
+  },[api]);
+  async function decide(item,decision){
+    setBusy(true);setError('');setNotice('');
+    try {
+      await api('/api/staff/marketplace/applications/'+item.id+'/decision',{
+        method:'POST',body:JSON.stringify({decision,feedback:feedback[item.id]||''})
+      });
+      await refresh();setNotice('Application decision saved. Teacher account access updated.');
+    }catch(e){setError(e.message)}finally{setBusy(false)}
+  }
+  return <section className="staff-card teacher-marketplace">
+    <header className="marketplace-header"><div><span className="marketplace-kicker">ACCOUNT ONBOARDING</span>
+      <h3>Teacher registrations</h3><p>Email-verified applications require a Heeva approval before tutor login can be activated.</p></div>
+      <span className="marketplace-status">{applications.filter(a=>a.status==='pending_admin').length} awaiting approval</span>
+    </header>
+    {error&&<p role="alert" className="marketplace-error">{error}</p>}
+    {notice&&<p role="status" className="marketplace-success">{notice}</p>}
+    {!applications.length&&<p>No teacher applications yet.</p>}
+    {applications.map(item=><article className="marketplace-review-item" key={item.id}>
+      <div className="marketplace-review-heading"><div><h4>{item.display_name}</h4><p>{item.email}</p></div>
+        <span className="marketplace-status">{item.status.replaceAll('_',' ')}</span></div>
+      <p>Email: {item.email_verified_at?'Verified':'Not verified'} · Applied: {new Date(item.created_at).toLocaleDateString()}</p>
+      {item.reviewer_feedback&&<p className="marketplace-feedback">{item.reviewer_feedback}</p>}
+      {item.status==='pending_admin'&&<div className="marketplace-review-actions">
+        <p className="marketplace-hint">Confirm identity, references and any safeguarding requirements outside this form before approving.</p>
+        <label>Review notes<textarea rows={2} maxLength={1200} value={feedback[item.id]||''}
+          onChange={e=>setFeedback(old=>({...old,[item.id]:e.target.value}))}/></label>
+        <button className="button button-outline" type="button" disabled={busy||!feedback[item.id]?.trim()} onClick={()=>decide(item,'rejected')}>Reject application</button>
+        <button className="button" type="button" disabled={busy} onClick={()=>decide(item,'approved')}>Approve teacher account</button>
+      </div>}
+    </article>)}
+  </section>;
+}

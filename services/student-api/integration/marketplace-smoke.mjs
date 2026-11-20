@@ -1,11 +1,12 @@
 // Run ONLY against a disposable database: DATABASE_URL=... node tests/marketplace-integration.mjs
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { mkdtemp, rm, readFile } from "node:fs/promises";
+import { mkdtemp, rm, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import pg from "pg";
 import { hashPassword, newId } from "../src/security.js";
+import { scanTeacherPdf } from "../src/file-scanner.js";
 
 const { Pool } = pg;
 const PORT = 3147;
@@ -17,6 +18,10 @@ if (!databaseUrl || !databaseUrl.includes("heeva_marketplace_test")) {
 const pool = new Pool({ connectionString: databaseUrl });
 const privateDir = await mkdtemp(join(tmpdir(), "heeva-marketplace-private-"));
 const emailOut = join(privateDir, 'verification-email.json');
+const scannerPath = join(privateDir, 'mock-clamscan');
+await writeFile(scannerPath, '#!/bin/sh\\nexit 0\\n', {mode:0o700});
+delete process.env.HEEVA_CLAMSCAN_PATH;
+assert.equal((await scanTeacherPdf('/nonexistent/path')).reason,'unavailable');
 const server = spawn(process.execPath, ["src/server.js"], {
   cwd: new URL("../", import.meta.url).pathname,
   env: {
@@ -29,6 +34,7 @@ const server = spawn(process.execPath, ["src/server.js"], {
     EMAIL_FROM: "Teacher Testing <test@example.invalid>",
     NODE_ENV: "test",
     HEEVA_TEST_EMAIL_OUT: emailOut,
+    HEEVA_CLAMSCAN_PATH: scannerPath,
     NODE_OPTIONS: "--import=" + new URL("./mock-mail.mjs",import.meta.url).href,
   },
   stdio: ["ignore", "pipe", "pipe"],
@@ -120,11 +126,20 @@ try {
   assert.equal(photo.response.status,201,JSON.stringify(photo.data));
   assert.equal((await call("/api/staff/marketplace/portrait","GET",tutorOne)).response.status,200);
   assert.equal((await call("/api/staff/marketplace/portrait","GET",tutorTwo)).response.status,404);
+  const fakePdf = Buffer.from('%PDF-1.4\\n1 0 obj\\n<< >>\\nendobj\\n%%EOF\\n');
+  const cv=await call("/api/staff/marketplace/cv","POST",tutorOne,fakePdf,"application/pdf");
+  assert.equal(cv.response.status,201,JSON.stringify(cv.data));
+  const ownCv=await call("/api/staff/marketplace/cv","GET",tutorOne);
+  assert.equal(ownCv.response.status,200);
+  assert.match(ownCv.response.headers.get("content-disposition"),/attachment/);
+  assert.equal((await call("/api/staff/marketplace/cv","GET",tutorTwo)).response.status,404);
 
   assert.equal((await call("/api/staff/marketplace/submit","POST",tutorOne,{})).response.status,200);
   const profiles = (await call("/api/staff/marketplace/review","GET",admin)).data.profiles;
   const profile = profiles.find(p => p.email === "market-tutor-one@example.invalid");
   assert.ok(profile?.id);
+  assert.equal(profile.has_cv,true);
+  assert.equal((await call("/api/staff/marketplace/review/"+profile.id+"/cv","GET",admin)).response.status,200);
   assert.equal((await call("/api/staff/marketplace/review/"+profile.id,"POST",tutorOne,{decision:"approved"})).response.status,404); // Deliberately do not disclose admin-only endpoint
   const approval = await call("/api/staff/marketplace/review/"+profile.id,"POST",admin,{decision:"approved",feedback:"Approved for isolated testing"});
   assert.equal(approval.response.status,200,JSON.stringify(approval.data));

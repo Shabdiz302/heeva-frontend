@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import { dirname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import pg from "pg";
+import { scanTeacherPdf } from "./file-scanner.js";
 import {
   createSessionToken, hashPassword, hashSessionToken, isValidEmail,
   newId, normalizeEmail, validatePassword, verifyPassword,
@@ -846,12 +847,90 @@ async function handle(req, res) {
       }finally{client.release();}
     }
 
+
+    // Teacher CV files require an external malware scanner before they can be stored.
+    // No direct public endpoints exist for these documents.
+    const ownCv = path === "/api/staff/marketplace/cv" && staff.role === "teacher";
+    const reviewCvMatch = staff.role === "admin"
+      ? path.match(/^\\/api\\/staff\\/marketplace\\/review\\/([0-9a-f-]{36})\\/cv$/i)
+      : null;
+    if (method === "GET" && (ownCv || reviewCvMatch)) {
+      const found = reviewCvMatch
+        ? await pool.query("SELECT cv_storage_key,cv_original_filename,cv_size_bytes FROM marketplace_teacher_profiles WHERE id=$1",[reviewCvMatch[1]])
+        : await pool.query("SELECT cv_storage_key,cv_original_filename,cv_size_bytes FROM marketplace_teacher_profiles WHERE staff_user_id=$1",[staff.id]);
+      const doc = found.rows[0];
+      if (!doc?.cv_storage_key) return json(res,404,{error:"No CV uploaded."});
+      const key=String(doc.cv_storage_key);
+      if (!/^[0-9a-f-]{36}\\.pdf$/.test(key)) return json(res,409,{error:"Invalid CV storage key."});
+      const file = await readFile(resolve(PRIVATE_RESOURCES_DIR,"teacher-cvs",key)).catch(e=>{
+        if(e.code==="ENOENT")return null;throw e;
+      });
+      if (!file || file.length !== doc.cv_size_bytes) return json(res,404,{error:"CV unavailable."});
+      const filename = String(doc.cv_original_filename||"Teacher-CV.pdf").replace(/[\\r\\n"\\\\/]/g,"_");
+      res.writeHead(200,{
+        "Content-Type":"application/pdf","Content-Length":file.length,
+        "Content-Disposition":'attachment; filename="Teacher-CV.pdf"; filename*=UTF-8\'\''+encodeURIComponent(filename),
+        "Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff",
+        "Referrer-Policy":"no-referrer","Content-Security-Policy":"default-src 'none'; sandbox",
+        "X-Frame-Options":"DENY"
+      });
+      return res.end(file);
+    }
+    if (method === "POST" && ownCv) {
+      if (String(req.headers["content-type"]||"").toLowerCase().split(";")[0].trim()!=="application/pdf")
+        return json(res,415,{error:"Only PDF CV documents are accepted."});
+      const file = await readBinary(req,5*1024*1024);
+      if (!file.subarray(0,5).equals(Buffer.from("%PDF-")))
+        return json(res,415,{error:"The uploaded CV is not a PDF file."});
+      let filename = "Teacher-CV.pdf";
+      try{filename=decodeURIComponent(String(req.headers["x-file-name"]||filename));}
+      catch{return json(res,400,{error:"Invalid filename."});}
+      filename=filename.trim();
+      if(!filename || filename.length>160 || !filename.toLowerCase().endsWith(".pdf") || /[\\r\\n\\\\/]/.test(filename))
+        return json(res,400,{error:"Choose a PDF filename of 160 characters or less."});
+
+      const client=await pool.connect();
+      let storagePath=null;
+      try{
+        await client.query("BEGIN");
+        const profile=await client.query(
+          "SELECT id,review_status FROM marketplace_teacher_profiles WHERE staff_user_id=$1 FOR UPDATE",[staff.id]);
+        if(!profile.rowCount){await client.query("ROLLBACK");return json(res,409,{error:"Save your teacher profile draft first."});}
+        if(profile.rows[0].review_status==="pending_review"){
+          await client.query("ROLLBACK");return json(res,409,{error:"Your profile is awaiting review."});
+        }
+        const dir=resolve(PRIVATE_RESOURCES_DIR,"teacher-cvs");
+        await mkdir(dir,{recursive:true,mode:0o700});
+        const key=newId()+".pdf";
+        storagePath=resolve(dir,key);
+        await writeFile(storagePath,file,{flag:"wx",mode:0o600});
+        const scan=await scanTeacherPdf(storagePath);
+        if(!scan.clean){
+          await client.query("ROLLBACK");
+          await unlink(storagePath).catch(()=>{});
+          return json(res,scan.reason==="infected"?415:503,{
+            error:scan.reason==="infected"?"The CV did not pass security scanning.":"CV scanning is temporarily unavailable. No file was accepted."
+          });
+        }
+        await client.query(
+          "UPDATE marketplace_teacher_profiles SET cv_storage_key=$2,cv_original_filename=$3,cv_size_bytes=$4,cv_uploaded_at=NOW(),review_status='draft',admin_feedback='',updated_at=NOW() WHERE staff_user_id=$1",
+          [staff.id,key,filename,file.length]);
+        await auditStaffAction(client,staff.id,"marketplace.cv.uploaded","marketplace_teacher_profile",profile.rows[0].id,{size:file.length});
+        await client.query("COMMIT");
+        return json(res,201,{ok:true,message:"Your private CV passed scanning and was saved for review."});
+      }catch(error){
+        await client.query("ROLLBACK").catch(()=>{});
+        if(storagePath) await unlink(storagePath).catch(()=>{});
+        throw error;
+      }finally{client.release();}
+    }
+
     // Marketplace teacher drafts are private and owned by the authenticated teacher.
     // Approval here is internal only: no public directory publishing or payment processing.
     if (path === "/api/staff/marketplace/profile" && staff.role === "teacher") {
       if (method === "GET") {
         const result = await pool.query(
-          "SELECT display_name,headline,biography,subjects,languages,qualifications_summary,teaching_experience,currency,proposed_rate_pence,lesson_duration_minutes,review_status,admin_feedback,(photo_storage_key IS NOT NULL) AS has_portrait,updated_at " +
+          "SELECT display_name,headline,biography,subjects,languages,qualifications_summary,teaching_experience,currency,proposed_rate_pence,lesson_duration_minutes,review_status,admin_feedback,(photo_storage_key IS NOT NULL) AS has_portrait,(cv_storage_key IS NOT NULL) AS has_cv,updated_at " +
           "FROM marketplace_teacher_profiles WHERE staff_user_id=$1", [staff.id]);
         return json(res,200,{profile:result.rows[0] || null});
       }
@@ -913,7 +992,7 @@ async function handle(req, res) {
 
     if (path === "/api/staff/marketplace/review" && staff.role === "admin" && method === "GET") {
       const result = await pool.query(
-        "SELECT p.id,p.display_name,p.headline,p.biography,p.subjects,p.languages,p.qualifications_summary,p.teaching_experience,p.proposed_rate_pence,p.lesson_duration_minutes,p.review_status,p.admin_feedback,(p.photo_storage_key IS NOT NULL) AS has_portrait,p.submitted_at,p.updated_at,u.email " +
+        "SELECT p.id,p.display_name,p.headline,p.biography,p.subjects,p.languages,p.qualifications_summary,p.teaching_experience,p.proposed_rate_pence,p.lesson_duration_minutes,p.review_status,p.admin_feedback,(p.photo_storage_key IS NOT NULL) AS has_portrait,(p.cv_storage_key IS NOT NULL) AS has_cv,p.submitted_at,p.updated_at,u.email " +
         "FROM marketplace_teacher_profiles p JOIN staff_users u ON u.id=p.staff_user_id ORDER BY p.updated_at DESC LIMIT 100"
       );
       return json(res,200,{profiles:result.rows});

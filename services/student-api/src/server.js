@@ -750,7 +750,7 @@ async function handle(req, res) {
       return json(res,200,{profiles:result.rows});
     }
 
-    const reviewMatch = path.match(/^\\/api\\/staff\\/marketplace\\/review\\/([0-9a-f-]{36})$/i);
+    const reviewMatch = path.match(/^\/api\/staff\/marketplace\/review\/([0-9a-f-]{36})$/i);
     if (reviewMatch && method === "POST" && staff.role === "admin") {
       const body = await readJson(req);
       const decision = String(body.decision || "");

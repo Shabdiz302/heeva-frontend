@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Link } from '../router.jsx';
 import { teachers, teacherCategories } from '../data/teachers.js';
 import { CTASection, Eyebrow, PageIntro, TeacherCard } from '../components/ContentBlocks.jsx';
 
@@ -46,6 +47,7 @@ export default function TeachersPage() {
             <h2>Ask us about the process behind the <em>people.</em></h2>
             <p>Heeva’s public information describes teacher onboarding and regular training. Families can ask about current safeguarding arrangements and any checks relevant to them before enrolment.</p>
             <p className="small-note">Experience and credentials appear on profiles only where the published biography states them. Please confirm current information with Heeva.</p>
+            <p><Link className="button button-outline" to="/teacher/apply">Apply to teach with Heeva</Link></p>
           </div>
         </div>
       </section>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from '../router.jsx';
+import { policies } from '../data/site.js';
 import { PageIntro, Eyebrow } from '../components/ContentBlocks.jsx';
 import './teacher-marketplace.css';
 
@@ -37,6 +38,13 @@ export default function TeacherApplyPage(){
       setMode('submitted');setNotice(response.message);
     }catch(err){setError(err.message)}finally{setBusy(false)}
   }
+  async function resend(){
+    setBusy(true);setError('');setNotice('');
+    try{
+      const response=await request('/api/teacher-applications/resend-code',{email:form.email});
+      setNotice(response.message);
+    }catch(err){setError(err.message)}finally{setBusy(false)}
+  }
   return <>
     <PageIntro eyebrow="Teach with Heeva" title={<>Become a Heeva <em>teacher.</em></>}>
       <p>Apply to teach online through Heeva. Every application is verified and reviewed before access is granted.</p>
@@ -60,8 +68,8 @@ export default function TeacherApplyPage(){
           <label>Password (8+ characters, uppercase, lowercase and number)
             <input type="password" minLength={8} maxLength={128} value={form.password} required onChange={e=>update('password',e.target.value)} autoComplete="new-password"/></label>
           <label className="marketplace-check"><input type="checkbox" checked={form.adultConfirmed} onChange={e=>update('adultConfirmed',e.target.checked)} required/> I confirm I am at least 18.</label>
-          <label className="marketplace-check"><input type="checkbox" checked={form.termsAccepted} onChange={e=>update('termsAccepted',e.target.checked)} required/> I accept the Heeva tutor application terms.</label>
-          <label className="marketplace-check"><input type="checkbox" checked={form.privacyAccepted} onChange={e=>update('privacyAccepted',e.target.checked)} required/> I have read the Heeva privacy information.</label>
+          <label className="marketplace-check"><input type="checkbox" checked={form.termsAccepted} onChange={e=>update('termsAccepted',e.target.checked)} required/> I agree to the <a href={policies.terms} target="_blank" rel="noreferrer">Heeva Terms of Service</a> and understand additional tutor terms will be required.</label>
+          <label className="marketplace-check"><input type="checkbox" checked={form.privacyAccepted} onChange={e=>update('privacyAccepted',e.target.checked)} required/> I have read the <a href={policies.privacy} target="_blank" rel="noreferrer">Heeva Privacy Policy</a>.</label>
           <button type="submit" className="button" disabled={busy}>{busy?'Submitting…':'Create teacher application'}</button>
           <p className="marketplace-hint">Development preview: real tutor terms and privacy links must be reviewed before public launch. Use test details only.</p>
         </form>}
@@ -69,7 +77,8 @@ export default function TeacherApplyPage(){
           <p>Enter the six-digit verification code sent to {form.email}. The code expires after ten minutes.</p>
           <label>Verification code<input inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={code} onChange={e=>setCode(e.target.value.replace(/\D/g,'').slice(0,6))} required autoComplete="one-time-code"/></label>
           <button type="submit" className="button" disabled={busy||code.length!==6}>{busy?'Verifying…':'Verify my email'}</button>
-          <p>For a missing or expired code, contact Heeva support. Self-service resend is not enabled in this preview.</p>
+          <button type="button" className="button button-outline" onClick={resend} disabled={busy}>Resend verification code</button>
+          <p>Resend is limited for security. Wait at least 60 seconds after the previous code.</p>
         </form>}
         {mode==='submitted'&&<div><p>A Heeva administrator will review your application. You cannot sign in as a tutor until approval.</p>
           <Link className="button button-outline" to="/staff/login">Staff login (after approval)</Link></div>}

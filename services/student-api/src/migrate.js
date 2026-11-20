@@ -8,7 +8,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is required");
 
-const migrations = ["001_initial", "002_parent_learner_profiles", "003_email_verification", "004_customer_learning_dashboard", "005_staff_management", "006_teacher_marketplace_profiles"];
+const migrations = ["001_initial", "002_parent_learner_profiles", "003_email_verification", "004_customer_learning_dashboard", "005_staff_management", "006_teacher_marketplace_profiles", "007_teacher_marketplace_offers"];
 const pool = new Pool({ connectionString: databaseUrl, max: 2, connectionTimeoutMillis: 10000 });
 
 try {

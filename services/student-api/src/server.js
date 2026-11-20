@@ -748,7 +748,7 @@ async function handle(req, res) {
     if (path === "/api/staff/marketplace/profile" && staff.role === "teacher") {
       if (method === "GET") {
         const result = await pool.query(
-          "SELECT display_name,headline,biography,subjects,languages,qualifications_summary,teaching_experience,currency,proposed_rate_pence,lesson_duration_minutes,review_status,admin_feedback,updated_at " +
+          "SELECT display_name,headline,biography,subjects,languages,qualifications_summary,teaching_experience,currency,proposed_rate_pence,lesson_duration_minutes,review_status,admin_feedback,(photo_storage_key IS NOT NULL) AS has_portrait,updated_at " +
           "FROM marketplace_teacher_profiles WHERE staff_user_id=$1", [staff.id]);
         return json(res,200,{profile:result.rows[0] || null});
       }
@@ -810,7 +810,7 @@ async function handle(req, res) {
 
     if (path === "/api/staff/marketplace/review" && staff.role === "admin" && method === "GET") {
       const result = await pool.query(
-        "SELECT p.id,p.display_name,p.headline,p.biography,p.subjects,p.languages,p.qualifications_summary,p.teaching_experience,p.proposed_rate_pence,p.lesson_duration_minutes,p.review_status,p.admin_feedback,p.submitted_at,p.updated_at,u.email " +
+        "SELECT p.id,p.display_name,p.headline,p.biography,p.subjects,p.languages,p.qualifications_summary,p.teaching_experience,p.proposed_rate_pence,p.lesson_duration_minutes,p.review_status,p.admin_feedback,(p.photo_storage_key IS NOT NULL) AS has_portrait,p.submitted_at,p.updated_at,u.email " +
         "FROM marketplace_teacher_profiles p JOIN staff_users u ON u.id=p.staff_user_id ORDER BY p.updated_at DESC LIMIT 100"
       );
       return json(res,200,{profiles:result.rows});

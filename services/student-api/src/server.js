@@ -677,6 +677,100 @@ async function handle(req, res) {
       return json(res,200,{staff:{id:staff.id,email:staff.email,displayName:staff.display_name,role:staff.role,teacherSlug:staff.teacher_slug}});
     }
 
+    // Marketplace teacher drafts are private and owned by the authenticated teacher.
+    // Approval here is internal only: no public directory publishing or payment processing.
+    if (path === "/api/staff/marketplace/profile" && staff.role === "teacher") {
+      if (method === "GET") {
+        const result = await pool.query(
+          "SELECT display_name,headline,biography,subjects,languages,qualifications_summary,teaching_experience,currency,proposed_rate_pence,lesson_duration_minutes,review_status,admin_feedback,updated_at " +
+          "FROM marketplace_teacher_profiles WHERE staff_user_id=$1", [staff.id]);
+        return json(res,200,{profile:result.rows[0] || null});
+      }
+      if (method === "PUT") {
+        const body = await readJson(req);
+        const value = (name,max) => typeof body[name] === "string" ? body[name].trim().slice(0,max+1) : "";
+        const displayName = value("displayName",120);
+        const headline = value("headline",160);
+        const biography = value("biography",4000);
+        const qualifications = value("qualificationsSummary",2500);
+        const experience = value("teachingExperience",2500);
+        const subjectList = body.subjects;
+        const languageList = body.languages;
+        const listValid = (list) => Array.isArray(list) && list.length <= 12 &&
+          list.every(x => typeof x === "string" && x.trim().length >= 1 && x.trim().length <= 60);
+        const duration = Number(body.lessonDurationMinutes);
+        const rate = body.proposedRatePence === null || body.proposedRatePence === "" ? null : Number(body.proposedRatePence);
+        if (!displayName || [displayName.length>120,headline.length>160,biography.length>4000,
+          qualifications.length>2500,experience.length>2500].some(Boolean) ||
+          !listValid(subjectList) || !listValid(languageList) ||
+          ![30,45,60,90].includes(duration) ||
+          (rate !== null && (!Number.isInteger(rate) || rate<100 || rate>100000))) {
+          return json(res,400,{error:"Check your profile fields, subjects, languages, lesson duration and tutor rate."});
+        }
+        const client = await pool.connect();
+        try {
+          await client.query("BEGIN");
+          const current = await client.query(
+            "SELECT review_status FROM marketplace_teacher_profiles WHERE staff_user_id=$1 FOR UPDATE", [staff.id]);
+          if (current.rows[0]?.review_status === "pending_review")
+            {await client.query("ROLLBACK"); return json(res,409,{error:"Your profile is awaiting review. Ask Heeva for changes."});}
+          const saved = await client.query(
+            "INSERT INTO marketplace_teacher_profiles(id,staff_user_id,display_name,headline,biography,subjects,languages,qualifications_summary,teaching_experience,proposed_rate_pence,lesson_duration_minutes,review_status,admin_feedback) " +
+            "VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'draft','') " +
+            "ON CONFLICT(staff_user_id) DO UPDATE SET display_name=EXCLUDED.display_name,headline=EXCLUDED.headline,biography=EXCLUDED.biography,subjects=EXCLUDED.subjects,languages=EXCLUDED.languages,qualifications_summary=EXCLUDED.qualifications_summary,teaching_experience=EXCLUDED.teaching_experience,proposed_rate_pence=EXCLUDED.proposed_rate_pence,lesson_duration_minutes=EXCLUDED.lesson_duration_minutes,review_status='draft',admin_feedback='',updated_at=NOW() " +
+            "RETURNING id", [newId(),staff.id,displayName,headline,biography,subjectList.map(x=>x.trim()),
+              languageList.map(x=>x.trim()),qualifications,experience,rate,duration]);
+          await auditStaffAction(client,staff.id,"marketplace.profile.saved","marketplace_teacher_profile",saved.rows[0].id);
+          await client.query("COMMIT");
+          return json(res,200,{ok:true});
+        } catch(error) {await client.query("ROLLBACK"); throw error;} finally {client.release();}
+      }
+    }
+
+    if (method === "POST" && path === "/api/staff/marketplace/submit" && staff.role === "teacher") {
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+        const changed = await client.query(
+          "UPDATE marketplace_teacher_profiles SET review_status='pending_review',submitted_at=NOW(),admin_feedback='',updated_at=NOW() " +
+          "WHERE staff_user_id=$1 AND review_status IN ('draft','changes_requested') AND headline<>'' AND biography<>'' " +
+          "AND cardinality(subjects)>0 AND cardinality(languages)>0 AND proposed_rate_pence IS NOT NULL RETURNING id", [staff.id]);
+        if (!changed.rowCount) {await client.query("ROLLBACK");return json(res,409,{error:"Save a complete draft with subject, language and tutor rate first."});}
+        await auditStaffAction(client,staff.id,"marketplace.profile.submitted","marketplace_teacher_profile",changed.rows[0].id);
+        await client.query("COMMIT");
+        return json(res,200,{ok:true});
+      } catch(error){await client.query("ROLLBACK");throw error;}finally{client.release();}
+    }
+
+    if (path === "/api/staff/marketplace/review" && staff.role === "admin" && method === "GET") {
+      const result = await pool.query(
+        "SELECT p.id,p.display_name,p.headline,p.biography,p.subjects,p.languages,p.qualifications_summary,p.teaching_experience,p.proposed_rate_pence,p.lesson_duration_minutes,p.review_status,p.admin_feedback,p.submitted_at,p.updated_at,u.email " +
+        "FROM marketplace_teacher_profiles p JOIN staff_users u ON u.id=p.staff_user_id ORDER BY p.updated_at DESC LIMIT 100"
+      );
+      return json(res,200,{profiles:result.rows});
+    }
+
+    const reviewMatch = path.match(/^\\/api\\/staff\\/marketplace\\/review\\/([0-9a-f-]{36})$/i);
+    if (reviewMatch && method === "POST" && staff.role === "admin") {
+      const body = await readJson(req);
+      const decision = String(body.decision || "");
+      const feedback = typeof body.feedback === "string" ? body.feedback.trim() : "";
+      if (!["approved","changes_requested"].includes(decision) || feedback.length>1200 ||
+          (decision==="changes_requested" && !feedback)) return json(res,400,{error:"Choose a valid review decision and provide feedback if requesting changes."});
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+        const changed = await client.query(
+          "UPDATE marketplace_teacher_profiles SET review_status=$2,admin_feedback=$3,reviewed_at=NOW(),reviewed_by=$4,updated_at=NOW() " +
+          "WHERE id=$1 AND review_status='pending_review' RETURNING id",
+          [reviewMatch[1],decision,feedback,staff.id]);
+        if (!changed.rowCount){await client.query("ROLLBACK");return json(res,409,{error:"Profile no longer awaiting review."});}
+        await auditStaffAction(client,staff.id,"marketplace.profile."+decision,"marketplace_teacher_profile",changed.rows[0].id);
+        await client.query("COMMIT");
+        return json(res,200,{ok:true});
+      }catch(error){await client.query("ROLLBACK");throw error;}finally{client.release();}
+    }
+
     if (method === "GET" && path === "/api/staff/teachers") {
       return json(res,200,{teachers:teacherCatalog});
     }

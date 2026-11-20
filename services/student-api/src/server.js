@@ -325,6 +325,76 @@ async function handle(req, res) {
     })) });
   }
 
+
+  // Teacher self-registration: never grants staff access without email + admin approval.
+  if (method === "POST" && path === "/api/teacher-applications/register") {
+    if (!emailVerificationConfigured()) return json(res,503,{error:"Teacher email verification is unavailable."});
+    const body = await readJson(req);
+    const email = normalizeEmail(body.email);
+    const displayName = String(body.displayName||"").trim();
+    const password = body.password;
+    if(!isValidEmail(email) || displayName.length<2 || displayName.length>120 ||
+       !validatePassword(password) || body.termsAccepted!==true ||
+       body.privacyAccepted!==true || body.adultConfirmed!==true) {
+      return json(res,400,{error:"Enter your name, email and strong password, and confirm terms, privacy and adult status."});
+    }
+    if(!rateLimit("teacher-register:"+email,3,60*60*1000))
+      return json(res,429,{error:"Too many registration attempts. Try again later."});
+    const hash=await hashPassword(password);
+    const code=createEmailVerificationCode();
+    const salt=createEmailVerificationSalt();
+    const digest=hashEmailVerificationCode(code,salt);
+    const staffId=newId();
+    const client=await pool.connect();
+    try{
+      await client.query("BEGIN");
+      await client.query(
+        "INSERT INTO staff_users(id,email,display_name,password_hash,role,status) VALUES($1,$2,$3,$4,'teacher','suspended')",
+        [staffId,email,displayName,hash]);
+      await client.query(
+        "INSERT INTO marketplace_teacher_applications(staff_user_id,terms_accepted_at,privacy_accepted_at,adult_confirmed_at,code_salt,code_hash,code_expires_at) " +
+        "VALUES($1,NOW(),NOW(),NOW(),$2,$3,NOW()+INTERVAL '10 minutes')",
+        [staffId,salt,digest]);
+      await client.query("COMMIT");
+    }catch(error){
+      await client.query("ROLLBACK");
+      if(error.code==="23505")return json(res,409,{error:"An account already exists for this email. Contact Heeva support if you need help."});
+      throw error;
+    }finally{client.release();}
+    const emailSent=await sendVerificationEmail(email,displayName,code);
+    return json(res,201,{ok:true,requiresEmailVerification:true,emailSent,
+      message:emailSent?"Check your email for a six-digit verification code.":"Registration saved, but email delivery failed. Contact Heeva support."});
+  }
+
+  if (method === "POST" && path === "/api/teacher-applications/verify-email") {
+    const body=await readJson(req);
+    const email=normalizeEmail(body.email);
+    const code=String(body.code||"").trim();
+    if(!isValidEmail(email)||!/^[0-9]{6}$/.test(code))return json(res,400,{error:"Enter a valid email and six-digit code."});
+    if(!rateLimit("teacher-verify:"+email,12,60*60*1000))return json(res,429,{error:"Too many attempts. Try again later."});
+    const client=await pool.connect();
+    try{
+      await client.query("BEGIN");
+      const found=await client.query(
+        "SELECT a.staff_user_id,a.code_salt,a.code_hash,a.code_expires_at,a.code_attempts " +
+        "FROM marketplace_teacher_applications a JOIN staff_users u ON u.id=a.staff_user_id " +
+        "WHERE u.email=$1 AND a.status='pending_email' FOR UPDATE OF a",[email]);
+      if(!found.rowCount){await client.query("ROLLBACK");return json(res,400,{error:"Code invalid or expired."});}
+      const row=found.rows[0];
+      if(row.code_attempts>=5 || new Date(row.code_expires_at).getTime()<=Date.now()){
+        await client.query("ROLLBACK");return json(res,400,{error:"Code expired or maximum attempts reached. Contact Heeva support."});
+      }
+      if(!verifyEmailVerificationCode(code,row.code_salt,row.code_hash)){
+        await client.query("UPDATE marketplace_teacher_applications SET code_attempts=code_attempts+1 WHERE staff_user_id=$1",[row.staff_user_id]);
+        await client.query("COMMIT");
+        return json(res,400,{error:"Code incorrect."});
+      }
+      await client.query("UPDATE marketplace_teacher_applications SET status='pending_admin',email_verified_at=NOW(),code_salt='',code_hash='' WHERE staff_user_id=$1",[row.staff_user_id]);
+      await client.query("COMMIT");
+      return json(res,200,{ok:true,message:"Email verified. Your application is awaiting Heeva approval."});
+    }catch(error){await client.query("ROLLBACK");throw error;}finally{client.release();}
+  }
+
   if (method === "POST" && path === "/api/auth/register") {
     if (!emailVerificationConfigured()) {
       return json(res, 503, { error: "Email verification is not configured yet. Please try again later." });
@@ -937,6 +1007,38 @@ async function handle(req, res) {
         });
         await client.query("COMMIT");
         return json(res,200,{ok:true,approvedCustomerPricePence:retail});
+      }catch(error){await client.query("ROLLBACK");throw error;}finally{client.release();}
+    }
+
+
+    if (method === "GET" && path === "/api/staff/marketplace/applications" && staff.role === "admin") {
+      const applications=await pool.query(
+        "SELECT a.staff_user_id AS id,a.status,a.email_verified_at,a.created_at,a.reviewer_feedback," +
+        "u.email,u.display_name FROM marketplace_teacher_applications a " +
+        "JOIN staff_users u ON u.id=a.staff_user_id ORDER BY a.created_at DESC LIMIT 100");
+      return json(res,200,{applications:applications.rows});
+    }
+    const teacherApplicationDecision=path.match(/^\/api\/staff\/marketplace\/applications\/([0-9a-f-]{36})\/decision$/i);
+    if(method==="POST" && teacherApplicationDecision && staff.role==="admin"){
+      const body=await readJson(req);
+      const decision=String(body.decision||"");
+      const feedback=typeof body.feedback==="string"?body.feedback.trim():"";
+      if(!["approved","rejected"].includes(decision)||feedback.length>1200||
+        (decision==="rejected"&&!feedback))return json(res,400,{error:"Choose approve or reject, with a reason for rejection."});
+      const client=await pool.connect();
+      try{
+        await client.query("BEGIN");
+        const changed=await client.query(
+          "UPDATE marketplace_teacher_applications SET status=$2,reviewed_by=$3,reviewed_at=NOW(),reviewer_feedback=$4 " +
+          "WHERE staff_user_id=$1 AND status='pending_admin' RETURNING staff_user_id",
+          [teacherApplicationDecision[1],decision,staff.id,feedback]);
+        if(!changed.rowCount){await client.query("ROLLBACK");return json(res,409,{error:"Application is not awaiting review."});}
+        if(decision==="approved")await client.query(
+          "UPDATE staff_users SET status='active',updated_at=NOW() WHERE id=$1 AND role='teacher' AND status='suspended'",
+          [teacherApplicationDecision[1]]);
+        await auditStaffAction(client,staff.id,"marketplace.application."+decision,"staff_user",teacherApplicationDecision[1]);
+        await client.query("COMMIT");
+        return json(res,200,{ok:true});
       }catch(error){await client.query("ROLLBACK");throw error;}finally{client.release();}
     }
 

@@ -15,8 +15,13 @@ const { Pool } = pg;
 const here = dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 3100);
 const SESSION_DAYS = Math.min(Math.max(Number(process.env.SESSION_TTL_DAYS || 30), 1), 30);
-const COOKIE_NAME = "__Host-heeva_preview_session";
-const STAFF_COOKIE_NAME = "__Host-heeva_staff_session";
+const COOKIE_NAME = process.env.HEEVA_STUDENT_COOKIE_NAME || "__Host-heeva_preview_session";
+const STAFF_COOKIE_NAME = process.env.HEEVA_STAFF_COOKIE_NAME || "__Host-heeva_staff_session";
+const COOKIE_PATTERN = /^__Host-[A-Za-z0-9_-]{4,80}$/;
+if (!COOKIE_PATTERN.test(COOKIE_NAME) || !COOKIE_PATTERN.test(STAFF_COOKIE_NAME) ||
+    COOKIE_NAME === STAFF_COOKIE_NAME) {
+  throw new Error("Invalid or overlapping Heeva session cookie names");
+}
 const STAFF_SESSION_HOURS = 8;
 const APP_ORIGINS = new Set((process.env.APP_ORIGINS || "https://staging.heevacourses.com")
   .split(",").map((item) => item.trim()).filter(Boolean));

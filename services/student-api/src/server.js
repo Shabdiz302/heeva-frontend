@@ -879,7 +879,7 @@ async function handle(req, res) {
         }catch(error){await client.query("ROLLBACK");throw error;}finally{client.release();}
       }
     }
-    const offerSubmitMatch = path.match(/^\/api\/staff\/marketplace\/offers\\/([0-9a-f-]{36})\\/submit$/i);
+    const offerSubmitMatch = path.match(/^\/api\/staff\/marketplace\/offers\/([0-9a-f-]{36})\/submit$/i);
     if (method === "POST" && offerSubmitMatch && staff.role === "teacher") {
       const client = await pool.connect();
       try {
@@ -903,7 +903,7 @@ async function handle(req, res) {
         "ORDER BY o.updated_at DESC LIMIT 100");
       return json(res,200,{offers:rows.rows});
     }
-    const offerReviewMatch = path.match(/^\/api\/staff\/marketplace\/offer-review\\/([0-9a-f-]{36})$/i);
+    const offerReviewMatch = path.match(/^\/api\/staff\/marketplace\/offer-review\/([0-9a-f-]{36})$/i);
     if (method === "POST" && offerReviewMatch && staff.role === "admin") {
       const body = await readJson(req);
       const decision = String(body.decision || "");

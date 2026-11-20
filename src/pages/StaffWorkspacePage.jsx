@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useRouter } from '../router.jsx';
+import { Link, useRouter } from '../router.jsx';
 import { PageIntro, Eyebrow } from '../components/ContentBlocks.jsx';
 import './staff-workspace.css';
 import { TeacherMarketplacePanel, MarketplaceReviewPanel, TeacherApplicationsPanel } from './TeacherMarketplacePanel.jsx';
@@ -251,7 +251,7 @@ export default function StaffWorkspacePage() {
           <div className="staff-card staff-login-card">
             <Eyebrow>Restricted access</Eyebrow><h3>Staff sign in</h3>
             <StaffNotice type="warning">Private staff workspace. Approved teachers and administrators can sign in here; customers cannot.</StaffNotice>
-            <p className="staff-small-note">Want to teach with Heeva? <a href="/student-preview-next/teacher/apply">Apply as a teacher</a>.</p>
+            <p className="staff-small-note">Want to teach with Heeva? <Link to="/teacher/apply">Apply as a teacher</Link>.</p>
             <StaffNotice type="error">{error}</StaffNotice>
             <form className="staff-form" onSubmit={submitLogin}>
               <StaffField label="Staff email" type="email" autoComplete="username" value={loginForm.email} onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })} required />

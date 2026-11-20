@@ -266,7 +266,7 @@ async function readBinary(req, maxBytes) {
   let size = 0;
   for await (const chunk of req) {
     size += chunk.length;
-    if (size > maxBytes) throw Object.assign(new Error("File exceeds the 20 MB upload limit."),{status:413});
+    if (size > maxBytes) throw Object.assign(new Error("File exceeds the upload size limit."),{status:413});
     chunks.push(chunk);
   }
   if (!size) throw Object.assign(new Error("The uploaded file is empty."),{status:400});

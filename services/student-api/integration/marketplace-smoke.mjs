@@ -19,7 +19,7 @@ const pool = new Pool({ connectionString: databaseUrl });
 const privateDir = await mkdtemp(join(tmpdir(), "heeva-marketplace-private-"));
 const emailOut = join(privateDir, 'verification-email.json');
 const scannerPath = join(privateDir, 'mock-clamscan');
-await writeFile(scannerPath, '#!/bin/sh\\nexit 0\\n', {mode:0o700});
+await writeFile(scannerPath, '#!/bin/sh\nexit 0\n', {mode:0o700});
 delete process.env.HEEVA_CLAMSCAN_PATH;
 assert.equal((await scanTeacherPdf('/nonexistent/path')).reason,'unavailable');
 const server = spawn(process.execPath, ["src/server.js"], {
@@ -126,7 +126,7 @@ try {
   assert.equal(photo.response.status,201,JSON.stringify(photo.data));
   assert.equal((await call("/api/staff/marketplace/portrait","GET",tutorOne)).response.status,200);
   assert.equal((await call("/api/staff/marketplace/portrait","GET",tutorTwo)).response.status,404);
-  const fakePdf = Buffer.from('%PDF-1.4\\n1 0 obj\\n<< >>\\nendobj\\n%%EOF\\n');
+  const fakePdf = Buffer.from('%PDF-1.4\n1 0 obj\n<< >>\nendobj\n%%EOF\n');
   const cv=await call("/api/staff/marketplace/cv","POST",tutorOne,fakePdf,"application/pdf");
   assert.equal(cv.response.status,201,JSON.stringify(cv.data));
   const ownCv=await call("/api/staff/marketplace/cv","GET",tutorOne);

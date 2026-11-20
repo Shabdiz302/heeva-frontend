@@ -837,6 +837,109 @@ async function handle(req, res) {
       }catch(error){await client.query("ROLLBACK");throw error;}finally{client.release();}
     }
 
+
+    // Course offers remain private until a separate public directory release.
+    if (path === "/api/staff/marketplace/offers" && staff.role === "teacher") {
+      if (method === "GET") {
+        const rows = await pool.query(
+          "SELECT id,course_slug,offer_title,offer_description,lesson_duration_minutes,proposed_tutor_rate_pence," +
+          "review_status,admin_feedback,approved_tutor_rate_pence,approved_customer_price_pence,approved_margin_basis_points,updated_at " +
+          "FROM marketplace_teacher_offers WHERE staff_user_id=$1 ORDER BY updated_at DESC LIMIT 100",[staff.id]);
+        return json(res,200,{offers:rows.rows});
+      }
+      if (method === "POST") {
+        const body = await readJson(req);
+        const slug = String(body.courseSlug || "").trim();
+        const title = String(body.offerTitle || "").trim();
+        const description = String(body.offerDescription || "").trim();
+        const duration = Number(body.lessonDurationMinutes);
+        const rate = Number(body.proposedTutorRatePence);
+        if (!coursesBySlug.has(slug) || title.length<3 || title.length>180 ||
+            description.length>2500 || ![30,45,60,90].includes(duration) ||
+            !Number.isInteger(rate) || rate<100 || rate>100000) {
+          return json(res,400,{error:"Choose a listed course, title, lesson duration and valid tutor rate."});
+        }
+        const client = await pool.connect();
+        try {
+          await client.query("BEGIN");
+          const profile = await client.query(
+            "SELECT id FROM marketplace_teacher_profiles WHERE staff_user_id=$1 AND review_status='approved'",[staff.id]);
+          if (!profile.rowCount) {
+            await client.query("ROLLBACK");
+            return json(res,409,{error:"Your teaching profile must be approved by Heeva before proposing courses."});
+          }
+          const id = newId();
+          await client.query(
+            "INSERT INTO marketplace_teacher_offers(id,staff_user_id,profile_id,course_slug,offer_title,offer_description,lesson_duration_minutes,proposed_tutor_rate_pence) " +
+            "VALUES($1,$2,$3,$4,$5,$6,$7,$8)",
+            [id,staff.id,profile.rows[0].id,slug,title,description,duration,rate]);
+          await auditStaffAction(client,staff.id,"marketplace.offer.created","marketplace_teacher_offer",id,{courseSlug:slug});
+          await client.query("COMMIT");
+          return json(res,201,{ok:true,offerId:id});
+        }catch(error){await client.query("ROLLBACK");throw error;}finally{client.release();}
+      }
+    }
+    const offerSubmitMatch = path.match(/^\/api\/staff\/marketplace\/offers\\/([0-9a-f-]{36})\\/submit$/i);
+    if (method === "POST" && offerSubmitMatch && staff.role === "teacher") {
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+        const changed = await client.query(
+          "UPDATE marketplace_teacher_offers SET review_status='pending_review',submitted_at=NOW(),admin_feedback='',updated_at=NOW() " +
+          "WHERE id=$1 AND staff_user_id=$2 AND review_status IN ('draft','changes_requested') RETURNING id",
+          [offerSubmitMatch[1],staff.id]);
+        if(!changed.rowCount){await client.query("ROLLBACK");return json(res,409,{error:"Offer not available for submission."});}
+        await auditStaffAction(client,staff.id,"marketplace.offer.submitted","marketplace_teacher_offer",changed.rows[0].id);
+        await client.query("COMMIT");
+        return json(res,200,{ok:true});
+      }catch(error){await client.query("ROLLBACK");throw error;}finally{client.release();}
+    }
+    if (method === "GET" && path === "/api/staff/marketplace/offer-review" && staff.role === "admin") {
+      const rows = await pool.query(
+        "SELECT o.id,o.course_slug,o.offer_title,o.offer_description,o.lesson_duration_minutes,o.proposed_tutor_rate_pence,o.review_status," +
+        "o.admin_feedback,o.approved_tutor_rate_pence,o.approved_customer_price_pence,o.approved_margin_basis_points,o.submitted_at," +
+        "p.display_name AS tutor_name,u.email FROM marketplace_teacher_offers o " +
+        "JOIN marketplace_teacher_profiles p ON p.id=o.profile_id JOIN staff_users u ON u.id=o.staff_user_id " +
+        "ORDER BY o.updated_at DESC LIMIT 100");
+      return json(res,200,{offers:rows.rows});
+    }
+    const offerReviewMatch = path.match(/^\/api\/staff\/marketplace\/offer-review\\/([0-9a-f-]{36})$/i);
+    if (method === "POST" && offerReviewMatch && staff.role === "admin") {
+      const body = await readJson(req);
+      const decision = String(body.decision || "");
+      const feedback = typeof body.feedback === "string" ? body.feedback.trim() : "";
+      const marginBps = Number(body.marginBasisPoints);
+      if (!["approved","changes_requested"].includes(decision) || feedback.length>1200 ||
+          (decision==="changes_requested" && !feedback) ||
+          (decision==="approved" && (!Number.isInteger(marginBps) || marginBps<0 || marginBps>5000))) {
+        return json(res,400,{error:"Choose a valid offer decision and margin from 0% to 50%."});
+      }
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
+        const current = await client.query(
+          "SELECT id,proposed_tutor_rate_pence FROM marketplace_teacher_offers WHERE id=$1 AND review_status='pending_review' FOR UPDATE",
+          [offerReviewMatch[1]]);
+        if(!current.rowCount){await client.query("ROLLBACK");return json(res,409,{error:"Offer is no longer awaiting review."});}
+        const tutorRate = current.rows[0].proposed_tutor_rate_pence;
+        // Margin (not markup) on the final selling price. Round UP to whole pence.
+        const retail = decision === "approved" ? Math.ceil(tutorRate * 10000 / (10000-marginBps)) : null;
+        if (retail !== null && retail>200000) {await client.query("ROLLBACK");return json(res,400,{error:"Approved selling price exceeds the permitted limit."});}
+        await client.query(
+          "UPDATE marketplace_teacher_offers SET review_status=$2,admin_feedback=$3," +
+          "approved_tutor_rate_pence=$4,approved_customer_price_pence=$5,approved_margin_basis_points=$6," +
+          "reviewed_by=$7,reviewed_at=NOW(),updated_at=NOW() WHERE id=$1",
+          [offerReviewMatch[1],decision,feedback,
+            decision==="approved"?tutorRate:null,retail,decision==="approved"?marginBps:null,staff.id]);
+        await auditStaffAction(client,staff.id,"marketplace.offer."+decision,"marketplace_teacher_offer",offerReviewMatch[1],{
+          approvedTutorRatePence:decision==="approved"?tutorRate:null,
+          approvedCustomerPricePence:retail,marginBasisPoints:decision==="approved"?marginBps:null
+        });
+        await client.query("COMMIT");
+        return json(res,200,{ok:true,approvedCustomerPricePence:retail});
+      }catch(error){await client.query("ROLLBACK");throw error;}finally{client.release();}
+    }
+
     if (method === "GET" && path === "/api/staff/teachers") {
       return json(res,200,{teachers:teacherCatalog});
     }

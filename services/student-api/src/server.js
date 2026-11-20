@@ -677,6 +677,72 @@ async function handle(req, res) {
       return json(res,200,{staff:{id:staff.id,email:staff.email,displayName:staff.display_name,role:staff.role,teacherSlug:staff.teacher_slug}});
     }
 
+
+    // Portrait uploads are quarantined in private storage; never served publicly.
+    const ownPortrait = path === "/api/staff/marketplace/portrait" && staff.role === "teacher";
+    const reviewPortraitMatch = staff.role === "admin"
+      ? path.match(/^\/api\/staff\/marketplace\/review\/([0-9a-f-]{36})\/portrait$/i)
+      : null;
+    if (method === "GET" && (ownPortrait || reviewPortraitMatch)) {
+      const result = reviewPortraitMatch
+        ? await pool.query("SELECT photo_storage_key,photo_mime_type,photo_size_bytes FROM marketplace_teacher_profiles WHERE id=$1", [reviewPortraitMatch[1]])
+        : await pool.query("SELECT photo_storage_key,photo_mime_type,photo_size_bytes FROM marketplace_teacher_profiles WHERE staff_user_id=$1", [staff.id]);
+      const portrait = result.rows[0];
+      if (!portrait?.photo_storage_key) return json(res,404,{error:"No portrait uploaded."});
+      const storageKey = String(portrait.photo_storage_key);
+      if (!/^[0-9a-f-]{36}\\.(jpg|png|webp)$/.test(storageKey)) return json(res,409,{error:"Invalid portrait storage reference."});
+      const storagePath = resolve(PRIVATE_RESOURCES_DIR,"teacher-portraits",storageKey);
+      const file = await readFile(storagePath).catch((error)=>{
+        if (error.code === "ENOENT") return null;
+        throw error;
+      });
+      if (!file || file.length !== portrait.photo_size_bytes) return json(res,404,{error:"Portrait unavailable."});
+      res.writeHead(200, {
+        "Content-Type":portrait.photo_mime_type,"Content-Length":file.length,
+        "Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff",
+        "Content-Security-Policy":"default-src 'none'; sandbox",
+        "Referrer-Policy":"no-referrer","X-Frame-Options":"DENY"
+      });
+      return res.end(file);
+    }
+    if (method === "POST" && ownPortrait) {
+      const mime = String(req.headers["content-type"] || "").toLowerCase().split(";")[0].trim();
+      const extensions = {"image/jpeg":".jpg","image/png":".png","image/webp":".webp"};
+      if (!extensions[mime]) return json(res,415,{error:"Upload a JPEG, PNG or WebP portrait."});
+      const bytes = await readBinary(req,5*1024*1024);
+      const signatureOk = mime === "image/jpeg"
+        ? bytes.length>3 && bytes[0]===0xff && bytes[1]===0xd8 && bytes[2]===0xff
+        : mime === "image/png"
+          ? bytes.length>24 && bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]))
+          : bytes.length>16 && bytes.toString("ascii",0,4)==="RIFF" && bytes.toString("ascii",8,12)==="WEBP";
+      if (!signatureOk) return json(res,415,{error:"The portrait content does not match the image type."});
+      const client = await pool.connect();
+      let newPath = null;
+      try {
+        await client.query("BEGIN");
+        const current = await client.query(
+          "SELECT id,photo_storage_key,review_status FROM marketplace_teacher_profiles WHERE staff_user_id=$1 FOR UPDATE",[staff.id]);
+        if (!current.rowCount) {await client.query("ROLLBACK");return json(res,409,{error:"Save your teacher profile draft before uploading a portrait."});}
+        if (current.rows[0].review_status === "pending_review") {await client.query("ROLLBACK");return json(res,409,{error:"Your profile is currently under review."});}
+        const key = newId()+extensions[mime];
+        const dir = resolve(PRIVATE_RESOURCES_DIR,"teacher-portraits");
+        await mkdir(dir,{recursive:true,mode:0o700});
+        newPath = resolve(dir,key);
+        await writeFile(newPath,bytes,{flag:"wx",mode:0o600});
+        await client.query(
+          "UPDATE marketplace_teacher_profiles SET photo_storage_key=$2,photo_mime_type=$3,photo_size_bytes=$4,photo_uploaded_at=NOW(),review_status='draft',admin_feedback='',updated_at=NOW() WHERE staff_user_id=$1",
+          [staff.id,key,mime,bytes.length]);
+        await auditStaffAction(client,staff.id,"marketplace.portrait.uploaded","marketplace_teacher_profile",current.rows[0].id,{mime,size:bytes.length});
+        await client.query("COMMIT");
+        // Old files may be retained until a secure orphan-cleanup job is added.
+        return json(res,201,{ok:true,message:"Portrait saved privately for review."});
+      }catch(error){
+        await client.query("ROLLBACK").catch(()=>{});
+        if (newPath) await unlink(newPath).catch(()=>{});
+        throw error;
+      }finally{client.release();}
+    }
+
     // Marketplace teacher drafts are private and owned by the authenticated teacher.
     // Approval here is internal only: no public directory publishing or payment processing.
     if (path === "/api/staff/marketplace/profile" && staff.role === "teacher") {

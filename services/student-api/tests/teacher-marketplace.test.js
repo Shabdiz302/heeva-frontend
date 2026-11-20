@@ -63,7 +63,7 @@ test("course offers are teacher-owned and approved retail rates are immutable sn
 });
 test("teacher course proposals and pricing approvals are role-scoped",()=>{
   assert.match(server,/path === "\/api\/staff\/marketplace\/offers" && staff.role === "teacher"/);
-  assert.match(server,/profile WHERE staff_user_id=\$1 AND review_status='approved'/);
+  assert.match(server,/marketplace_teacher_profiles WHERE staff_user_id=\$1 AND review_status='approved'/);
   assert.match(server,/offerSubmitMatch && staff.role === "teacher"/);
   assert.match(server,/offerReviewMatch && staff.role === "admin"/);
   assert.match(server,/marketplace.offer.approved|marketplace.offer\."\+decision/);

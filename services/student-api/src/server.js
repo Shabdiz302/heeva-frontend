@@ -852,7 +852,7 @@ async function handle(req, res) {
     // No direct public endpoints exist for these documents.
     const ownCv = path === "/api/staff/marketplace/cv" && staff.role === "teacher";
     const reviewCvMatch = staff.role === "admin"
-      ? path.match(/^\\/api\\/staff\\/marketplace\\/review\\/([0-9a-f-]{36})\\/cv$/i)
+      ? path.match(/^\/api\/staff\/marketplace\/review\/([0-9a-f-]{36})\/cv$/i)
       : null;
     if (method === "GET" && (ownCv || reviewCvMatch)) {
       const found = reviewCvMatch
@@ -861,12 +861,12 @@ async function handle(req, res) {
       const doc = found.rows[0];
       if (!doc?.cv_storage_key) return json(res,404,{error:"No CV uploaded."});
       const key=String(doc.cv_storage_key);
-      if (!/^[0-9a-f-]{36}\\.pdf$/.test(key)) return json(res,409,{error:"Invalid CV storage key."});
+      if (!/^[0-9a-f-]{36}\.pdf$/.test(key)) return json(res,409,{error:"Invalid CV storage key."});
       const file = await readFile(resolve(PRIVATE_RESOURCES_DIR,"teacher-cvs",key)).catch(e=>{
         if(e.code==="ENOENT")return null;throw e;
       });
       if (!file || file.length !== doc.cv_size_bytes) return json(res,404,{error:"CV unavailable."});
-      const filename = String(doc.cv_original_filename||"Teacher-CV.pdf").replace(/[\\r\\n"\\\\/]/g,"_");
+      const filename = String(doc.cv_original_filename||"Teacher-CV.pdf").replace(/[\r\n"\\/]/g,"_");
       res.writeHead(200,{
         "Content-Type":"application/pdf","Content-Length":file.length,
         "Content-Disposition":'attachment; filename="Teacher-CV.pdf"; filename*=UTF-8\'\''+encodeURIComponent(filename),
@@ -886,7 +886,7 @@ async function handle(req, res) {
       try{filename=decodeURIComponent(String(req.headers["x-file-name"]||filename));}
       catch{return json(res,400,{error:"Invalid filename."});}
       filename=filename.trim();
-      if(!filename || filename.length>160 || !filename.toLowerCase().endsWith(".pdf") || /[\\r\\n\\\\/]/.test(filename))
+      if(!filename || filename.length>160 || !filename.toLowerCase().endsWith(".pdf") || /[\r\n\\/]/.test(filename))
         return json(res,400,{error:"Choose a PDF filename of 160 characters or less."});
 
       const client=await pool.connect();

@@ -16,6 +16,10 @@ const readProfile = (p) => p ? ({
 export function TeacherMarketplacePanel({ api, staff }) {
   const [form,setForm] = useState({...empty,displayName:staff.displayName || ''});
   const [status,setStatus] = useState('draft');
+  const [hasProfile,setHasProfile] = useState(false);
+  const [hasPortrait,setHasPortrait] = useState(false);
+  const [portraitFile,setPortraitFile] = useState(null);
+  const [portraitVersion,setPortraitVersion] = useState(0);
   const [feedback,setFeedback] = useState('');
   const [loading,setLoading] = useState(true);
   const [busy,setBusy] = useState(false);
@@ -25,6 +29,8 @@ export function TeacherMarketplacePanel({ api, staff }) {
     const {profile} = await api('/api/staff/marketplace/profile');
     setForm(profile ? readProfile(profile) : {...empty,displayName:staff.displayName || ''});
     setStatus(profile?.review_status || 'draft');
+    setHasProfile(Boolean(profile));
+    setHasPortrait(Boolean(profile?.has_portrait));
     setFeedback(profile?.admin_feedback || '');
   }
   useEffect(() => {
@@ -33,6 +39,8 @@ export function TeacherMarketplacePanel({ api, staff }) {
       if(!active)return;
       setForm(profile ? readProfile(profile) : {...empty,displayName:staff.displayName || ''});
       setStatus(profile?.review_status || 'draft');
+    setHasProfile(Boolean(profile));
+    setHasPortrait(Boolean(profile?.has_portrait));
       setFeedback(profile?.admin_feedback || '');
     }).catch(err=>{if(active)setError(err.message)}).finally(()=>{if(active)setLoading(false)});
     return ()=>{active=false};
@@ -58,6 +66,25 @@ export function TeacherMarketplacePanel({ api, staff }) {
     try{await api('/api/staff/marketplace/submit',{method:'POST',body:'{}'});await reload();setNotice('Profile submitted for Heeva administrator review.');}
     catch(err){setError(err.message)}finally{setBusy(false)}
   }
+  async function uploadPortrait() {
+    if(!portraitFile || !hasProfile) return;
+    if(!['image/jpeg','image/png','image/webp'].includes(portraitFile.type) || portraitFile.size > 5*1024*1024) {
+      setError('Use a JPEG, PNG or WebP image smaller than 5 MB.'); return;
+    }
+    setBusy(true);setError('');setNotice('');
+    try{
+      const apiBase=import.meta.env.VITE_STUDENT_API_BASE || '/student-preview-api';
+      const response=await fetch(apiBase+'/api/staff/marketplace/portrait',{
+        method:'POST', credentials:'same-origin',
+        headers:{'Content-Type':portraitFile.type},body:portraitFile
+      });
+      const result=await response.json().catch(()=>({}));
+      if(!response.ok) throw Error(result.error||'Portrait upload failed.');
+      setPortraitFile(null);setPortraitVersion(x=>x+1);
+      await reload();setNotice('Your portrait was saved privately. It is not published.');
+    }catch(err){setError(err.message)}finally{setBusy(false)}
+  }
+  const portraitUrl=(import.meta.env.VITE_STUDENT_API_BASE || '/student-preview-api')+'/api/staff/marketplace/portrait?v='+portraitVersion;
   if(loading)return <section className="staff-card">Loading your marketplace profile…</section>;
   return <section className="staff-card teacher-marketplace" aria-label="Teacher marketplace profile">
     <header className="marketplace-header"><div>
@@ -89,8 +116,19 @@ export function TeacherMarketplacePanel({ api, staff }) {
       </div>
       <p className="marketplace-hint">This is the amount you propose to earn, not the final customer price. Heeva determines its commission and must approve each public offer.</p>
       <div className="marketplace-disabled-media">
-        <strong>Profile photo, CV and introductory video</strong>
-        <p>Secure uploads are being built with private storage, file checks and moderation. Uploading is not enabled in this release. Do not send sensitive documents through this form.</p>
+        <strong>Profile portrait (private staging upload)</strong>
+        {hasPortrait&&<img className="marketplace-portrait" src={portraitUrl} alt="Your uploaded teacher portrait" />}
+        <label className="marketplace-upload-label">JPEG, PNG or WebP (up to 5 MB)
+          <input type="file" accept="image/jpeg,image/png,image/webp" disabled={!hasProfile || status==='pending_review' || busy}
+            onChange={e=>setPortraitFile(e.target.files?.[0]||null)}/>
+        </label>
+        <button type="button" className="button button-outline" disabled={!portraitFile||!hasProfile||status==='pending_review'||busy} onClick={uploadPortrait}>Upload private portrait</button>
+        {!hasProfile&&<p>Save your profile draft before uploading a portrait.</p>}
+        <p>Your photo stays private until the full verification, moderation and publishing process is available.</p>
+      </div>
+      <div className="marketplace-disabled-media">
+        <strong>CV and introductory video — not yet available</strong>
+        <p>These require additional private document controls and video processing. Please do not upload sensitive documents elsewhere.</p>
       </div>
       <div className="marketplace-actions">
         <button type="submit" className="button" disabled={busy||status==='pending_review'}>{busy?'Saving…':'Save private draft'}</button>
@@ -129,6 +167,7 @@ export function MarketplaceReviewPanel({api}) {
     {profiles.map(p=><article key={p.id} className="marketplace-review-item">
       <div className="marketplace-review-heading"><div><h4>{p.display_name}</h4><p>{p.email} · {p.headline || 'No headline'}</p></div><span className="marketplace-status">{p.review_status.replaceAll('_',' ')}</span></div>
       <p>{p.biography || 'No biography yet.'}</p>
+      {p.has_portrait && <img className="marketplace-portrait" src={(import.meta.env.VITE_STUDENT_API_BASE || '/student-preview-api')+'/api/staff/marketplace/review/'+p.id+'/portrait'} alt={'Uploaded private portrait of '+p.display_name} />}
       <div className="marketplace-review-meta"><span>Subjects: {(p.subjects||[]).join(', ')||'—'}</span><span>Languages: {(p.languages||[]).join(', ')||'—'}</span>
       <span>Teacher rate: {p.proposed_rate_pence==null?'Not set':'£'+(p.proposed_rate_pence/100).toFixed(2)} / {p.lesson_duration_minutes} min</span></div>
       <details><summary>Qualifications and experience</summary><p>{p.qualifications_summary||'No qualifications summary.'}</p><p>{p.teaching_experience||'No experience summary.'}</p></details>

@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 
 const migration = await readFile(new URL("../migrations/006_teacher_marketplace_profiles.sql", import.meta.url), "utf8");
 const migrator = await readFile(new URL("../src/migrate.js", import.meta.url), "utf8");
+const offersMigration = await readFile(new URL("../migrations/007_teacher_marketplace_offers.sql", import.meta.url), "utf8");
 const server = await readFile(new URL("../src/server.js", import.meta.url), "utf8");
 
 test("marketplace profile migration is registered and tied to staff account", () => {
@@ -50,4 +51,21 @@ test("portraits are private, size-limited and only available through staff authe
   assert.match(server, /"image\/jpeg":".jpg","image\/png":".png","image\/webp":".webp"/);
   assert.match(server, /"Cache-Control":"private, no-store"/);
   assert.match(server, /marketplace.portrait.uploaded/);
+});
+
+test("course offers are teacher-owned and approved retail rates are immutable snapshots",()=>{
+  assert.match(migrator,/007_teacher_marketplace_offers/);
+  assert.match(offersMigration,/staff_user_id UUID NOT NULL REFERENCES staff_users/);
+  assert.match(offersMigration,/approved_tutor_rate_pence INTEGER/);
+  assert.match(offersMigration,/approved_customer_price_pence INTEGER/);
+  assert.match(offersMigration,/approved_margin_basis_points INTEGER/);
+  assert.match(offersMigration,/review_status='approved'/);
+});
+test("teacher course proposals and pricing approvals are role-scoped",()=>{
+  assert.match(server,/path === "\/api\/staff\/marketplace\/offers" && staff.role === "teacher"/);
+  assert.match(server,/profile WHERE staff_user_id=\$1 AND review_status='approved'/);
+  assert.match(server,/offerSubmitMatch && staff.role === "teacher"/);
+  assert.match(server,/offerReviewMatch && staff.role === "admin"/);
+  assert.match(server,/marketplace.offer.approved|marketplace.offer\."\+decision/);
+  assert.match(server,/Math\.ceil\(tutorRate \* 10000 \/ \(10000-marginBps\)\)/);
 });

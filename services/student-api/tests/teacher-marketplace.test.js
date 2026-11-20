@@ -69,3 +69,14 @@ test("teacher course proposals and pricing approvals are role-scoped",()=>{
   assert.match(server,/marketplace.offer.approved|marketplace.offer\."\+decision/);
   assert.match(server,/Math\.ceil\(tutorRate \* 10000 \/ \(10000-marginBps\)\)/);
 });
+
+test("teacher self-registration stays suspended before email and admin review",()=>{
+  assert.match(migrator,/008_teacher_applications/);
+  assert.match(server,/path === "\/api\/teacher-applications\/register"/);
+  assert.match(server,/role,status\) VALUES\(\$1,\$2,\$3,\$4,'teacher','suspended'\)/);
+  assert.match(server,/path === "\/api\/teacher-applications\/verify-email"/);
+  assert.match(server,/verifyEmailVerificationCode\(code,row\.code_salt,row\.code_hash\)/);
+  assert.match(server,/status='pending_admin',email_verified_at=NOW\(\)/);
+  assert.match(server,/teacherApplicationDecision && staff.role==="admin"/);
+  assert.match(server,/UPDATE staff_users SET status='active',updated_at=NOW\(\)/);
+});

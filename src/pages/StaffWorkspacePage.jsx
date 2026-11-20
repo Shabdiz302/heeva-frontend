@@ -250,7 +250,8 @@ export default function StaffWorkspacePage() {
           </div>
           <div className="staff-card staff-login-card">
             <Eyebrow>Restricted access</Eyebrow><h3>Staff sign in</h3>
-            <StaffNotice type="warning">Private staff workspace. Approved teachers and administrators can sign in here; customers cannot.</StaffNotice>\n            <p className="staff-small-note">Want to teach with Heeva? <a href="/student-preview-next/teacher/apply">Apply as a teacher</a>.</p>
+            <StaffNotice type="warning">Private staff workspace. Approved teachers and administrators can sign in here; customers cannot.</StaffNotice>
+            <p className="staff-small-note">Want to teach with Heeva? <a href="/student-preview-next/teacher/apply">Apply as a teacher</a>.</p>
             <StaffNotice type="error">{error}</StaffNotice>
             <form className="staff-form" onSubmit={submitLogin}>
               <StaffField label="Staff email" type="email" autoComplete="username" value={loginForm.email} onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })} required />

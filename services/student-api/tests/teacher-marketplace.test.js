@@ -80,3 +80,13 @@ test("teacher self-registration stays suspended before email and admin review",(
   assert.match(server,/teacherApplicationDecision && staff.role==="admin"/);
   assert.match(server,/UPDATE staff_users SET status='active',updated_at=NOW\(\)/);
 });
+
+test("CV upload fails closed and is restricted to authenticated teacher and admin",()=>{
+  assert.match(migrator,/009_teacher_cv_documents/);
+  assert.match(server,/const ownCv = path === "\/api\/staff\/marketplace\/cv" && staff.role === "teacher"/);
+  assert.match(server,/reviewCvMatch = staff.role === "admin"/);
+  assert.match(server,/scanTeacherPdf\(storagePath\)/);
+  assert.match(server,/scan.reason==="infected"\?415:503/);
+  assert.match(server,/marketplace.cv.uploaded/);
+  assert.match(server,/Content-Disposition/);
+});

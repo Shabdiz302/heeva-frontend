@@ -38,6 +38,7 @@ export default function StaffWorkspacePage() {
   const [staff, setStaff] = useState(null);
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [busy, setBusy] = useState(false);
+  const [activeView, setActiveView] = useState('overview');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [counts, setCounts] = useState({});
@@ -276,6 +277,13 @@ export default function StaffWorkspacePage() {
         </div>
         <StaffNotice type="error">{error}</StaffNotice>
         <StaffNotice type="success">{notice}</StaffNotice>
+        <nav className="staff-view-nav" aria-label="Staff workspace sections">
+          <button type="button" className={activeView === 'overview' ? 'is-active' : ''} aria-current={activeView === 'overview' ? 'page' : undefined} onClick={() => setActiveView('overview')}><span aria-hidden="true">◫</span> Overview</button>
+          {staff.role === 'admin' && <button type="button" className={activeView === 'requests' ? 'is-active' : ''} aria-current={activeView === 'requests' ? 'page' : undefined} onClick={() => setActiveView('requests')}><span aria-hidden="true">✉</span> Enrolment requests <span className="staff-nav-count">{requestCount}</span></button>}
+          <button type="button" className={activeView === 'courses' ? 'is-active' : ''} aria-current={activeView === 'courses' ? 'page' : undefined} onClick={() => setActiveView('courses')}><span aria-hidden="true">▦</span> Courses &amp; lessons <span className="staff-nav-count">{enrolments.length}</span></button>
+        </nav>
+        {activeView === 'overview' && <div className="staff-overview">
+          <div className="staff-overview-intro"><div><Eyebrow>At a glance</Eyebrow><h3>Your teaching operations</h3><p>See what needs attention, then jump straight to the right task.</p></div></div>
         <div className="staff-stats">
           <article><strong>{counts.pendingRequests ?? '—'}</strong><small>{staff.role === 'admin' ? 'Pending requests' : 'My active courses'}</small></article>
           <article><strong>{counts.activeEnrolments ?? '—'}</strong><small>Active enrolments</small></article>
@@ -283,7 +291,13 @@ export default function StaffWorkspacePage() {
           <article><strong>{counts.publishedResources ?? '—'}</strong><small>Published resources</small></article>
         </div>
 
-        {staff.role === 'admin' && (
+        <div className="staff-quick-actions">
+          {staff.role === 'admin' && <button type="button" onClick={() => setActiveView('requests')}><span className="staff-quick-icon" aria-hidden="true">✉</span><strong>Review requests</strong><small>{requestCount} awaiting action</small><span aria-hidden="true">→</span></button>}
+          <button type="button" onClick={() => setActiveView('courses')}><span className="staff-quick-icon" aria-hidden="true">▦</span><strong>Manage courses and lessons</strong><small>{enrolments.length} active course records</small><span aria-hidden="true">→</span></button>
+        </div>
+        </div>}
+
+        {activeView === 'requests' && staff.role === 'admin' && (
           <section className="staff-card">
             <div className="staff-section-head"><div><Eyebrow>New customer activity</Eyebrow><h3>Enrolment requests</h3></div><span className="staff-count">{requestCount} awaiting action</span></div>
             {requests.length ? requests.map((request) => {
@@ -304,7 +318,7 @@ export default function StaffWorkspacePage() {
           </section>
         )}
 
-        <section className="staff-card">
+        {activeView === 'courses' && <section className="staff-card">
           <div className="staff-section-head"><div><Eyebrow>Teaching operations</Eyebrow><h3>{staff.role === 'admin' ? 'Active course enrolments' : 'My assigned courses'}</h3></div><span className="staff-count">{enrolments.length} courses</span></div>
           {enrolments.length ? enrolments.map((enrolment) => {
             const lessons = lessonsByEnrolment[enrolment.id] || [];
@@ -345,7 +359,7 @@ export default function StaffWorkspacePage() {
               </article>
             );
           }) : <p className="staff-empty">No active course enrolments are assigned yet.</p>}
-        </section>
+        </section>}
         <p className="staff-small-note">Every staff action is restricted by role and recorded in the staff audit log. Staging only; do not use real customer or child data until the required safeguarding and privacy reviews are complete.</p>
       </section>
     </>

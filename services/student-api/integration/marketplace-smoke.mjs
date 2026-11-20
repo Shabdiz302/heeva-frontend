@@ -91,7 +91,7 @@ try {
   const profiles = (await call("/api/staff/marketplace/review","GET",admin)).data.profiles;
   const profile = profiles.find(p => p.email === "market-tutor-one@example.invalid");
   assert.ok(profile?.id);
-  assert.equal((await call("/api/staff/marketplace/review/"+profile.id,"POST",tutorOne,{decision:"approved"})).response.status,403);
+  assert.equal((await call("/api/staff/marketplace/review/"+profile.id,"POST",tutorOne,{decision:"approved"})).response.status,404); // Deliberately do not disclose admin-only endpoint
   const approval = await call("/api/staff/marketplace/review/"+profile.id,"POST",admin,{decision:"approved",feedback:"Approved for isolated testing"});
   assert.equal(approval.response.status,200,JSON.stringify(approval.data));
 

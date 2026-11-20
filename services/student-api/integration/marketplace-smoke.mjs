@@ -1,7 +1,7 @@
 // Run ONLY against a disposable database: DATABASE_URL=... node tests/marketplace-integration.mjs
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import pg from "pg";
@@ -16,6 +16,7 @@ if (!databaseUrl || !databaseUrl.includes("heeva_marketplace_test")) {
 }
 const pool = new Pool({ connectionString: databaseUrl });
 const privateDir = await mkdtemp(join(tmpdir(), "heeva-marketplace-private-"));
+const emailOut = join(privateDir, 'verification-email.json');
 const server = spawn(process.execPath, ["src/server.js"], {
   cwd: new URL("../", import.meta.url).pathname,
   env: {
@@ -24,7 +25,11 @@ const server = spawn(process.execPath, ["src/server.js"], {
     APP_ORIGINS: BASE,
     COOKIE_SECURE: "true",
     PRIVATE_RESOURCES_DIR: privateDir,
-    RESEND_API_KEY: "",
+    RESEND_API_KEY: "integration-test-only",
+    EMAIL_FROM: "Teacher Testing <test@example.invalid>",
+    NODE_ENV: "test",
+    HEEVA_TEST_EMAIL_OUT: emailOut,
+    NODE_OPTIONS: "--import=" + new URL("./mock-mail.mjs",import.meta.url).href,
   },
   stdio: ["ignore", "pipe", "pipe"],
 });
@@ -67,23 +72,31 @@ try {
       [newId(),email, email.split("@")[0],hashed,role]
     );
   }
-  const applicantId = newId();
-  await pool.query(
-    "INSERT INTO staff_users(id,email,display_name,password_hash,role,status) VALUES($1,$2,$3,$4,'teacher','suspended')",
-    [applicantId,"market-applicant@example.invalid","Market Applicant",hashed]
-  );
-  await pool.query(
-    "INSERT INTO marketplace_teacher_applications(staff_user_id,status,terms_accepted_at,privacy_accepted_at,adult_confirmed_at,email_verified_at,code_salt,code_hash,code_expires_at) " +
-    "VALUES($1,'pending_admin',NOW(),NOW(),NOW(),NOW(),'test','test',NOW())",[applicantId]
-  );
   await ready();
+  const applicationSignup=await call("/api/teacher-applications/register","POST","",{
+    displayName:"Market Applicant",email:"market-applicant@example.invalid",
+    password:"OnlyForTesting123!",termsAccepted:true,privacyAccepted:true,adultConfirmed:true
+  });
+  assert.equal(applicationSignup.response.status,201,JSON.stringify(applicationSignup.data));
+  const email = JSON.parse(await readFile(emailOut,"utf8"));
+  assert.equal(email.email,"market-applicant@example.invalid");
+  assert.match(email.code,/^[0-9]{6}$/);
+  assert.equal((await call("/api/teacher-applications/verify-email","POST","",{
+    email:email.email,code:"000000" === email.code?"999999":"000000"
+  })).response.status,400);
+  const verified=await call("/api/teacher-applications/verify-email","POST","",{
+    email:email.email,code:email.code
+  });
+  assert.equal(verified.response.status,200,JSON.stringify(verified.data));
   const blockedLogin = await call("/api/staff/auth/login","POST","",{
     email:"market-applicant@example.invalid",password:"OnlyForTesting123!"
   });
   assert.equal(blockedLogin.response.status,401);
   const admin = await login("market-admin@example.invalid");
   const requests = (await call("/api/staff/marketplace/applications","GET",admin)).data.applications;
-  assert.ok(requests.find(a=>a.id===applicantId&&a.status==="pending_admin"));
+  const pending = requests.find(a=>a.email==="market-applicant@example.invalid");
+  assert.ok(pending?.id&&pending.status==="pending_admin"&&pending.email_verified_at);
+  const applicantId=pending.id;
   const accepted=await call("/api/staff/marketplace/applications/"+applicantId+"/decision",
     "POST",admin,{decision:"approved",feedback:"Test approval"});
   assert.equal(accepted.response.status,200,JSON.stringify(accepted.data));

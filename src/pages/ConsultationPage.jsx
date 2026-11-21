@@ -75,7 +75,7 @@ function BusinessEnquiryPreview() {
         '',
         'AI-related request:',
         String(fields.get('workflow')||'')
-      ].join('\\n');
+      ].join('\n');
       window.location.href = `mailto:${contact.email}?subject=${encodeURIComponent('Heeva for Business enquiry')}&body=${encodeURIComponent(details)}`;
       setStatus('email-draft');
       return;

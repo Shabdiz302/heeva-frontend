@@ -316,7 +316,7 @@ export default function StaffWorkspacePage() {
           <button type="button" className={activeView === 'courses' ? 'is-active' : ''} aria-current={activeView === 'courses' ? 'page' : undefined} onClick={() => setActiveView('courses')}><span aria-hidden="true">▦</span> Courses &amp; lessons <span className="staff-nav-count">{enrolments.length}</span></button>
         </nav>
         {activeView === 'overview' && <div className="staff-overview">
-          <div className="staff-overview-intro"><div><Eyebrow>At a glance</Eyebrow><h3>Your teaching operations</h3><p>See what needs attention, then jump straight to the right task.</p></div></div>
+          <div className="staff-overview-intro"><div><Eyebrow>At a glance</Eyebrow><h3>{staff.role === 'admin' ? 'Heeva operations overview' : 'Your teaching workspace'}</h3><p>See what needs attention, then jump straight to the right task.</p></div></div>
         <div className="staff-stats">
           <article><strong>{counts.pendingRequests ?? '—'}</strong><small>{staff.role === 'admin' ? 'Pending requests' : 'My active courses'}</small></article>
           <article><strong>{counts.activeEnrolments ?? '—'}</strong><small>Active enrolments</small></article>
@@ -326,6 +326,11 @@ export default function StaffWorkspacePage() {
 
         <div className="staff-quick-actions">
           {staff.role === 'admin' && <button type="button" onClick={() => setActiveView('requests')}><span className="staff-quick-icon" aria-hidden="true">✉</span><strong>Review requests</strong><small>{requestCount} awaiting action</small><span aria-hidden="true">→</span></button>}
+          {staff.role === 'admin' && <button type="button" onClick={() => setActiveView('teacher-applications')}><span className="staff-quick-icon" aria-hidden="true">♙</span><strong>Educator registrations</strong><small>Review new applications and identity checks</small><span aria-hidden="true">→</span></button>}
+          {staff.role === 'admin' && <button type="button" onClick={() => setActiveView('marketplace-review')}><span className="staff-quick-icon" aria-hidden="true">✓</span><strong>Educator profiles</strong><small>Approve reviewed professional profiles</small><span aria-hidden="true">→</span></button>}
+          {staff.role === 'admin' && <button type="button" onClick={() => setActiveView('offer-review')}><span className="staff-quick-icon" aria-hidden="true">£</span><strong>Course pricing</strong><small>Review proposed tutor rates and customer prices</small><span aria-hidden="true">→</span></button>}
+          {staff.role === 'teacher' && <button type="button" onClick={() => setActiveView('teacher-profile')}><span className="staff-quick-icon" aria-hidden="true">♙</span><strong>My professional profile</strong><small>Update biography, qualifications and portrait</small><span aria-hidden="true">→</span></button>}
+          {staff.role === 'teacher' && <button type="button" onClick={() => setActiveView('teacher-offers')}><span className="staff-quick-icon" aria-hidden="true">▤</span><strong>My course proposals</strong><small>Propose subjects and lesson rates</small><span aria-hidden="true">→</span></button>
           <button type="button" onClick={() => setActiveView('courses')}><span className="staff-quick-icon" aria-hidden="true">▦</span><strong>Manage courses and lessons</strong><small>{enrolments.length} active course records</small><span aria-hidden="true">→</span></button>
         </div>
         </div>}

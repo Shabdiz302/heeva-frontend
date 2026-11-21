@@ -81,7 +81,7 @@ export default function StaffWorkspacePage() {
   }, [isLogin, navigate]);
 
   useEffect(() => {
-    if (isLogin || !staff) return undefined;
+    if (isLogin || !staff || staff.onboardingOnly) return undefined;
     let active = true;
     Promise.all([
       staffApi('/api/staff/dashboard'),
@@ -240,7 +240,7 @@ export default function StaffWorkspacePage() {
     return (
       <>
         <PageIntro eyebrow="Heeva staff workspace" title={<>Staff <em>sign in.</em></>}>
-          <p>Authorised administrators and approved educators only.</p>
+          <p>Heeva administrators, approved educators and verified educator applicants.</p>
         </PageIntro>
         <section className="shell staff-shell staff-login-layout">
           <div className="staff-login-aside">
@@ -249,14 +249,14 @@ export default function StaffWorkspacePage() {
             <p>Review enrolment requests, confirm lesson packages, manage schedules and publish learning documents.</p>
           </div>
           <div className="staff-card staff-login-card">
-            <Eyebrow>Restricted access</Eyebrow><h3>Staff sign in</h3>
-            <StaffNotice type="warning">Private staff workspace. Approved educators and administrators can sign in here; learners cannot.</StaffNotice>
+            <Eyebrow>Restricted access</Eyebrow><h3>Educator and staff sign in</h3>
+            <StaffNotice type="warning">Private staff workspace. Educators with verified emails can complete private profiles here. Only approved educators and administrators can manage lessons.</StaffNotice>
             <p className="staff-small-note">Want to teach with Heeva? <Link to="/teacher/apply">Apply to teach</Link>.</p>
             <StaffNotice type="error">{error}</StaffNotice>
             <form className="staff-form" onSubmit={submitLogin}>
               <StaffField label="Staff email" type="email" autoComplete="username" value={loginForm.email} onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })} required />
               <StaffField label="Password" type="password" autoComplete="current-password" value={loginForm.password} onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })} required />
-              <button className="button staff-submit" type="submit" disabled={busy}>{busy ? 'Signing in…' : 'Sign in to staff workspace'} <span aria-hidden="true">↗</span></button>
+              <button className="button staff-submit" type="submit" disabled={busy}>{busy ? 'Signing in…' : 'Sign in securely'} <span aria-hidden="true">↗</span></button>
             </form>
           </div>
         </section>
@@ -266,6 +266,19 @@ export default function StaffWorkspacePage() {
 
   if (!staff) {
     return <section className="shell staff-shell"><StaffNotice type="info">Checking staff session…</StaffNotice></section>;
+  }
+
+  if (staff.onboardingOnly) {
+    return <>
+      <PageIntro eyebrow="Teach with Heeva" title={<>Create your <em>educator profile.</em></>}>
+        <p>Your email is verified. Build and submit your private profile for Heeva review. Your page is not public yet.</p>
+      </PageIntro>
+      <section className="shell staff-shell">
+        <div className="staff-topbar"><div><Eyebrow>Educator onboarding</Eyebrow><h2>Welcome, {staff.displayName}.</h2><p>{staff.email}</p></div>
+          <button className="button button-outline" type="button" onClick={logout} disabled={busy}>Sign out</button></div>
+        <TeacherMarketplacePanel api={staffApi} staff={staff} />
+      </section>
+    </>;
   }
 
   return (

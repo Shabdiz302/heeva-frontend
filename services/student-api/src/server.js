@@ -336,7 +336,7 @@ async function handle(req, res) {
       "FROM marketplace_public_educators WHERE published=TRUE ORDER BY published_at DESC,slug ASC LIMIT 200");
     return json(res,200,{educators:rows.rows});
   }
-  const publicEducator = path.match(/^\\/api\\/public\\/educators\\/([0-9a-f-]{36})$/i);
+  const publicEducator = path.match(/^\/api\/public\/educators\/([0-9a-f-]{36})$/i);
   if (method === "GET" && publicEducator) {
     const row = await pool.query(
       "SELECT slug,display_name,headline,biography,subjects,languages,published_at " +
@@ -1161,7 +1161,7 @@ async function handle(req, res) {
 
 
     // Administrators can remove a previously approved public profile immediately.
-    const unpublish = path.match(/^\\/api\\/staff\\/marketplace\\/public-educators\\/([0-9a-f-]{36})\\/unpublish$/i);
+    const unpublish = path.match(/^\/api\/staff\/marketplace\/public-educators\/([0-9a-f-]{36})\/unpublish$/i);
     if (method==="POST" && unpublish && staff.role==="admin") {
       const client=await pool.connect();
       try {

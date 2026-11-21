@@ -122,8 +122,16 @@ try {
     decision:"approved",feedback:"Reviewed complete profile"
   })).response.status,200);
   const accepted=await call("/api/staff/marketplace/applications/"+applicantId+"/decision",
-    "POST",admin,{decision:"approved",feedback:"Test approval"});
+    "POST",admin,{decision:"approved",feedback:"Test approval",confirmSafeguarding:true});
   assert.equal(accepted.response.status,200,JSON.stringify(accepted.data));
+  const live=(await call("/api/public/educators")).data.educators;
+  const published=live.find(p=>p.slug===pendingProfile.id);
+  assert.ok(published&&published.display_name==="Market Applicant");
+  assert.ok(!JSON.stringify(published).includes("market-applicant@example.invalid"));
+  assert.equal((await call("/api/public/educators/"+pendingProfile.id)).response.status,200);
+  assert.equal((await call("/api/staff/marketplace/public-educators/"+pendingProfile.id+"/unpublish","POST",admin,{})).response.status,200);
+  assert.equal((await call("/api/public/educators/"+pendingProfile.id)).response.status,404);
+
   const applicant=await login("market-applicant@example.invalid");
   assert.ok(applicant);
   assert.equal((await call("/api/staff/marketplace/applications","GET",applicant)).response.status,404);

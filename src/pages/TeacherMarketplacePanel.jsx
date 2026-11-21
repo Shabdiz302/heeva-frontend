@@ -27,6 +27,13 @@ export function TeacherMarketplacePanel({ api, staff }) {
   const [busy,setBusy] = useState(false);
   const [error,setError] = useState('');
   const [notice,setNotice] = useState('');
+  const [aiField,setAiField] = useState('biography');
+  const [aiLanguage,setAiLanguage] = useState('en');
+  const [aiConsent,setAiConsent] = useState(false);
+  const [aiSuggestion,setAiSuggestion] = useState('');
+  const [aiBusy,setAiBusy] = useState(false);
+  const [aiError,setAiError] = useState('');
+
   async function reload() {
     const {profile} = await api('/api/staff/marketplace/profile');
     setForm(profile ? readProfile(profile) : {...empty,displayName:staff.displayName || ''});
@@ -69,6 +76,18 @@ export function TeacherMarketplacePanel({ api, staff }) {
     setBusy(true);setError('');setNotice('');
     try{await api('/api/staff/marketplace/submit',{method:'POST',body:'{}'});await reload();setNotice('Profile submitted for Heeva administrator review.');}
     catch(err){setError(err.message)}finally{setBusy(false)}
+  }
+  async function suggestWriting(){
+    setAiBusy(true);setAiError('');setAiSuggestion('');
+    const text=String(form[aiField]||'').trim();
+    try{
+      const result=await api('/api/staff/marketplace/ai-assist',{
+        method:'POST',body:JSON.stringify({field:aiField,text,language:aiLanguage,consent:aiConsent})
+      });
+      setAiSuggestion(result.suggestion||'');
+      if(!result.suggestion)throw Error('No suggestion was returned.');
+    }catch(err){setAiError(err.message)}
+    finally{setAiBusy(false)}
   }
   async function uploadPortrait() {
     if(!portraitFile || !hasProfile) return;
@@ -125,6 +144,29 @@ export function TeacherMarketplacePanel({ api, staff }) {
         <label>Languages (comma separated)<input value={form.languages} placeholder="English, Persian" onChange={edit('languages')} disabled={status==='pending_review'}/></label>
       </div>
       <label>Professional biography<textarea value={form.biography} maxLength={4000} rows={4} onChange={edit('biography')} placeholder="Describe your teaching approach and experience." disabled={status==='pending_review'}/></label>
+      <section className="marketplace-disabled-media" aria-label="AI profile writing assistant">
+        <strong>AI Profile Writer — optional</strong>
+        <p>Polish your own words in English or Persian. AI suggestions may contain mistakes; check every qualification and claim before accepting. No text is changed automatically.</p>
+        <div className="marketplace-grid">
+          <label>Improve this field<select value={aiField} onChange={e=>{setAiField(e.target.value);setAiSuggestion('')}}>
+            <option value="biography">Professional biography</option><option value="headline">Professional headline</option>
+          </select></label>
+          <label>Writing language<select value={aiLanguage} onChange={e=>setAiLanguage(e.target.value)}>
+            <option value="en">English</option><option value="fa">Persian / فارسی</option>
+          </select></label>
+        </div>
+        <label className="marketplace-check"><input type="checkbox" checked={aiConsent} onChange={e=>setAiConsent(e.target.checked)}/><span>I consent to sending the selected text to the AI writing provider. I will not include student details, personal documents or confidential data.</span></label>
+        <button className="button button-outline" type="button" disabled={aiBusy||busy||status==='pending_review'||!aiConsent||String(form[aiField]||'').trim().length<30} onClick={suggestWriting}>{aiBusy?'Preparing suggestion…':'Suggest improved wording'}</button>
+        {aiError&&<p role="alert" className="marketplace-error">{aiError}</p>}
+        {aiSuggestion&&<div className="marketplace-ai-preview">
+          <strong>Suggested draft — review before accepting</strong>
+          <p dir="auto">{aiSuggestion}</p>
+          <div className="marketplace-actions">
+            <button type="button" className="button" onClick={()=>{setForm(old=>({...old,[aiField]:aiSuggestion}));setAiSuggestion('');}}>Use this wording (not saved yet)</button>
+            <button type="button" className="button button-outline" onClick={()=>setAiSuggestion('')}>Discard suggestion</button>
+          </div>
+        </div>}
+      </section>
       <div className="marketplace-grid">
         <label>Qualifications summary<textarea rows={3} value={form.qualificationsSummary} maxLength={2500} onChange={edit('qualificationsSummary')} disabled={status==='pending_review'}/></label>
         <label>Teaching experience<textarea rows={3} value={form.teachingExperience} maxLength={2500} onChange={edit('teachingExperience')} disabled={status==='pending_review'}/></label>

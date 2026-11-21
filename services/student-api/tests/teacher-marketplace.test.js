@@ -81,6 +81,14 @@ test("teacher self-registration stays suspended before email and admin review",(
   assert.match(server,/UPDATE staff_users SET status='active',updated_at=NOW\(\)/);
 });
 
+test("verified but unapproved educators have private onboarding access only",()=>{
+  assert.match(server,/a\.email_verified_at IS NOT NULL AND a\.status='pending_admin'/);
+  assert.match(server,/if \(staff\.onboarding_only\)/);
+  assert.match(server,/Finish your private educator profile and await Heeva approval/);
+  assert.match(server,/staff\.onboarding_only===true/);
+  assert.match(server,/p\.review_status='approved'/);
+});
+
 test("CV upload fails closed and is restricted to authenticated teacher and admin",()=>{
   assert.match(migrator,/009_teacher_cv_documents/);
   assert.match(server,/const ownCv = path === "\/api\/staff\/marketplace\/cv" && staff.role === "teacher"/);

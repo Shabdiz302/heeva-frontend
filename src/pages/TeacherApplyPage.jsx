@@ -46,20 +46,20 @@ export default function TeacherApplyPage(){
     }catch(err){setError(err.message)}finally{setBusy(false)}
   }
   return <>
-    <PageIntro eyebrow="Teach with Heeva" title={<>Become a Heeva <em>teacher.</em></>}>
-      <p>Apply to teach online through Heeva. Every application is verified and reviewed before access is granted.</p>
+    <PageIntro eyebrow="Teach with Heeva" title={<>Become a Heeva <em>educator.</em></>}>
+      <p>Teach school subjects, music, languages, creative skills, technology or professional courses online. Every application is verified and reviewed before access is granted.</p>
     </PageIntro>
     <section className="shell staff-shell teacher-marketplace-apply">
       <div className="teacher-apply-promo">
-        <Eyebrow>Our tutor marketplace</Eyebrow>
+        <Eyebrow>Teach with Heeva</Eyebrow>
         <h2>Share your expertise with more learners.</h2>
         <p>Build a professional profile, propose your own lesson rates and courses, and let Heeva support the booking and customer experience.</p>
         <div className="marketplace-steps"><span>01 Apply</span><span>02 Verify email</span><span>03 Heeva review</span><span>04 Build profile</span></div>
-        <p className="marketplace-hint">Heeva reviews teachers for suitability. Creating an account does not guarantee approval, assignments or income.</p>
+        <p className="marketplace-hint">Heeva reviews educators for suitability. Creating an account does not guarantee approval, assignments or income.</p>
       </div>
       <section className="staff-card teacher-marketplace">
-        <header className="marketplace-header"><div><span className="marketplace-kicker">TEACHER APPLICATION</span>
-          <h3>{mode==='register'?'Create your tutor account':mode==='verify'?'Verify your email':'Application submitted'}</h3></div></header>
+        <header className="marketplace-header"><div><span className="marketplace-kicker">EDUCATOR APPLICATION</span>
+          <h3>{mode==='register'?'Create your educator account':mode==='verify'?'Verify your email':'Application submitted'}</h3></div></header>
         {error&&<p role="alert" className="marketplace-error">{error}</p>}
         {notice&&<p role="status" className="marketplace-success">{notice}</p>}
         {mode==='register'&&<form className="marketplace-form" onSubmit={register}>
@@ -67,11 +67,11 @@ export default function TeacherApplyPage(){
           <label>Email<input type="email" value={form.email} required onChange={e=>update('email',e.target.value)} autoComplete="email"/></label>
           <label>Password (8+ characters, uppercase, lowercase and number)
             <input type="password" minLength={8} maxLength={128} value={form.password} required onChange={e=>update('password',e.target.value)} autoComplete="new-password"/></label>
-          <label className="marketplace-check"><input type="checkbox" checked={form.adultConfirmed} onChange={e=>update('adultConfirmed',e.target.checked)} required/> I confirm I am at least 18.</label>
-          <label className="marketplace-check"><input type="checkbox" checked={form.termsAccepted} onChange={e=>update('termsAccepted',e.target.checked)} required/> I agree to the <a href={policies.terms} target="_blank" rel="noreferrer">Heeva Terms of Service</a> and understand additional tutor terms will be required.</label>
-          <label className="marketplace-check"><input type="checkbox" checked={form.privacyAccepted} onChange={e=>update('privacyAccepted',e.target.checked)} required/> I have read the <a href={policies.privacy} target="_blank" rel="noreferrer">Heeva Privacy Policy</a>.</label>
-          <button type="submit" className="button" disabled={busy}>{busy?'Submitting…':'Create teacher application'}</button>
-          <p className="marketplace-hint">Development preview: real tutor terms and privacy links must be reviewed before public launch. Use test details only.</p>
+          <label className="marketplace-check"><input type="checkbox" checked={form.adultConfirmed} onChange={e=>update('adultConfirmed',e.target.checked)} required/><span>I confirm I am at least 18.</span></label>
+          <label className="marketplace-check"><input type="checkbox" checked={form.termsAccepted} onChange={e=>update('termsAccepted',e.target.checked)} required/><span>I agree to the <a href={policies.terms} target="_blank" rel="noreferrer">Heeva Terms of Service</a> and understand additional educator terms will be required.</span></label>
+          <label className="marketplace-check"><input type="checkbox" checked={form.privacyAccepted} onChange={e=>update('privacyAccepted',e.target.checked)} required/><span>I have read the <a href={policies.privacy} target="_blank" rel="noreferrer">Heeva Privacy Policy</a>.</span></label>
+          <button type="submit" className="button" disabled={busy}>{busy?'Submitting…':'Submit educator application'}</button>
+          <p className="marketplace-hint">Development preview: educator terms and privacy links must be reviewed before public launch. Use test details only.</p>
         </form>}
         {mode==='verify'&&<form className="marketplace-form" onSubmit={verify}>
           <p>Enter the six-digit verification code sent to {form.email}. The code expires after ten minutes.</p>
@@ -80,8 +80,8 @@ export default function TeacherApplyPage(){
           <button type="button" className="button button-outline" onClick={resend} disabled={busy}>Resend verification code</button>
           <p>Resend is limited for security. Wait at least 60 seconds after the previous code.</p>
         </form>}
-        {mode==='submitted'&&<div><p>A Heeva administrator will review your application. You cannot sign in as a tutor until approval.</p>
-          <Link className="button button-outline" to="/staff/login">Staff login (after approval)</Link></div>}
+        {mode==='submitted'&&<div><p>A Heeva administrator will review your application. You cannot sign in as an educator until approval.</p>
+          <Link className="button button-outline" to="/staff/login">Educator login (after approval)</Link></div>}
       </section>
     </section>
   </>;

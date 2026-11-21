@@ -73,7 +73,9 @@ export default function CourseDetailPage({ course }) {
             {!isComingSoon && course.slug !== 'introduction-to-farsi' && <a className="button" href={`https://heevacourses.com/online-courses/${course.liveSlug}`} target="_blank" rel="noreferrer">{isPublishedUnconfirmed ? 'Check current details on Heeva' : 'View details & book on Heeva'} <span aria-hidden="true">↗</span></a>}
           </div>
           <div className="detail-art" aria-label={`Illustration for ${course.title}`}>
-            <img className="detail-course-photo" src={course.image} alt={course.imageAlt} width="180" height="180" loading="eager" decoding="async" />
+            {course.image
+              ? <img className="detail-course-photo" src={course.image} alt={course.imageAlt} width="180" height="180" loading="eager" decoding="async" />
+              : <span className="detail-course-photo detail-course-photo-fallback" aria-label={course.category.replaceAll('-',' ')}>{course.mark}</span>}
             <small>{categoryLabel(course.category)}</small>
           </div>
         </div>

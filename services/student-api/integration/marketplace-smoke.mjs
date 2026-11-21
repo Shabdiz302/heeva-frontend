@@ -111,6 +111,14 @@ try {
     biography:"I offer individual music lessons online.",subjects:["Music"],languages:["English"],
     qualificationsSummary:"",teachingExperience:"Online teaching",proposedRatePence:2000,lessonDurationMinutes:60
   })).response.status,200);
+  const earlyOffer=await call("/api/staff/marketplace/offers","POST",privateApplicant,{
+    courseSlug:"piano",offerTitle:"Beginner piano for families",
+    offerDescription:"Individual piano tuition with structured weekly exercises.",
+    lessonDurationMinutes:60,proposedTutorRatePence:2500
+  });
+  assert.equal(earlyOffer.response.status,201,JSON.stringify(earlyOffer.data));
+  assert.equal((await call("/api/staff/marketplace/offers/"+earlyOffer.data.offerId+"/submit","POST",privateApplicant,{})).response.status,200);
+  assert.equal((await call("/api/staff/marketplace/offer-review","GET",privateApplicant)).response.status,403);
   assert.equal((await call("/api/staff/marketplace/submit","POST",privateApplicant,{})).response.status,200);
   const admin = await login("market-admin@example.invalid");
   const requests = (await call("/api/staff/marketplace/applications","GET",admin)).data.applications;

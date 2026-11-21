@@ -240,7 +240,7 @@ export default function StaffWorkspacePage() {
     return (
       <>
         <PageIntro eyebrow="Heeva staff workspace" title={<>Staff <em>sign in.</em></>}>
-          <p>Authorised administrators and teachers only.</p>
+          <p>Authorised administrators and approved educators only.</p>
         </PageIntro>
         <section className="shell staff-shell staff-login-layout">
           <div className="staff-login-aside">
@@ -250,8 +250,8 @@ export default function StaffWorkspacePage() {
           </div>
           <div className="staff-card staff-login-card">
             <Eyebrow>Restricted access</Eyebrow><h3>Staff sign in</h3>
-            <StaffNotice type="warning">Private staff workspace. Approved teachers and administrators can sign in here; customers cannot.</StaffNotice>
-            <p className="staff-small-note">Want to teach with Heeva? <Link to="/teacher/apply">Apply as a teacher</Link>.</p>
+            <StaffNotice type="warning">Private staff workspace. Approved educators and administrators can sign in here; learners cannot.</StaffNotice>
+            <p className="staff-small-note">Want to teach with Heeva? <Link to="/teacher/apply">Apply to teach</Link>.</p>
             <StaffNotice type="error">{error}</StaffNotice>
             <form className="staff-form" onSubmit={submitLogin}>
               <StaffField label="Staff email" type="email" autoComplete="username" value={loginForm.email} onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })} required />
@@ -275,7 +275,7 @@ export default function StaffWorkspacePage() {
       </PageIntro>
       <section className="shell staff-shell">
         <div className="staff-topbar">
-          <div><Eyebrow>{staff.role === 'admin' ? 'Administrator' : 'Teacher workspace'}</Eyebrow><h2>Welcome, {staff.displayName}.</h2><p>{staff.email}</p></div>
+          <div><Eyebrow>{staff.role === 'admin' ? 'Administrator' : 'Educator workspace'}</Eyebrow><h2>Welcome, {staff.displayName}.</h2><p>{staff.email}</p></div>
           <button className="button button-outline" type="button" onClick={logout} disabled={busy}>Sign out</button>
         </div>
         <StaffNotice type="error">{error}</StaffNotice>
@@ -283,9 +283,9 @@ export default function StaffWorkspacePage() {
         <nav className="staff-view-nav" aria-label="Staff workspace sections">
           <button type="button" className={activeView === 'overview' ? 'is-active' : ''} aria-current={activeView === 'overview' ? 'page' : undefined} onClick={() => setActiveView('overview')}><span aria-hidden="true">◫</span> Overview</button>
           {staff.role === 'admin' && <button type="button" className={activeView === 'requests' ? 'is-active' : ''} aria-current={activeView === 'requests' ? 'page' : undefined} onClick={() => setActiveView('requests')}><span aria-hidden="true">✉</span> Enrolment requests <span className="staff-nav-count">{requestCount}</span></button>}
-          {staff.role === 'admin' && <button type="button" className={activeView === 'teacher-applications' ? 'is-active' : ''} aria-current={activeView === 'teacher-applications' ? 'page' : undefined} onClick={() => setActiveView('teacher-applications')}>Teacher registrations</button>}
-          {staff.role === 'admin' && <button type="button" className={activeView === 'marketplace-review' ? 'is-active' : ''} aria-current={activeView === 'marketplace-review' ? 'page' : undefined} onClick={() => setActiveView('marketplace-review')}>Teacher applications</button>}
-          {staff.role === 'teacher' && <button type="button" className={activeView === 'teacher-profile' ? 'is-active' : ''} aria-current={activeView === 'teacher-profile' ? 'page' : undefined} onClick={() => setActiveView('teacher-profile')}>My marketplace profile</button>}
+          {staff.role === 'admin' && <button type="button" className={activeView === 'teacher-applications' ? 'is-active' : ''} aria-current={activeView === 'teacher-applications' ? 'page' : undefined} onClick={() => setActiveView('teacher-applications')}>Educator registrations</button>}
+          {staff.role === 'admin' && <button type="button" className={activeView === 'marketplace-review' ? 'is-active' : ''} aria-current={activeView === 'marketplace-review' ? 'page' : undefined} onClick={() => setActiveView('marketplace-review')}>Educator profiles</button>}
+          {staff.role === 'teacher' && <button type="button" className={activeView === 'teacher-profile' ? 'is-active' : ''} aria-current={activeView === 'teacher-profile' ? 'page' : undefined} onClick={() => setActiveView('teacher-profile')}>My educator profile</button>}
           {staff.role === 'teacher' && <button type="button" className={activeView === 'teacher-offers' ? 'is-active' : ''} aria-current={activeView === 'teacher-offers' ? 'page' : undefined} onClick={() => setActiveView('teacher-offers')}>My course offers</button>}
           {staff.role === 'admin' && <button type="button" className={activeView === 'offer-review' ? 'is-active' : ''} aria-current={activeView === 'offer-review' ? 'page' : undefined} onClick={() => setActiveView('offer-review')}>Course pricing</button>}
           <button type="button" className={activeView === 'courses' ? 'is-active' : ''} aria-current={activeView === 'courses' ? 'page' : undefined} onClick={() => setActiveView('courses')}><span aria-hidden="true">▦</span> Courses &amp; lessons <span className="staff-nav-count">{enrolments.length}</span></button>

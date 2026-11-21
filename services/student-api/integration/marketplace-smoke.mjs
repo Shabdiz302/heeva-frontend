@@ -113,7 +113,7 @@ try {
   assert.ok(pending?.id&&pending.status==="pending_admin"&&pending.email_verified_at);
   const applicantId=pending.id;
   const premature=await call("/api/staff/marketplace/applications/"+applicantId+"/decision",
-    "POST",admin,{decision:"approved",feedback:"Too early"});
+    "POST",admin,{decision:"approved",feedback:"Too early",confirmSafeguarding:true});
   assert.equal(premature.response.status,409);
   const pendingProfiles=(await call("/api/staff/marketplace/review","GET",admin)).data.profiles;
   const pendingProfile=pendingProfiles.find(p=>p.email==="market-applicant@example.invalid");

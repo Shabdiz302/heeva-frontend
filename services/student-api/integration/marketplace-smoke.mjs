@@ -100,6 +100,11 @@ try {
   const applicantSession=await call("/api/staff/auth/me","GET",privateApplicant);
   assert.equal(applicantSession.data.staff.onboardingOnly,true);
   assert.equal((await call("/api/staff/dashboard","GET",privateApplicant)).response.status,403);
+  // AI is opt-in and fails closed when provider credentials are absent.
+  assert.equal((await call("/api/staff/marketplace/ai-assist","POST",privateApplicant,{
+    field:"biography",text:"I teach beginner piano with patient weekly practice.",consent:true
+  })).response.status,503);
+
   assert.equal((await call("/api/staff/marketplace/applications","GET",privateApplicant)).response.status,403);
   assert.equal((await call("/api/staff/marketplace/profile","PUT",privateApplicant,{
     displayName:"Market Applicant",headline:"Online beginner music educator",

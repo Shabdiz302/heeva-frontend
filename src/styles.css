@@ -1088,3 +1088,7 @@ img { display: block; max-width: 100%; }
 .approved-educator-profile p { line-height:1.85; white-space:pre-line; }
 @media(max-width:900px) { .approved-educator-grid {grid-template-columns:repeat(2,minmax(0,1fr));} }
 @media(max-width:600px) { .approved-educator-grid {grid-template-columns:1fr;} .approved-educator-card{padding:20px;} }
+
+/* Planned school courses use a deliberate typographic symbol rather than a broken stock-image placeholder. */
+.course-card-photo-fallback, .detail-course-photo-fallback { display:grid; place-items:center; text-align:center; border-radius:50%; background:linear-gradient(135deg,#17364e,#365a77); color:#e8c46d; border:2px solid rgba(232,196,109,.7); font:700 36px/1 var(--serif); }
+.detail-course-photo-fallback { width:180px; height:180px; font-size:64px; }

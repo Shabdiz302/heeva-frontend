@@ -10,6 +10,7 @@ import CoursesPage from './pages/CoursesPage.jsx';
 import CourseDetailPage from './pages/CourseDetailPage.jsx';
 import TeachersPage from './pages/TeachersPage.jsx';
 import TeacherProfilePage from './pages/TeacherProfilePage.jsx';
+import { ApprovedEducatorPage } from './pages/ApprovedEducators.jsx';
 import HowItWorksPage from './pages/HowItWorksPage.jsx';
 import ParentsPage from './pages/ParentsPage.jsx';
 import AboutPage from './pages/AboutPage.jsx';
@@ -51,6 +52,8 @@ function CurrentPage() {
   if (path === '/') return <HomePage />;
   if (path === '/courses') return <CoursesPage />;
   if (path === '/teachers') return <TeachersPage />;
+  const approvedMatch = path.match(/^\/educators\/([0-9a-f-]{36})$/i);
+  if (approvedMatch) return <ApprovedEducatorPage slug={approvedMatch[1]} />;
   const teacherMatch = path.match(/^\/teachers\/([^/]+)$/);
   if (teacherMatch) {
     const teacher = teachers.find((item) => item.slug === teacherMatch[1]);

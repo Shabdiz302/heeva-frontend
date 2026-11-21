@@ -811,8 +811,9 @@ async function handle(req, res) {
     if (staff.onboarding_only) {
       const allowed = new Set(["/api/staff/auth/me", "/api/staff/marketplace/profile",
         "/api/staff/marketplace/portrait", "/api/staff/marketplace/cv", "/api/staff/marketplace/submit",
-        "/api/staff/marketplace/ai-assist"]);
-      if (!allowed.has(path)) return json(res,403,{error:"Finish your private educator profile and await Heeva approval."});
+        "/api/staff/marketplace/ai-assist", "/api/staff/marketplace/offers"]);
+      const canSubmitOwnOffer = method==="POST" && /^\\/api\\/staff\\/marketplace\\/offers\\/([0-9a-f-]{36})\\/submit$/i.test(path);
+      if (!allowed.has(path) && !canSubmitOwnOffer) return json(res,403,{error:"Finish your private educator profile and await Heeva approval."});
     }
 
     if (method === "GET" && path === "/api/staff/auth/me") {
@@ -1136,10 +1137,10 @@ async function handle(req, res) {
         try {
           await client.query("BEGIN");
           const profile = await client.query(
-            "SELECT id FROM marketplace_teacher_profiles WHERE staff_user_id=$1 AND review_status='approved'",[staff.id]);
+            "SELECT id FROM marketplace_teacher_profiles WHERE staff_user_id=$1",[staff.id]);
           if (!profile.rowCount) {
             await client.query("ROLLBACK");
-            return json(res,409,{error:"Your teaching profile must be approved by Heeva before proposing courses."});
+            return json(res,409,{error:"Save your private teaching profile before proposing courses."});
           }
           const id = newId();
           await client.query(

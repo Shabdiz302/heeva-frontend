@@ -12,7 +12,7 @@ export const pageMeta = {
   '/student/login': ['Student sign in | Heeva Courses', 'Sign in to the separate Heeva staging student portal.'],
   '/student/register': ['Create an account | Heeva Courses', 'Create a parent, guardian or adult learner account on the separate Heeva staging platform.'],
   '/student/dashboard': ['Student dashboard | Heeva Courses', 'Review your staging account, course requests and introductory lesson request.'],
-  '/teacher/apply': ['Apply to teach | Heeva Courses', 'Apply to teach online courses with Heeva. Applications require email verification and approval.'],
-  '/staff/login': ['Staff sign in | Heeva Courses', 'Private sign-in for authorised Heeva administrators and teachers.'],
+  '/teacher/apply': ['Teach with Heeva | Educator application', 'Join Heeva as an educator for school, music, language, creative, technology or professional courses. Applications require email verification and approval.'],
+  '/staff/login': ['Staff sign in | Heeva Courses', 'Private sign-in for authorised Heeva administrators and approved educators.'],
   '/staff/dashboard': ['Staff workspace | Heeva Courses', 'Private Heeva operations workspace for enrolments, lesson schedules and course materials.'],
 };

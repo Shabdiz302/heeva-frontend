@@ -96,15 +96,31 @@ try {
     email:email.email,code:email.code
   });
   assert.equal(verified.response.status,200,JSON.stringify(verified.data));
-  const blockedLogin = await call("/api/staff/auth/login","POST","",{
-    email:"market-applicant@example.invalid",password:"OnlyForTesting123!"
-  });
-  assert.equal(blockedLogin.response.status,401);
+  const privateApplicant=await login("market-applicant@example.invalid");
+  const applicantSession=await call("/api/staff/auth/me","GET",privateApplicant);
+  assert.equal(applicantSession.data.staff.onboardingOnly,true);
+  assert.equal((await call("/api/staff/dashboard","GET",privateApplicant)).response.status,403);
+  assert.equal((await call("/api/staff/marketplace/applications","GET",privateApplicant)).response.status,403);
+  assert.equal((await call("/api/staff/marketplace/profile","PUT",privateApplicant,{
+    displayName:"Market Applicant",headline:"Online beginner music educator",
+    biography:"I offer individual music lessons online.",subjects:["Music"],languages:["English"],
+    qualificationsSummary:"",teachingExperience:"Online teaching",proposedRatePence:2000,lessonDurationMinutes:60
+  })).response.status,200);
+  assert.equal((await call("/api/staff/marketplace/submit","POST",privateApplicant,{})).response.status,200);
   const admin = await login("market-admin@example.invalid");
   const requests = (await call("/api/staff/marketplace/applications","GET",admin)).data.applications;
   const pending = requests.find(a=>a.email==="market-applicant@example.invalid");
   assert.ok(pending?.id&&pending.status==="pending_admin"&&pending.email_verified_at);
   const applicantId=pending.id;
+  const premature=await call("/api/staff/marketplace/applications/"+applicantId+"/decision",
+    "POST",admin,{decision:"approved",feedback:"Too early"});
+  assert.equal(premature.response.status,409);
+  const pendingProfiles=(await call("/api/staff/marketplace/review","GET",admin)).data.profiles;
+  const pendingProfile=pendingProfiles.find(p=>p.email==="market-applicant@example.invalid");
+  assert.ok(pendingProfile?.id);
+  assert.equal((await call("/api/staff/marketplace/review/"+pendingProfile.id,"POST",admin,{
+    decision:"approved",feedback:"Reviewed complete profile"
+  })).response.status,200);
   const accepted=await call("/api/staff/marketplace/applications/"+applicantId+"/decision",
     "POST",admin,{decision:"approved",feedback:"Test approval"});
   assert.equal(accepted.response.status,200,JSON.stringify(accepted.data));

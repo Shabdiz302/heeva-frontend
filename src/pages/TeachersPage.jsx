@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from '../router.jsx';
 import { teachers, teacherCategories } from '../data/teachers.js';
 import { CTASection, Eyebrow, PageIntro, TeacherCard } from '../components/ContentBlocks.jsx';
+import { ApprovedEducators } from './ApprovedEducators.jsx';
 
 export default function TeachersPage() {
   const [query, setQuery] = useState('');
@@ -39,6 +40,7 @@ export default function TeachersPage() {
           <div className="empty-results"><span aria-hidden="true">⌕</span><h2>No teacher found</h2><p>Try a different name, subject, or search term.</p><button className="text-link" type="button" onClick={() => { setQuery(''); setCategory('all'); }}>Show all teachers <span aria-hidden="true">↗</span></button></div>
         )}
       </section>
+      <section className="shell page-content"><ApprovedEducators query={query}/></section>
       <section className="teacher-practice-section">
         <div className="shell teacher-practice-grid">
           <div className="practice-bigmark" aria-hidden="true">✳</div>

@@ -38,6 +38,7 @@ jobs:
 
       - name: Build static website
         env:
+          HEEVA_BASE_PATH: /heeva-frontend/
           VITE_HEEVA_CHAT_URL: ${{ vars.VITE_HEEVA_CHAT_URL }}
         run: pnpm run build
 

@@ -43,3 +43,19 @@ Status: DEVELOPMENT ONLY. Do not replace the existing PHP website until all rele
 6. Deploy isolated staging API and website, perform full acceptance and only then propose production switch.
 
 Draft PR #6 is NOT a production release.
+
+## Development progress update — 21 November 2026
+
+Changes committed on development branch, not on production:
+- Responsive global Student/Parent / Educator login menu and Teach with Heeva CTA.
+- Verified educators can complete private profiles and propose course offers before approval, without staff/customer access.
+- Heeva approves profile then account with explicit safeguarding acknowledgement; approved public snapshot is published through isolated API; admin can unpublish. Private edits do not silently replace approved snapshots.
+- Public directory and educator detail frontend can load approved snapshots when same-origin API is connected; legacy teacher listing remains available.
+- Optional bilingual AI writing preview (factual wording, consent, accept/discard) behind backend-only OpenAI key/model and per-educator monthly usage cap. NOT yet configured or usable from public preview.
+- Nine UK primary, 11+, KS3, GCSE and A-level subjects added as coming-soon to frontend and API catalogues. No bookings for courses without confirmed teachers/pricing.
+- Business enquiry: authenticated Formspree endpoint can be configured, otherwise opens an email draft and never claims delivery.
+- Student trial backend already uses a unique primary key per learner and responds 409 for repeat requests. Further commercial eligibility/abuse checks and practical booking workflow pending.
+- GitHub CI and Cloudflare preview provide build verification, NOT full cross-browser and real-user acceptance.
+- Teacher media enhancement and video, live payment, booking integration, educator payouts, bilingual sitewide translation, B2B secure backend integration, pricing/legal/safeguarding and production cutover remain BLOCKED / NOT COMPLETE.
+
+Never describe this draft PR as a complete launchable website. The live site has not been replaced.

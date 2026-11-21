@@ -217,6 +217,7 @@ export function MarketplaceReviewPanel({api}) {
 export function TeacherApplicationsPanel({api}) {
   const [applications,setApplications]=useState([]);
   const [feedback,setFeedback]=useState({});
+  const [safeguarding,setSafeguarding]=useState({});
   const [error,setError]=useState('');
   const [notice,setNotice]=useState('');
   const [busy,setBusy]=useState(false);
@@ -230,14 +231,14 @@ export function TeacherApplicationsPanel({api}) {
     setBusy(true);setError('');setNotice('');
     try {
       await api('/api/staff/marketplace/applications/'+item.id+'/decision',{
-        method:'POST',body:JSON.stringify({decision,feedback:feedback[item.id]||''})
+        method:'POST',body:JSON.stringify({decision,feedback:feedback[item.id]||'',confirmSafeguarding:decision==='approved'&&safeguarding[item.id]===true})
       });
-      await refresh();setNotice('Application decision saved. Educator account access updated.');
+      await refresh();setNotice(decision==='approved'?'Educator approved and reviewed public profile published.':'Application rejection recorded.');
     }catch(e){setError(e.message)}finally{setBusy(false)}
   }
   return <section className="staff-card teacher-marketplace">
     <header className="marketplace-header"><div><span className="marketplace-kicker">ACCOUNT ONBOARDING</span>
-      <h3>Educator registrations</h3><p>Email-verified applications require Heeva approval before educator login can be activated.</p></div>
+      <h3>Educator registrations</h3><p>Educators verify email and complete their private profile before final approval. Approval publishes the reviewed profile; confirm all applicable checks first.</p></div>
       <span className="marketplace-status">{applications.filter(a=>a.status==='pending_admin').length} awaiting approval</span>
     </header>
     {error&&<p role="alert" className="marketplace-error">{error}</p>}
@@ -249,11 +250,12 @@ export function TeacherApplicationsPanel({api}) {
       <p>Email: {item.email_verified_at?'Verified':'Not verified'} · Applied: {new Date(item.created_at).toLocaleDateString()}</p>
       {item.reviewer_feedback&&<p className="marketplace-feedback">{item.reviewer_feedback}</p>}
       {item.status==='pending_admin'&&<div className="marketplace-review-actions">
-        <p className="marketplace-hint">Confirm identity, references and any safeguarding requirements outside this form before approving.</p>
+        <p className="marketplace-hint">Review the full profile in Educator profiles first. Verify identity, references, qualification evidence, eligibility and any safeguarding requirements before publishing.</p>
+        <label className="marketplace-check"><input type="checkbox" checked={Boolean(safeguarding[item.id])} onChange={e=>setSafeguarding(o=>({...o,[item.id]:e.target.checked}))}/><span>I confirm identity, eligibility and all applicable safeguarding checks are complete, and authorise public publication of the reviewed profile.</span></label>
         <label>Review notes<textarea rows={2} maxLength={1200} value={feedback[item.id]||''}
           onChange={e=>setFeedback(old=>({...old,[item.id]:e.target.value}))}/></label>
         <button className="button button-outline" type="button" disabled={busy||!feedback[item.id]?.trim()} onClick={()=>decide(item,'rejected')}>Reject application</button>
-        <button className="button" type="button" disabled={busy} onClick={()=>decide(item,'approved')}>Approve educator account</button>
+        <button className="button" type="button" disabled={busy||!safeguarding[item.id]} onClick={()=>decide(item,'approved')}>Approve and publish profile</button>
       </div>}
     </article>)}
   </section>;

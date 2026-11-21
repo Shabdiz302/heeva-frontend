@@ -40,7 +40,9 @@ export function CourseCard({ course }) {
   const action = status === 'coming-soon' ? 'See planned course' : 'View course details';
   return (
     <article className={`course-card card-${course.colour}${status === 'coming-soon' ? ' course-card-coming-soon' : ''}`}>
-      <img className="course-card-photo" src={course.image} alt="" aria-hidden="true" width="112" height="112" loading="lazy" decoding="async" />
+      {course.image
+        ? <img className="course-card-photo" src={course.image} alt="" aria-hidden="true" width="112" height="112" loading="lazy" decoding="async" />
+        : <span className="course-card-photo course-card-photo-fallback" aria-hidden="true">{course.mark}</span>}
       <div className="course-card-top">
         <span className="course-mark" aria-hidden="true">{course.mark}</span>
         <span className="course-status-tag">{statusLabel}</span>

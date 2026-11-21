@@ -1,0 +1,31 @@
+name: Heeva dashboard UI build
+
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'services/student-api/**'
+      - 'package.json'
+      - '.github/workflows/heeva-dashboard-ui-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  frontend-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install frontend dependencies
+        run: npm install --no-audit --no-fund
+      - name: Compile Vite frontend
+        run: npm run build
+      - name: Check Student API server syntax
+        run: node --check services/student-api/src/server.js
+      - name: Check Student API migration runner syntax
+        run: node --check services/student-api/src/migrate.js

@@ -69,3 +69,35 @@
   .staff-inline-form .button,.staff-add-lesson .button,.staff-upload-form .button,.staff-upload-form > div:first-child { grid-column:auto; }
   .staff-lesson-row { grid-template-columns:1fr; }
 }
+
+/* Portal dashboard usability: navigation, scannable overview, and touch-friendly actions. */
+.staff-view-nav { display:flex; flex-wrap:wrap; gap:10px; margin:22px 0 26px; padding:9px; border:1px solid #e2e7e3; border-radius:16px; background:#f3f6f4; }
+.staff-view-nav button { display:flex; align-items:center; gap:10px; min-height:48px; padding:12px 18px; border:0; border-radius:11px; background:transparent; color:#334a55; cursor:pointer; font-size:14px; font-weight:700; }
+.staff-view-nav button:hover,.staff-view-nav button:focus-visible { background:#e6eceb; outline-offset:2px; }
+.staff-view-nav button.is-active { color:#fff; background:#17344f; box-shadow:0 4px 12px rgba(17,42,68,.18); }
+.staff-nav-count { display:inline-flex; justify-content:center; min-width:25px; padding:3px 7px; border-radius:50px; background:rgba(130,148,155,.16); font-size:12px; }
+.staff-view-nav button.is-active .staff-nav-count { background:rgba(255,255,255,.2); }
+.staff-overview-intro { padding:24px 26px; border-radius:16px; background:linear-gradient(115deg,#142e46,#24536b); color:#fff; }
+.staff-overview-intro h3 { margin:7px 0 7px; font-size:clamp(23px,3vw,34px); line-height:1.2; color:#fff; }
+.staff-overview-intro p { margin:0; font-size:14px; color:#e1ebef; }
+.staff-overview-intro .eyebrow { color:#ead69a; }
+.staff-overview .staff-stats { gap:16px; margin:17px 0; }
+.staff-overview .staff-stats article { min-height:134px; padding:24px; border:1px solid #e1e7eb; border-radius:14px; background:#fff; box-shadow:0 5px 20px rgba(25,51,75,.05); }
+.staff-overview .staff-stats strong { font:700 36px/1.1 system-ui,sans-serif; color:#183a53; }
+.staff-overview .staff-stats small { margin-top:14px; font-size:13px; color:#576b7a; }
+.staff-quick-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin:16px 0 26px; }
+.staff-quick-actions button { display:flex; align-items:center; gap:16px; padding:22px; min-height:100px; border:1px solid #dbe5e8; border-radius:14px; background:#fff; text-align:left; cursor:pointer; color:#17344f; }
+.staff-quick-actions button:hover,.staff-quick-actions button:focus-visible { border-color:#b8a06b; box-shadow:0 8px 25px rgba(28,58,75,.09); }
+.staff-quick-actions button strong { font-size:15px; }
+.staff-quick-actions button small { display:block; font-size:12px; color:#627381; }
+.staff-quick-actions button > span:last-child { margin-left:auto; font-size:20px; }
+.staff-quick-icon { display:grid; place-items:center; width:46px; height:46px; flex:none; border-radius:12px; background:#f7edd7; color:#7c652d; font-size:22px; }
+.staff-shell .staff-card { border-radius:14px; }
+.staff-shell .staff-record-heading strong { font-size:20px; line-height:1.35; }
+.staff-shell .staff-record-heading small,.staff-shell .staff-state,.staff-shell .staff-count { font-size:12px; line-height:1.6; }
+.staff-shell .staff-field { font-size:12px; }
+.staff-shell .staff-field input,.staff-shell .staff-field select { min-height:46px; font-size:14px; }
+.staff-shell .staff-notice,.staff-shell .staff-small-note { font-size:12px; }
+.staff-shell .staff-text-button,.staff-shell .staff-lesson-row select { min-height:44px; font-size:13px; }
+@media (max-width:800px) { .staff-view-nav button { flex:1 1 auto; justify-content:center; } .staff-quick-actions { grid-template-columns:1fr; } .staff-overview .staff-stats { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:480px) { .staff-view-nav { padding:6px; } .staff-view-nav button { width:100%; justify-content:flex-start; } .staff-overview .staff-stats { grid-template-columns:1fr 1fr; gap:9px; } .staff-overview .staff-stats article { min-height:112px; padding:15px; } .staff-overview .staff-stats strong { font-size:30px; } .staff-overview .staff-stats small { font-size:12px; } }

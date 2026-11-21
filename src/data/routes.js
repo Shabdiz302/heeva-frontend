@@ -1,10 +1,10 @@
 export const pageMeta = {
-  '/': ['Heeva Courses | Discover what makes your child shine', 'Personalised online courses, a free consultation and room to discuss the right next step with Heeva.'],
+  '/': ['Heeva Courses | Online Courses, Tutors & Skills for Every Age', 'Explore online music, language and creative courses, meet tutors and discover upcoming school, technology and professional programmes.'],
   '/courses': ['Courses | Heeva Courses', 'Explore Heeva’s online courses in music, languages, creative arts, AI and digital skills. Browse existing programmes and upcoming courses.'],
-  '/teachers': ['Our teachers | Heeva Courses', 'Search the current Heeva teacher directory by name, subject, or biography and open individual teacher profiles.'],
+  '/teachers': ['Our Tutors | Heeva Courses', 'Meet Heeva tutors, browse teaching subjects and discover profiles for music, languages and creative learning.'],
   '/how-heeva-works': ['How Heeva works | Heeva Courses', 'Learn how to begin with a free consultation and discuss course information, trial terms and next steps.'],
   '/for-parents': ['For parents | Heeva Courses', 'Information for families about course fit, fees, teacher onboarding, safeguarding and published policies.'],
-  '/about': ['About Heeva | Heeva Courses', 'Learn about Heeva Courses and its published focus on individual online learning.'],
+  '/about': ['About Heeva | Heeva Courses', 'Discover Heeva Courses, an online education marketplace for children, adults, educators and organisations.'],
   '/for-organisations': ['Business Consultancy & Leadership Development | Heeva for Business', 'Explore leadership development, organisational consultancy, healthcare management and practical AI training for employers and healthcare teams.'],
   '/consultation': ['Free consultation | Heeva Courses', 'Request a free consultation with Heeva by WhatsApp or email.'],
   '/faq': ['Frequently asked questions | Heeva Courses', 'Answers about online courses, free consultations, course details, safeguarding questions and contacting Heeva.'],
@@ -12,6 +12,7 @@ export const pageMeta = {
   '/student/login': ['Student sign in | Heeva Courses', 'Sign in to the separate Heeva staging student portal.'],
   '/student/register': ['Create an account | Heeva Courses', 'Create a parent, guardian or adult learner account on the separate Heeva staging platform.'],
   '/student/dashboard': ['Student dashboard | Heeva Courses', 'Review your staging account, course requests and introductory lesson request.'],
-  '/staff/login': ['Staff sign in | Heeva Courses', 'Private sign-in for authorised Heeva administrators and teachers.'],
+  '/teacher/apply': ['Teach with Heeva | Educator application', 'Join Heeva as an educator for school, music, language, creative, technology or professional courses. Applications require email verification and approval.'],
+  '/staff/login': ['Staff sign in | Heeva Courses', 'Secure sign-in for Heeva staff, approved educators and verified educator applicants completing their profiles.'],
   '/staff/dashboard': ['Staff workspace | Heeva Courses', 'Private Heeva operations workspace for enrolments, lesson schedules and course materials.'],
 };

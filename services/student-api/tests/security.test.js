@@ -43,8 +43,9 @@ test("session tokens are random and stored as hashes", () => {
 });
 
 test("catalogue has unique slugs and one free-lesson rule is supported separately", () => {
-  assert.equal(catalog.length, 39);
-  assert.equal(new Set(catalog.map((course) => course.slug)).size, 39);
+  assert.ok(catalog.length >= 39);
+  assert.equal(new Set(catalog.map((course) => course.slug)).size, catalog.length);
+  assert.ok(catalog.some((course) => course.slug === "gcse-maths" && course.status === "coming-soon"));
   assert.ok(catalog.some((course) => course.slug === "piano"));
   assert.ok(catalog.some((course) => course.status === "coming-soon"));
 });

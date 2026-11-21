@@ -10,6 +10,7 @@ import CoursesPage from './pages/CoursesPage.jsx';
 import CourseDetailPage from './pages/CourseDetailPage.jsx';
 import TeachersPage from './pages/TeachersPage.jsx';
 import TeacherProfilePage from './pages/TeacherProfilePage.jsx';
+import { ApprovedEducatorPage } from './pages/ApprovedEducators.jsx';
 import HowItWorksPage from './pages/HowItWorksPage.jsx';
 import ParentsPage from './pages/ParentsPage.jsx';
 import AboutPage from './pages/AboutPage.jsx';
@@ -20,6 +21,8 @@ import NotFoundPage from './pages/NotFoundPage.jsx';
 import OrganisationsPage from './pages/OrganisationsPage.jsx';
 import StudentPortalPage from './pages/StudentPortalPage.jsx';
 import StaffWorkspacePage from './pages/StaffWorkspacePage.jsx';
+import TeacherApplyPage from './pages/TeacherApplyPage.jsx';
+import DemoDashboard from './pages/DemoDashboard.jsx';
 
 const SITE_URL = 'https://heevacourses.com';
 const SITE_NAME = 'Heeva';
@@ -50,6 +53,8 @@ function CurrentPage() {
   if (path === '/') return <HomePage />;
   if (path === '/courses') return <CoursesPage />;
   if (path === '/teachers') return <TeachersPage />;
+  const approvedMatch = path.match(/^\/educators\/([0-9a-f-]{36})$/i);
+  if (approvedMatch) return <ApprovedEducatorPage slug={approvedMatch[1]} />;
   const teacherMatch = path.match(/^\/teachers\/([^/]+)$/);
   if (teacherMatch) {
     const teacher = teachers.find((item) => item.slug === teacherMatch[1]);
@@ -64,6 +69,8 @@ function CurrentPage() {
   if (path === '/contact') return <ContactPage />;
   if (['/student/login', '/student/register', '/student/dashboard'].includes(path)) return <StudentPortalPage />;
   if (['/staff/login', '/staff/dashboard'].includes(path)) return <StaffWorkspacePage />;
+  if (path === '/teacher/apply') return <TeacherApplyPage />;
+  if (path === '/demo') return <DemoDashboard />;
   const match = path.match(/^\/courses\/([^/]+)$/);
   if (match) {
     const course = courses.find((item) => item.slug === match[1]);

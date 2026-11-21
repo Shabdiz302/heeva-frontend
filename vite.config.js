@@ -5,7 +5,8 @@ import { teachers } from './src/data/teachers.js';
 import { pageMeta } from './src/data/routes.js';
 import { defineConfig } from 'vite';
 
-const siteBase = process.env.HEEVA_BASE_PATH || '/heeva-frontend/';
+// Cloudflare Workers serves assets from the origin root. GitHub Pages opts into its repo prefix explicitly.
+const siteBase = process.env.HEEVA_BASE_PATH || '/';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({

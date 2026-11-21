@@ -1,15 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useRouter } from '../router.jsx';
 import { policies } from '../data/site.js';
 import { assetPath } from '../utils/assets.js';
 import HeevaChat from './HeevaChat.jsx';
 
 const primaryNav = [
-  ['Courses', '/courses'],
-  ['Our teachers', '/teachers'],
+  ['Explore courses', '/courses'],
+  ['Our Tutors', '/teachers'],
   ['How it works', '/how-heeva-works'],
   ['For parents', '/for-parents'],
-  ['About', '/about'],
   ['For Business', '/for-organisations'],
 ];
 
@@ -24,26 +23,56 @@ function Brand({ footer = false }) {
 export function SiteHeader() {
   const { pathname } = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const accountMenu = useRef(null);
   const courseActive = pathname.startsWith('/courses');
   const isBusiness = pathname === '/for-organisations';
 
   useEffect(() => {
     const onKeyDown = (event) => {
-      if (event.key === 'Escape') setMenuOpen(false);
+      if (event.key === 'Escape') {
+        setMenuOpen(false);
+        if (accountMenu.current) accountMenu.current.open = false;
+      }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
-  const closeMenu = () => setMenuOpen(false);
+  useEffect(() => {
+    if (accountMenu.current) accountMenu.current.open = false;
+  }, [pathname]);
+
+  useEffect(() => {
+    const closeOnOutside = (event) => {
+      if (accountMenu.current && !accountMenu.current.contains(event.target)) {
+        accountMenu.current.open = false;
+      }
+    };
+    document.addEventListener('pointerdown', closeOnOutside);
+    return () => document.removeEventListener('pointerdown', closeOnOutside);
+  }, []);
+
+  const closeMenu = () => {
+    setMenuOpen(false);
+    if (accountMenu.current) accountMenu.current.open = false;
+  };
 
   return (
     <>
       <div className="utility-bar">
         <div className="shell utility-inner">
-          <span><span className="utility-spark">✳</span> A little curiosity goes a long way</span>
-          <span className="utility-note">{isBusiness ? 'Management development and advisory' : 'Personalised online lessons · One free introductory lesson'}</span>
-          <Link to="/contact" className="utility-contact">Get in touch <span aria-hidden="true">↗</span></Link>
+          <span className="utility-note"><span className="utility-spark">✳</span>{isBusiness ? 'Management development and advisory' : 'Personalised online courses · One free introductory lesson'}</span>
+          <div className="utility-actions">
+            <Link to="/contact" className="utility-contact">Contact us <span aria-hidden="true">↗</span></Link>
+            <details className="header-account" ref={accountMenu}>
+              <summary className="header-account-toggle">Log in <span aria-hidden="true">⌄</span></summary>
+              <div className="header-account-options">
+                <Link to="/student/login" onClick={closeMenu}><strong>Student / Parent</strong><small>Access lessons and learning</small></Link>
+                <Link to="/staff/login" onClick={closeMenu}><strong>Educator</strong><small>Complete your profile or teach</small></Link>
+                <Link to="/student/register" onClick={closeMenu} className="header-account-create">New student? Create account</Link>
+              </div>
+            </details>
+          </div>
         </div>
       </div>
       <header className="site-header">
@@ -64,6 +93,11 @@ export function SiteHeader() {
               const active = to === '/courses' ? courseActive : pathname === to;
               return <Link key={to} to={to} aria-current={active ? 'page' : undefined} onClick={closeMenu}>{label}</Link>;
             })}
+            <Link className="nav-teach" to="/teacher/apply" onClick={closeMenu}>Teach with Heeva</Link>
+            <div className="mobile-account-links" aria-label="Account access">
+              <Link to="/student/login" onClick={closeMenu}>Student / Parent login</Link>
+              <Link to="/staff/login" onClick={closeMenu}>Educator login</Link>
+            </div>
             <Link className="button button-nav" to={isBusiness ? "/consultation?audience=business" : "/consultation"} onClick={closeMenu}>{isBusiness ? "Business enquiries" : "Request a free consultation"} <span aria-hidden="true">↗</span></Link>
           </nav>
         </div>
@@ -84,9 +118,11 @@ export function SiteFooter() {
         <div className="footer-col">
           <h2>Explore</h2>
           <Link to="/courses">All courses</Link>
-          <Link to="/teachers">Our teachers</Link>
+          <Link to="/teachers">Our Tutors</Link>
           <Link to="/how-heeva-works">How Heeva works</Link>
-          <Link to="/student/login">Student portal sign in</Link>
+          <Link to="/student/login">Student / parent sign in</Link>
+          <Link to="/staff/login">Educator sign in</Link>
+          <Link to="/teacher/apply">Teach with Heeva</Link>
         </div>
         <div className="footer-col">
           <h2>For families</h2>
@@ -99,7 +135,7 @@ export function SiteFooter() {
           <Link to="/about">About Heeva</Link>
           <Link to="/for-organisations">Heeva for Business</Link>
           <Link to="/contact">Contact</Link>
-          <Link to="/student/register">Create a staging account</Link>
+          <Link to="/student/register">Student / parent registration</Link>
           <a href={policies.privacy} target="_blank" rel="noreferrer">Privacy policy <span aria-hidden="true">↗</span></a>
           <a href={policies.terms} target="_blank" rel="noreferrer">Terms of service <span aria-hidden="true">↗</span></a>
         </div>

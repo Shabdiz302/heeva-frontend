@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useRouter } from '../router.jsx';
+import { Link, useRouter } from '../router.jsx';
 import { PageIntro, Eyebrow } from '../components/ContentBlocks.jsx';
 import './staff-workspace.css';
+import { TeacherMarketplacePanel, MarketplaceReviewPanel, TeacherApplicationsPanel } from './TeacherMarketplacePanel.jsx';
+import { TeacherOffersPanel, OfferReviewPanel } from './MarketplaceOffersPanel.jsx';
 
 async function staffApi(path, options = {}) {
   const apiBase = import.meta.env.VITE_STUDENT_API_BASE || '/student-preview-api';
@@ -38,6 +40,7 @@ export default function StaffWorkspacePage() {
   const [staff, setStaff] = useState(null);
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [busy, setBusy] = useState(false);
+  const [activeView, setActiveView] = useState('overview');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [counts, setCounts] = useState({});
@@ -78,7 +81,7 @@ export default function StaffWorkspacePage() {
   }, [isLogin, navigate]);
 
   useEffect(() => {
-    if (isLogin || !staff) return undefined;
+    if (isLogin || !staff || staff.onboardingOnly) return undefined;
     let active = true;
     Promise.all([
       staffApi('/api/staff/dashboard'),
@@ -237,7 +240,7 @@ export default function StaffWorkspacePage() {
     return (
       <>
         <PageIntro eyebrow="Heeva staff workspace" title={<>Staff <em>sign in.</em></>}>
-          <p>Authorised administrators and teachers only.</p>
+          <p>Heeva administrators, approved educators and verified educator applicants.</p>
         </PageIntro>
         <section className="shell staff-shell staff-login-layout">
           <div className="staff-login-aside">
@@ -246,13 +249,19 @@ export default function StaffWorkspacePage() {
             <p>Review enrolment requests, confirm lesson packages, manage schedules and publish learning documents.</p>
           </div>
           <div className="staff-card staff-login-card">
-            <Eyebrow>Restricted access</Eyebrow><h3>Staff sign in</h3>
-            <StaffNotice type="warning">Private staging workspace. Staff credentials are provisioned by a server administrator. Customer accounts cannot sign in here.</StaffNotice>
+            <Eyebrow>Restricted access</Eyebrow><h3>Educator and staff sign in</h3>
+            <StaffNotice type="warning">Private staff workspace. Educators with verified emails can complete private profiles here. Only approved educators and administrators can manage lessons.</StaffNotice>
+            <p className="staff-small-note">Want to teach with Heeva? <Link to="/teacher/apply">Apply to teach</Link>.</p>
+            <div className="preview-demo-entry">
+              <strong>Reviewing the website?</strong>
+              <p>The sample credentials work on the separate dashboard demo—not on this real sign-in form, which requires the staging API.</p>
+              <Link className="button button-outline" to="/demo">Explore demo dashboards ↗</Link>
+            </div>
             <StaffNotice type="error">{error}</StaffNotice>
             <form className="staff-form" onSubmit={submitLogin}>
               <StaffField label="Staff email" type="email" autoComplete="username" value={loginForm.email} onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })} required />
               <StaffField label="Password" type="password" autoComplete="current-password" value={loginForm.password} onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })} required />
-              <button className="button staff-submit" type="submit" disabled={busy}>{busy ? 'Signing in…' : 'Sign in to staff workspace'} <span aria-hidden="true">↗</span></button>
+              <button className="button staff-submit" type="submit" disabled={busy}>{busy ? 'Signing in…' : 'Sign in securely'} <span aria-hidden="true">↗</span></button>
             </form>
           </div>
         </section>
@@ -264,6 +273,26 @@ export default function StaffWorkspacePage() {
     return <section className="shell staff-shell"><StaffNotice type="info">Checking staff session…</StaffNotice></section>;
   }
 
+  if (staff.onboardingOnly) {
+    return <>
+      <PageIntro eyebrow="Teach with Heeva" title={<>Create your <em>educator profile.</em></>}>
+        <p>Your email is verified. Build and submit your private profile for Heeva review. Your page is not public yet.</p>
+      </PageIntro>
+      <section className="shell staff-shell">
+        <div className="staff-topbar"><div><Eyebrow>Educator onboarding</Eyebrow><h2>Welcome, {staff.displayName}.</h2><p>{staff.email}</p></div>
+          <button className="button button-outline" type="button" onClick={logout} disabled={busy}>Sign out</button></div>
+        <nav className="staff-view-nav" aria-label="Educator onboarding steps">
+          <button type="button" className={activeView!=='teacher-offers'?'is-active':''} onClick={()=>setActiveView('teacher-profile')}>1. My educator profile</button>
+          <button type="button" className={activeView==='teacher-offers'?'is-active':''} onClick={()=>setActiveView('teacher-offers')}>2. My proposed courses</button>
+        </nav>
+        {activeView==='teacher-offers'
+          ? <TeacherOffersPanel api={staffApi}/>
+          : <TeacherMarketplacePanel api={staffApi} staff={staff} />}
+        <p className="staff-small-note">Your profile and proposed courses remain private while Heeva reviews them. No learners can book you until Heeva approves the relevant offers.</p>
+      </section>
+    </>;
+  }
+
   return (
     <>
       <PageIntro eyebrow="Heeva operations" title={<>Staff <em>workspace.</em></>}>
@@ -271,11 +300,23 @@ export default function StaffWorkspacePage() {
       </PageIntro>
       <section className="shell staff-shell">
         <div className="staff-topbar">
-          <div><Eyebrow>{staff.role === 'admin' ? 'Administrator' : 'Teacher workspace'}</Eyebrow><h2>Welcome, {staff.displayName}.</h2><p>{staff.email}</p></div>
+          <div><Eyebrow>{staff.role === 'admin' ? 'Administrator' : 'Educator workspace'}</Eyebrow><h2>Welcome, {staff.displayName}.</h2><p>{staff.email}</p></div>
           <button className="button button-outline" type="button" onClick={logout} disabled={busy}>Sign out</button>
         </div>
         <StaffNotice type="error">{error}</StaffNotice>
         <StaffNotice type="success">{notice}</StaffNotice>
+        <nav className="staff-view-nav" aria-label="Staff workspace sections">
+          <button type="button" className={activeView === 'overview' ? 'is-active' : ''} aria-current={activeView === 'overview' ? 'page' : undefined} onClick={() => setActiveView('overview')}><span aria-hidden="true">◫</span> Overview</button>
+          {staff.role === 'admin' && <button type="button" className={activeView === 'requests' ? 'is-active' : ''} aria-current={activeView === 'requests' ? 'page' : undefined} onClick={() => setActiveView('requests')}><span aria-hidden="true">✉</span> Enrolment requests <span className="staff-nav-count">{requestCount}</span></button>}
+          {staff.role === 'admin' && <button type="button" className={activeView === 'teacher-applications' ? 'is-active' : ''} aria-current={activeView === 'teacher-applications' ? 'page' : undefined} onClick={() => setActiveView('teacher-applications')}>Educator registrations</button>}
+          {staff.role === 'admin' && <button type="button" className={activeView === 'marketplace-review' ? 'is-active' : ''} aria-current={activeView === 'marketplace-review' ? 'page' : undefined} onClick={() => setActiveView('marketplace-review')}>Educator profiles</button>}
+          {staff.role === 'teacher' && <button type="button" className={activeView === 'teacher-profile' ? 'is-active' : ''} aria-current={activeView === 'teacher-profile' ? 'page' : undefined} onClick={() => setActiveView('teacher-profile')}>My educator profile</button>}
+          {staff.role === 'teacher' && <button type="button" className={activeView === 'teacher-offers' ? 'is-active' : ''} aria-current={activeView === 'teacher-offers' ? 'page' : undefined} onClick={() => setActiveView('teacher-offers')}>My course offers</button>}
+          {staff.role === 'admin' && <button type="button" className={activeView === 'offer-review' ? 'is-active' : ''} aria-current={activeView === 'offer-review' ? 'page' : undefined} onClick={() => setActiveView('offer-review')}>Course pricing</button>}
+          <button type="button" className={activeView === 'courses' ? 'is-active' : ''} aria-current={activeView === 'courses' ? 'page' : undefined} onClick={() => setActiveView('courses')}><span aria-hidden="true">▦</span> Courses &amp; lessons <span className="staff-nav-count">{enrolments.length}</span></button>
+        </nav>
+        {activeView === 'overview' && <div className="staff-overview">
+          <div className="staff-overview-intro"><div><Eyebrow>At a glance</Eyebrow><h3>{staff.role === 'admin' ? 'Heeva operations overview' : 'Your teaching workspace'}</h3><p>See what needs attention, then jump straight to the right task.</p></div></div>
         <div className="staff-stats">
           <article><strong>{counts.pendingRequests ?? '—'}</strong><small>{staff.role === 'admin' ? 'Pending requests' : 'My active courses'}</small></article>
           <article><strong>{counts.activeEnrolments ?? '—'}</strong><small>Active enrolments</small></article>
@@ -283,7 +324,23 @@ export default function StaffWorkspacePage() {
           <article><strong>{counts.publishedResources ?? '—'}</strong><small>Published resources</small></article>
         </div>
 
-        {staff.role === 'admin' && (
+        <div className="staff-quick-actions">
+          {staff.role === 'admin' && <button type="button" onClick={() => setActiveView('requests')}><span className="staff-quick-icon" aria-hidden="true">✉</span><strong>Review requests</strong><small>{requestCount} awaiting action</small><span aria-hidden="true">→</span></button>}
+          {staff.role === 'admin' && <button type="button" onClick={() => setActiveView('teacher-applications')}><span className="staff-quick-icon" aria-hidden="true">♙</span><strong>Educator registrations</strong><small>Review new applications and identity checks</small><span aria-hidden="true">→</span></button>}
+          {staff.role === 'admin' && <button type="button" onClick={() => setActiveView('marketplace-review')}><span className="staff-quick-icon" aria-hidden="true">✓</span><strong>Educator profiles</strong><small>Approve reviewed professional profiles</small><span aria-hidden="true">→</span></button>}
+          {staff.role === 'admin' && <button type="button" onClick={() => setActiveView('offer-review')}><span className="staff-quick-icon" aria-hidden="true">£</span><strong>Course pricing</strong><small>Review proposed tutor rates and customer prices</small><span aria-hidden="true">→</span></button>}
+          {staff.role === 'teacher' && <button type="button" onClick={() => setActiveView('teacher-profile')}><span className="staff-quick-icon" aria-hidden="true">♙</span><strong>My professional profile</strong><small>Update biography, qualifications and portrait</small><span aria-hidden="true">→</span></button>}
+          {staff.role === 'teacher' && <button type="button" onClick={() => setActiveView('teacher-offers')}><span className="staff-quick-icon" aria-hidden="true">▤</span><strong>My course proposals</strong><small>Propose subjects and lesson rates</small><span aria-hidden="true">→</span></button>}
+          <button type="button" onClick={() => setActiveView('courses')}><span className="staff-quick-icon" aria-hidden="true">▦</span><strong>Manage courses and lessons</strong><small>{enrolments.length} active course records</small><span aria-hidden="true">→</span></button>
+        </div>
+        </div>}
+
+        {activeView === 'teacher-profile' && staff.role === 'teacher' && <TeacherMarketplacePanel api={staffApi} staff={staff} />}
+        {activeView === 'teacher-offers' && staff.role === 'teacher' && <TeacherOffersPanel api={staffApi} />}
+        {activeView === 'offer-review' && staff.role === 'admin' && <OfferReviewPanel api={staffApi} />}
+        {activeView === 'marketplace-review' && staff.role === 'admin' && <MarketplaceReviewPanel api={staffApi} />}
+        {activeView === 'teacher-applications' && staff.role === 'admin' && <TeacherApplicationsPanel api={staffApi} />}
+        {activeView === 'requests' && staff.role === 'admin' && (
           <section className="staff-card">
             <div className="staff-section-head"><div><Eyebrow>New customer activity</Eyebrow><h3>Enrolment requests</h3></div><span className="staff-count">{requestCount} awaiting action</span></div>
             {requests.length ? requests.map((request) => {
@@ -304,7 +361,7 @@ export default function StaffWorkspacePage() {
           </section>
         )}
 
-        <section className="staff-card">
+        {activeView === 'courses' && <section className="staff-card">
           <div className="staff-section-head"><div><Eyebrow>Teaching operations</Eyebrow><h3>{staff.role === 'admin' ? 'Active course enrolments' : 'My assigned courses'}</h3></div><span className="staff-count">{enrolments.length} courses</span></div>
           {enrolments.length ? enrolments.map((enrolment) => {
             const lessons = lessonsByEnrolment[enrolment.id] || [];
@@ -345,7 +402,7 @@ export default function StaffWorkspacePage() {
               </article>
             );
           }) : <p className="staff-empty">No active course enrolments are assigned yet.</p>}
-        </section>
+        </section>}
         <p className="staff-small-note">Every staff action is restricted by role and recorded in the staff audit log. Staging only; do not use real customer or child data until the required safeguarding and privacy reviews are complete.</p>
       </section>
     </>

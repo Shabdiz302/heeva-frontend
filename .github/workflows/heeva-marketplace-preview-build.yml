@@ -1,0 +1,68 @@
+name: Build isolated Heeva marketplace preview
+
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'vite.config.js'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/heeva-marketplace-preview-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  marketplace-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out the review branch
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned pnpm
+        run: npm install --global pnpm@11.25.0
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Compile isolated marketplace preview
+        env:
+          HEEVA_BASE_PATH: /marketplace-preview/
+          VITE_STUDENT_API_BASE: /marketplace-preview-api
+        run: pnpm run build
+      - name: Check preview bundle and separation
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f dist/index.html
+          test -f dist/staff/login/index.html
+          test -f dist/staff/dashboard/index.html
+          test -f dist/teacher/apply/index.html
+          test -f dist/student/login/index.html
+          test -f dist/student/dashboard/index.html
+          test -f dist/images/teachers/maryam-m.webp
+          grep -q '/marketplace-preview/assets/' dist/index.html
+          if grep -R -l --include='*.js' '/student-preview-api/api/' dist/assets; then
+            echo 'Preview bundle still calls existing staging API'; exit 1
+          fi
+          if grep -R -l --include='*.js' '/student-preview-next-api/api/' dist/assets; then
+            echo 'Preview bundle still calls current isolated student API'; exit 1
+          fi
+          if ! grep -R -q --include='*.js' '/marketplace-preview-api' dist/assets; then
+            echo 'Expected isolated marketplace API URL is absent'; exit 1
+          fi
+          if ! grep -R -q --include='*.js' '/marketplace-preview/' dist/assets; then
+            echo 'Expected isolated marketplace base is absent'; exit 1
+          fi
+          echo 'Marketplace preview artifact was built with isolated /marketplace-preview/ and /marketplace-preview-api routes.'
+      - name: Upload candidate only (no VPS deployment)
+        uses: actions/upload-artifact@v4
+        with:
+          name: heeva-marketplace-preview-candidate
+          path: dist/
+          retention-days: 7
+          if-no-files-found: error

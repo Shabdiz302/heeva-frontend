@@ -111,6 +111,7 @@ export default function StudentPortalPage() {
     displayName: '', ageBand: '8_12', preferredLanguage: 'en', guardianAuthorityConfirmed: false,
   });
   const [busy, setBusy] = useState(false);
+  const [activeView, setActiveView] = useState('overview');
   const [verificationPending, setVerificationPending] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [registrationEmail, setRegistrationEmail] = useState('');
@@ -384,13 +385,34 @@ export default function StudentPortalPage() {
         <PageIntro eyebrow="Heeva learning space" title={<>Your learning, <em>in one place.</em></>}>
           <p>See your enrolled courses, lesson allowance, learning progress and downloadable course materials.</p>
         </PageIntro>
-        <section className="shell student-portal student-dashboard">
+        <section className="shell student-portal student-dashboard" data-view={activeView}>
           <div className="student-dashboard-heading">
             <div><Eyebrow>Account overview</Eyebrow><h2>Hello, {account?.firstName || 'there'}.</h2><p>{account?.email || 'Loading your account…'}</p></div>
             <button className="button button-outline" type="button" onClick={logout} disabled={busy}>Sign out</button>
           </div>
           <Notice type="error">{error}</Notice>
           <Notice type="success">{notice}</Notice>
+          <nav className="student-view-nav" aria-label="Learning dashboard sections">
+            {[
+              ['overview', 'Overview', '◫'],
+              ['courses', 'My courses', '▦'],
+              ['schedule', 'Schedule', '▣'],
+              ['requests', 'Enrolments', '✉'],
+              ['account', 'My account', '◉'],
+            ].map(([id, label, symbol]) => (
+              <button key={id} type="button" className={activeView === id ? 'is-active' : ''}
+                aria-current={activeView === id ? 'page' : undefined}
+                onClick={() => setActiveView(id)}>
+                <span aria-hidden="true">{symbol}</span>{label}
+              </button>
+            ))}
+          </nav>
+
+          {activeView === 'overview' && <div className="student-dashboard-welcome">
+            <div><Eyebrow>Your learning journey</Eyebrow><h3>Everything in one place</h3>
+            <p>Check course progress, view upcoming lessons, and manage your family's learning.</p></div>
+            <button type="button" onClick={() => setActiveView('courses')}>View my courses <span aria-hidden="true">→</span></button>
+          </div>}
 
           <section className="student-learning-overview" aria-label="Learning overview">
             <div className="student-overview-heading">
@@ -612,6 +634,11 @@ export default function StudentPortalPage() {
           <Eyebrow>{registering ? 'New account' : 'Secure sign in'}</Eyebrow>
           <h2>{registering ? 'Create an account' : 'Sign in to Heeva'}</h2>
           <Notice type="warning">Staging preview only. Use test details, a test email and a unique password. Do not enter real children's personal information or payment details.</Notice>
+          <div className="preview-demo-entry">
+            <strong>Want to explore a sample account?</strong>
+            <p>The demo accounts use a separate preview login. They do not work with this staging API sign-in.</p>
+            <Link className="button button-outline" to="/demo">Open dashboard demo ↗</Link>
+          </div>
           <Notice type="error">{error}</Notice>
           {verificationPending ? (
             <form className="student-form" onSubmit={verifyEmail}>

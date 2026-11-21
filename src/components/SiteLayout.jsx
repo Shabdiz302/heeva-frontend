@@ -5,11 +5,10 @@ import { assetPath } from '../utils/assets.js';
 import HeevaChat from './HeevaChat.jsx';
 
 const primaryNav = [
-  ['Courses', '/courses'],
-  ['Our teachers', '/teachers'],
+  ['Explore courses', '/courses'],
+  ['Our educators', '/teachers'],
   ['How it works', '/how-heeva-works'],
   ['For parents', '/for-parents'],
-  ['About', '/about'],
   ['For Business', '/for-organisations'],
 ];
 
@@ -62,9 +61,18 @@ export function SiteHeader() {
     <>
       <div className="utility-bar">
         <div className="shell utility-inner">
-          <span><span className="utility-spark">✳</span> A little curiosity goes a long way</span>
-          <span className="utility-note">{isBusiness ? 'Management development and advisory' : 'Personalised online lessons · One free introductory lesson'}</span>
-          <Link to="/contact" className="utility-contact">Get in touch <span aria-hidden="true">↗</span></Link>
+          <span className="utility-note"><span className="utility-spark">✳</span>{isBusiness ? 'Management development and advisory' : 'Personalised online courses · One free introductory lesson'}</span>
+          <div className="utility-actions">
+            <Link to="/contact" className="utility-contact">Contact us <span aria-hidden="true">↗</span></Link>
+            <details className="header-account" ref={accountMenu}>
+              <summary className="header-account-toggle">Log in <span aria-hidden="true">⌄</span></summary>
+              <div className="header-account-options">
+                <Link to="/student/login" onClick={closeMenu}><strong>Student / Parent</strong><small>Access lessons and learning</small></Link>
+                <Link to="/staff/login" onClick={closeMenu}><strong>Educator</strong><small>Complete your profile or teach</small></Link>
+                <Link to="/student/register" onClick={closeMenu} className="header-account-create">New student? Create account</Link>
+              </div>
+            </details>
+          </div>
         </div>
       </div>
       <header className="site-header">
@@ -86,14 +94,10 @@ export function SiteHeader() {
               return <Link key={to} to={to} aria-current={active ? 'page' : undefined} onClick={closeMenu}>{label}</Link>;
             })}
             <Link className="nav-teach" to="/teacher/apply" onClick={closeMenu}>Teach with Heeva</Link>
-            <details className="header-account" ref={accountMenu}>
-              <summary className="header-account-toggle"><span aria-hidden="true">♙</span> Log in <span aria-hidden="true">⌄</span></summary>
-              <div className="header-account-options">
-                <Link to="/student/login" onClick={closeMenu}><strong>Student / Parent</strong><small>Access lessons and learning</small></Link>
-                <Link to="/staff/login" onClick={closeMenu}><strong>Educator</strong><small>Complete your profile or teach</small></Link>
-                <Link to="/student/register" onClick={closeMenu} className="header-account-create">New student? Create account</Link>
-              </div>
-            </details>
+            <div className="mobile-account-links" aria-label="Account access">
+              <Link to="/student/login" onClick={closeMenu}>Student / Parent login</Link>
+              <Link to="/staff/login" onClick={closeMenu}>Educator login</Link>
+            </div>
             <Link className="button button-nav" to={isBusiness ? "/consultation?audience=business" : "/consultation"} onClick={closeMenu}>{isBusiness ? "Business enquiries" : "Request a free consultation"} <span aria-hidden="true">↗</span></Link>
           </nav>
         </div>

@@ -44,6 +44,20 @@ export default function AboutPage() {
           <Link className="text-link" to="/for-organisations">Heeva for Business ↗</Link>
         </div>
       </section>
+      <section className="shell section-space about-director" aria-labelledby="heeva-director-heading">
+        <div className="about-director-image">
+          <img src="/images/brand/maryam-zahmatkesh-approved-final.webp" alt="Dr Maryam Zahmatkesh, Director of Heeva Courses" width="340" height="365" loading="lazy" decoding="async" />
+        </div>
+        <div className="about-director-copy">
+          <Eyebrow>Leadership at Heeva</Eyebrow>
+          <h2 id="heeva-director-heading">Dr Maryam Zahmatkesh</h2>
+          <p className="about-director-role">Director, Heeva Courses</p>
+          <p>Dr Maryam Zahmatkesh brings a combination of academic knowledge and hands-on management experience to Heeva. Her background includes healthcare management, human resource management and leadership education, with experience in both higher education and hospital management.</p>
+          <p>She holds a PhD focused on management autonomy in healthcare organisations, alongside qualifications in leadership and healthcare management. Her experience helps shape Heeva's commitment to thoughtful teaching, professional development and practical learning.</p>
+          <p>Alongside her work with Heeva, she is a Lecturer in Health Management at Royal Holloway, University of London. Her academic appointment is separate from Heeva Courses, which operates independently and is not endorsed by the university.</p>
+          <a className="text-link" href="https://pure.royalholloway.ac.uk/en/persons/maryam-zahmatkesh/" target="_blank" rel="noreferrer">View Dr Maryam's academic profile ↗ <span className="sr-only">(opens in a new tab)</span></a>
+        </div>
+      </section>
       <section className="shell section-space about-first-step">
         <Eyebrow>Getting started</Eyebrow>
         <h2>Try a lesson before you decide.</h2>

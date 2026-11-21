@@ -276,7 +276,14 @@ export default function StaffWorkspacePage() {
       <section className="shell staff-shell">
         <div className="staff-topbar"><div><Eyebrow>Educator onboarding</Eyebrow><h2>Welcome, {staff.displayName}.</h2><p>{staff.email}</p></div>
           <button className="button button-outline" type="button" onClick={logout} disabled={busy}>Sign out</button></div>
-        <TeacherMarketplacePanel api={staffApi} staff={staff} />
+        <nav className="staff-view-nav" aria-label="Educator onboarding steps">
+          <button type="button" className={activeView!=='teacher-offers'?'is-active':''} onClick={()=>setActiveView('teacher-profile')}>1. My educator profile</button>
+          <button type="button" className={activeView==='teacher-offers'?'is-active':''} onClick={()=>setActiveView('teacher-offers')}>2. My proposed courses</button>
+        </nav>
+        {activeView==='teacher-offers'
+          ? <TeacherOffersPanel api={staffApi}/>
+          : <TeacherMarketplacePanel api={staffApi} staff={staff} />}
+        <p className="staff-small-note">Your profile and proposed courses remain private while Heeva reviews them. No learners can book you until Heeva approves the relevant offers.</p>
       </section>
     </>;
   }

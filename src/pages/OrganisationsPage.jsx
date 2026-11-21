@@ -69,7 +69,7 @@ export default function OrganisationsPage() {
         <div className="org-enquiry-copy"><h2>Discuss your project</h2><p>Tell us what you want to improve, who is involved and when you’d like to start. We can then discuss a suitable scope and format.</p></div>
         <div className="org-enquiry-card">
           <h3>Business enquiries</h3>
-          <p>Use the enquiry preview to see what we ask for, or email Heeva with a short brief.</p>
+          <p>Tell us about your organisation's needs. Complete a business enquiry to send your brief through the configured form, or prepare an email to our team.</p>
           <ButtonLink to={enquiryPath} variant="cream">Open business enquiry</ButtonLink>
         </div>
       </section>

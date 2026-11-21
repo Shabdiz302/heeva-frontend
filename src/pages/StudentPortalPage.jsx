@@ -391,6 +391,11 @@ export default function StudentPortalPage() {
             <button className="button button-outline" type="button" onClick={logout} disabled={busy}>Sign out</button>
           </div>
           <Notice type="error">{error}</Notice>
+          <div className="preview-demo-entry">
+            <strong>Want to explore a sample account?</strong>
+            <p>The demo accounts use a separate preview login. They do not work with this staging API sign-in.</p>
+            <Link className="button button-outline" to="/demo">Open dashboard demo ↗</Link>
+          </div>
           <Notice type="success">{notice}</Notice>
           <nav className="student-view-nav" aria-label="Learning dashboard sections">
             {[

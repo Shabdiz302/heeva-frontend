@@ -22,6 +22,7 @@ import OrganisationsPage from './pages/OrganisationsPage.jsx';
 import StudentPortalPage from './pages/StudentPortalPage.jsx';
 import StaffWorkspacePage from './pages/StaffWorkspacePage.jsx';
 import TeacherApplyPage from './pages/TeacherApplyPage.jsx';
+import DemoDashboard from './pages/DemoDashboard.jsx';
 
 const SITE_URL = 'https://heevacourses.com';
 const SITE_NAME = 'Heeva';
@@ -69,6 +70,7 @@ function CurrentPage() {
   if (['/student/login', '/student/register', '/student/dashboard'].includes(path)) return <StudentPortalPage />;
   if (['/staff/login', '/staff/dashboard'].includes(path)) return <StaffWorkspacePage />;
   if (path === '/teacher/apply') return <TeacherApplyPage />;
+  if (path === '/demo') return <DemoDashboard />;
   const match = path.match(/^\/courses\/([^/]+)$/);
   if (match) {
     const course = courses.find((item) => item.slug === match[1]);

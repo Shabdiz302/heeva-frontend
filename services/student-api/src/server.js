@@ -329,6 +329,22 @@ async function handle(req, res) {
     }
   }
 
+  // Public directory exposes only a reviewed snapshot. Private applications and documents never leave the staff API.
+  if (method === "GET" && path === "/api/public/educators") {
+    const rows = await pool.query(
+      "SELECT slug,display_name,headline,biography,subjects,languages,published_at " +
+      "FROM marketplace_public_educators WHERE published=TRUE ORDER BY published_at DESC,slug ASC LIMIT 200");
+    return json(res,200,{educators:rows.rows});
+  }
+  const publicEducator = path.match(/^\\/api\\/public\\/educators\\/([0-9a-f-]{36})$/i);
+  if (method === "GET" && publicEducator) {
+    const row = await pool.query(
+      "SELECT slug,display_name,headline,biography,subjects,languages,published_at " +
+      "FROM marketplace_public_educators WHERE slug=$1 AND published=TRUE LIMIT 1",
+      [publicEducator[1]]);
+    return row.rowCount ? json(res,200,{educator:row.rows[0]}) : json(res,404,{error:"Educator profile not found."});
+  }
+
   if (method === "GET" && path === "/api/courses") {
     return json(res, 200, { courses: catalog.map(({ slug, title, status }) => ({
       slug, title, status, enrolmentOpen: status === "available"
@@ -1144,6 +1160,22 @@ async function handle(req, res) {
     }
 
 
+    // Administrators can remove a previously approved public profile immediately.
+    const unpublish = path.match(/^\\/api\\/staff\\/marketplace\\/public-educators\\/([0-9a-f-]{36})\\/unpublish$/i);
+    if (method==="POST" && unpublish && staff.role==="admin") {
+      const client=await pool.connect();
+      try {
+        await client.query("BEGIN");
+        const updated=await client.query(
+          "UPDATE marketplace_public_educators SET published=FALSE,updated_at=NOW() " +
+          "WHERE profile_id=$1 AND published=TRUE RETURNING profile_id",[unpublish[1]]);
+        if (!updated.rowCount) {await client.query("ROLLBACK");return json(res,404,{error:"Published educator not found."});}
+        await auditStaffAction(client,staff.id,"marketplace.educator.unpublished","marketplace_teacher_profile",unpublish[1]);
+        await client.query("COMMIT");
+        return json(res,200,{ok:true});
+      } catch(error) {await client.query("ROLLBACK");throw error;}finally{client.release();}
+    }
+
     if (method === "GET" && path === "/api/staff/marketplace/applications" && staff.role === "admin") {
       const applications=await pool.query(
         "SELECT a.staff_user_id AS id,a.status,a.email_verified_at,a.created_at,a.reviewer_feedback," +
@@ -1157,6 +1189,7 @@ async function handle(req, res) {
       const decision=String(body.decision||"");
       const feedback=typeof body.feedback==="string"?body.feedback.trim():"";
       if(!["approved","rejected"].includes(decision)||feedback.length>1200||
+         (decision==="approved" && body.confirmSafeguarding!==true)||
         (decision==="rejected"&&!feedback))return json(res,400,{error:"Choose approve or reject, with a reason for rejection."});
       const client=await pool.connect();
       try{
@@ -1167,9 +1200,20 @@ async function handle(req, res) {
           "SELECT 1 FROM marketplace_teacher_profiles p WHERE p.staff_user_id=$1 AND p.review_status='approved')) RETURNING staff_user_id",
           [teacherApplicationDecision[1],decision,staff.id,feedback]);
         if(!changed.rowCount){await client.query("ROLLBACK");return json(res,409,{error:"Application is not awaiting review."});}
-        if(decision==="approved")await client.query(
-          "UPDATE staff_users SET status='active',updated_at=NOW() WHERE id=$1 AND role='teacher' AND status='suspended'",
-          [teacherApplicationDecision[1]]);
+        if (decision==="approved") {
+          await client.query(
+            "UPDATE staff_users SET status='active',updated_at=NOW() WHERE id=$1 AND role='teacher' AND status='suspended'",
+            [teacherApplicationDecision[1]]);
+          // Publishing is a reviewed snapshot; later drafts cannot silently alter the public page.
+          await client.query(
+            "INSERT INTO marketplace_public_educators(profile_id,slug,display_name,headline,biography,subjects,languages,published,published_at) " +
+            "SELECT p.id,p.id::text,p.display_name,p.headline,p.biography,p.subjects,p.languages,TRUE,NOW() " +
+            "FROM marketplace_teacher_profiles p WHERE p.staff_user_id=$1 AND p.review_status='approved' " +
+            "ON CONFLICT(profile_id) DO UPDATE SET display_name=EXCLUDED.display_name,headline=EXCLUDED.headline," +
+            "biography=EXCLUDED.biography,subjects=EXCLUDED.subjects,languages=EXCLUDED.languages," +
+            "published=TRUE,published_at=NOW(),updated_at=NOW()",
+            [teacherApplicationDecision[1]]);
+        }
         await auditStaffAction(client,staff.id,"marketplace.application."+decision,"staff_user",teacherApplicationDecision[1]);
         await client.query("COMMIT");
         return json(res,200,{ok:true});

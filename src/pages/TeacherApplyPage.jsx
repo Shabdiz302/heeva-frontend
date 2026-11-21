@@ -47,19 +47,19 @@ export default function TeacherApplyPage(){
   }
   return <>
     <PageIntro eyebrow="Teach with Heeva" title={<>Become a Heeva <em>educator.</em></>}>
-      <p>Teach school subjects, music, languages, creative skills, technology or professional courses online. Every application is verified and reviewed before access is granted.</p>
+      <p>Teach school subjects, music, languages, creative skills, technology or professional courses online. Verify your email, complete your private profile and submit it for Heeva approval before publishing.</p>
     </PageIntro>
     <section className="shell staff-shell teacher-marketplace-apply">
       <div className="teacher-apply-promo">
         <Eyebrow>Teach with Heeva</Eyebrow>
         <h2>Share your expertise with more learners.</h2>
         <p>Build a professional profile, propose your own lesson rates and courses, and let Heeva support the booking and customer experience.</p>
-        <div className="marketplace-steps"><span>01 Apply</span><span>02 Verify email</span><span>03 Heeva review</span><span>04 Build profile</span></div>
+        <div className="marketplace-steps"><span>01 Apply</span><span>02 Verify email</span><span>03 Build profile</span><span>04 Heeva review</span></div>
         <p className="marketplace-hint">Heeva reviews educators for suitability. Creating an account does not guarantee approval, assignments or income.</p>
       </div>
       <section className="staff-card teacher-marketplace">
         <header className="marketplace-header"><div><span className="marketplace-kicker">EDUCATOR APPLICATION</span>
-          <h3>{mode==='register'?'Create your educator account':mode==='verify'?'Verify your email':'Application submitted'}</h3></div></header>
+          <h3>{mode==='register'?'Create your educator account':mode==='verify'?'Verify your email':'Email verified'}</h3></div></header>
         {error&&<p role="alert" className="marketplace-error">{error}</p>}
         {notice&&<p role="status" className="marketplace-success">{notice}</p>}
         {mode==='register'&&<form className="marketplace-form" onSubmit={register}>
@@ -80,8 +80,8 @@ export default function TeacherApplyPage(){
           <button type="button" className="button button-outline" onClick={resend} disabled={busy}>Resend verification code</button>
           <p>Resend is limited for security. Wait at least 60 seconds after the previous code.</p>
         </form>}
-        {mode==='submitted'&&<div><p>A Heeva administrator will review your application. You cannot sign in as an educator until approval.</p>
-          <Link className="button button-outline" to="/staff/login">Educator login (after approval)</Link></div>}
+        {mode==='submitted'&&<div><p>Your email has been verified. You can now sign in to complete your private educator profile. Heeva will review it after you submit it; nothing appears on the website before approval.</p>
+          <Link className="button button-outline" to="/staff/login">Continue to my educator profile</Link></div>}
       </section>
     </section>
   </>;

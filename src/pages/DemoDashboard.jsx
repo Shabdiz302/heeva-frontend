@@ -31,17 +31,61 @@ export default function DemoDashboard() {
     setUser(found);setError('');setTab('overview');setPassword('');
   };
   const signOut=()=>{setUser(null);setEmail('');setPassword('');setTab('overview')};
-  const demoRows = user?.role==='student' ? [
-    ['My learning','1 course request awaiting confirmation'],['Free introductory lesson','1 eligible request · not scheduled'],['Next lesson','Not confirmed yet'],['Course materials','Available after enrolment']
-  ] : user?.role==='educator' ? [
-    ['Profile','Sample biography ready for Heeva review'],['Course proposals','2 drafts · awaiting approval'],['Introductory video','Not uploaded'],['Upcoming lessons','No confirmed lessons']
-  ] : [
-    ['Educator applications','3 sample applications for review'],['Course approvals','2 sample proposals'],['Enrolment requests','5 sample requests'],['Confirmed lessons','0 in demo']
-  ];
+  const role = user?.role || 'student';
+  const tabs = {
+    student: [['overview','Overview','◫'],['courses','My courses','▤'],['lessons','Lessons & calendar','▦'],['trial','Free lesson','✳'],['profile','Family profiles','♙'],['billing','Payments','£'],['messages','Help & support','✉']],
+    educator: [['overview','Overview','◫'],['profile','Professional profile','♙'],['courses','Course proposals','▤'],['lessons','Teaching calendar','▦'],['earnings','Earnings','£'],['media','AI profile studio','✳'],['messages','Heeva feedback','✉']],
+    admin: [['overview','Overview','◫'],['profile','Educator approvals','♙'],['courses','Course & price reviews','▤'],['lessons','Lessons & bookings','▦'],['students','Students & parents','♙'],['billing','Finance & payouts','£'],['media','Content & AI review','✳'],['messages','Enquiries & support','✉']]
+  };
+  const metrics = {
+    student: [['01','Active course request','Awaiting confirmation','▤'],['01','Free trial allowance','One per eligible learner','✳'],['00','Confirmed upcoming lessons','Nothing scheduled yet','▦'],['02','Learner profiles','Sample family account','♙']],
+    educator: [['75%','Profile completion','Finish verification details','♙'],['02','Course proposals','One awaiting review','▤'],['00','Upcoming lessons','Booking not enabled','▦'],['—','Earnings','Not connected to payments','£']],
+    admin: [['03','Educator applications','Awaiting identity checks','♙'],['02','Course proposals','Pricing review required','▤'],['05','Learner requests','Not confirmed bookings','✉'],['00','Confirmed lessons','Staging data only','▦']]
+  };
+  const activity = {
+    student: [['Music course enquiry','Awaiting Heeva response','Review pending'],['One free introductory lesson','Available to request','Not scheduled'],['Account access','Parent/learner setup','Demo only']],
+    educator: [['Professional biography','Draft saved locally in demo','Draft'],['Piano lesson offer','Ready for Heeva review','Pending'],['Media assets','Original portrait still required','Action needed']],
+    admin: [['Samira Roberts','Piano profile · evidence review','Verification needed'],['GCSE Mathematics','Course pricing · draft','Awaiting pricing'],['Parent enquiry','Introductory lesson request','Unassigned']]
+  };
+  const quick = {
+    student: [['Find a course','courses'],['View lesson plan','lessons'],['Free introductory lesson','trial']],
+    educator: [['Complete profile','profile'],['Submit course offer','courses'],['Prepare media','media']],
+    admin: [['Review educators','profile'],['Approve course pricing','courses'],['Review enquiries','messages']]
+  };
+  function displayTab() {
+    if(tab==='overview') return <>
+      <div className="demo-panel-heading"><div><span className="demo-eyebrow">YOUR WORKSPACE</span><h2>Overview</h2><p>Important information and next steps, all in one place.</p></div><span className="demo-status-pill">Preview data</span></div>
+      <div className="demo-metrics">{metrics[role].map(([number,title,detail,symbol])=><article key={title}><span className="demo-metric-icon" aria-hidden="true">{symbol}</span><strong>{number}</strong><h3>{title}</h3><p>{detail}</p></article>)}</div>
+      <div className="demo-bottom-grid">
+        <section className="demo-panel"><h3>Recent activity</h3><div className="demo-activity">{activity[role].map(([title,detail,status])=><div className="demo-activity-item" key={title}><span className="demo-activity-dot" /><div><strong>{title}</strong><small>{detail}</small></div><em>{status}</em></div>)}</div></section>
+        <section className="demo-panel"><h3>Quick actions</h3><p>Jump directly to the part of your portal you want to review.</p><div className="demo-quick">{quick[role].map(([title,target])=><button type="button" onClick={()=>setTab(target)} key={target}>{title} <span aria-hidden="true">↗</span></button>)}</div></section>
+      </div>
+      <div className="demo-tip"><strong>Preview only.</strong> These values are illustrative. The real dashboard will use verified account records and protected API permissions.</div>
+    </>;
+    if(tab==='profile') return <>
+      <h2>{role==='student'?'Family & learner profiles':role==='educator'?'My professional profile':'Educator application review'}</h2>
+      {role==='student'?<div className="demo-detail-grid">
+        <article className="demo-panel"><span className="demo-profile-avatar">A</span><h3>Alex Morgan</h3><p>Account holder · Parent / guardian</p><p><strong>Contact:</strong> alex@example.invalid</p><span className="demo-status-pill">Sample account</span></article>
+        <article className="demo-panel"><h3>Linked learners</h3><p>Jordan · age 13–17 · English</p><p>Taylor · age 8–12 · English</p><p>Only a parent or authorised guardian can manage a child's learner account.</p></article>
+      </div>:role==='educator'?<div className="demo-panel"><div className="demo-progress-heading"><h3>Samira Roberts</h3><b>75% complete</b></div><div className="demo-progress-track"><span style={{width:'75%'}} /></div><p>Beginner piano · Music fundamentals · Online one-to-one</p><p><strong>About:</strong> “I help new learners build confidence at the piano through practical, encouraging lessons.”</p><div className="demo-checklist"><p>✓ Profile details and biography</p><p>✓ Proposed courses and lesson format</p><p>○ Identity and qualifications review</p><p>○ Approved public photograph</p></div><span className="demo-status-pill">Not yet public</span></div>:<div className="demo-course-list">{[['Samira Roberts','Music tutor · Profile complete','Check identity and teaching evidence'],['Jordan Patel','School mathematics · Awaiting documents','Review relevant safeguarding'],['Olivia Chen','Language tutor · Changes requested','Await corrected qualification details']].map(([name,detail,next])=><article key={name}><h3>{name}</h3><p>{detail}</p><span className="demo-status-pill">{next}</span></article>)}</div>}
+    </>;
+    if(tab==='courses') return <>
+      <div className="demo-panel-heading"><div><h2>{role==='student'?'Courses and learning':role==='educator'?'My course proposals':'Course and price approvals'}</h2><p>Explore course status and review the associated next steps.</p></div></div>
+      <div className="demo-course-list">{sampleCourses.map(c=><article key={c.slug}><div className="demo-course-row"><strong>{c.title}</strong><span className="demo-status-pill">{c.status==='coming-soon'?'Coming soon':'Availability unconfirmed'}</span></div><p>{role==='student'?'You can enquire about this programme. No demo booking will be created.':role==='educator'?'Draft a course offer and proposed lesson rate, then submit for Heeva review.':"Confirm tutor credentials, course content and customer price before publication."}</p></article>)}</div>
+    </>;
+    if(tab==='lessons') return <>
+      <h2>{role==='educator'?'My teaching calendar':role==='admin'?'Bookings & schedules':'My lesson calendar'}</h2>
+      <div className="demo-detail-grid"><div className="demo-panel"><h3>Weekly schedule — example</h3><div className="demo-week">{['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map((day,i)=><div key={day}><strong>{day}</strong><span className={i===1||i===3?'marked':''}>{24+i}</span></div>)}</div><p>Highlighted dates are illustrative, not real reservations.</p></div><div className="demo-panel"><h3>Upcoming lessons</h3><p>No real lessons have been scheduled in this preview.</p><p>In the connected platform, you will see tutor assignments, the learner's timezone, links and lesson materials.</p></div></div>
+    </>;
+    if(tab==='trial') return <><h2>One free introductory lesson</h2><div className="demo-panel"><span className="demo-status-pill">Eligibility subject to Heeva's terms</span><h3>Find the right starting point</h3><p>Eligible learners may request <strong>one free introductory lesson</strong> to explore a course. This allowance is per eligible learner, not one free session with each tutor.</p><p>Your example request is awaiting confirmation; it is not an actual booking.</p><button className="demo-outline" type="button" onClick={()=>setTab('courses')}>Explore available courses →</button></div></>;
+    if(tab==='billing'||tab==='earnings') return <><h2>{role==='educator'?'Earnings and payouts':role==='admin'?'Payments and educator payouts':'Payments and receipts'}</h2><div className="demo-panel"><h3>Financial overview</h3><p>Payment processing, receipts, refunds and educator payouts are not connected to this demonstration.</p><div className="demo-metrics"><article><strong>—</strong><h3>Balance</h3><p>No financial records</p></article><article><strong>—</strong><h3>Transactions</h3><p>Requires secure payment integration</p></article></div></div></>;
+    if(tab==='media') return <><h2>{role==='educator'?'AI profile studio':'Content and AI moderation'}</h2><div className="demo-detail-grid">{[['Profile writing','Polish your own factual biography in English or Persian. Review suggestions before accepting.'],['Professional portrait','Crop, adjust lighting and improve background while preserving real identity.'],['Introduction video','Prepare a real educator video with subtitles, editing and Heeva approval.']].map(([title,desc],i)=><article className="demo-panel" key={title}><div className="demo-media-icon" aria-hidden="true">{['✎','◉','▣'][i]}</div><h3>{title}</h3><p>{desc}</p><span className="demo-status-pill">{i===0?'Provider configuration required':'Media integration pending'}</span></article>)}</div></>;
+    return <><h2>{role==='admin'?'Enquiries and support queue':role==='educator'?'Heeva review feedback':'Help & support'}</h2><div className="demo-panel"><h3>{role==='admin'?'Incoming requests':'Contact the Heeva team'}</h3><p>{role==='admin'?'Requests will appear here once the secure enquiry and staff backend is connected.':'For course questions, profile reviews and lesson issues, contact Heeva through the official support channel.'}</p><Link to="/contact" className="demo-outline">Contact Heeva ↗</Link></div></>;
+  }
   return <main className="shell heeva-demo" aria-label="Heeva sample dashboard">
-    <div className="demo-ribbon">DEMO ONLY · SAMPLE DATA · NO LIVE ACCOUNTS OR BOOKINGS</div>
+    <div className="demo-ribbon">DESIGN PREVIEW · SAMPLE DATA · NO REAL BOOKINGS, APPROVALS OR PAYMENTS</div>
     {!user ? <>
-      <div className="demo-intro"><span className="demo-eyebrow">HEEVA DASHBOARD PREVIEW</span><h1>Explore the Heeva dashboards</h1><p>Use any sample account below to see how each dashboard is organised. This is a self-contained visual demonstration—not access to the live or staging database.</p></div>
+      <div className="demo-intro"><span className="demo-eyebrow">HEEVA DASHBOARD PREVIEW</span><h1>Explore the Heeva dashboards</h1><p>See how the Student/Parent, Educator and Admin experiences work. All data is fictional. These sample accounts never connect to real Heeva records.</p></div>
       <div className="demo-layout">
         <form onSubmit={signIn} className="demo-login-panel">
           <h2>Sample sign in</h2>
@@ -53,33 +97,16 @@ export default function DemoDashboard() {
         <div className="demo-accounts">
           <h2>Choose a sample role</h2>
           {Object.entries(demos).map(([address,account])=><button key={address} type="button" className="demo-account-choice" onClick={()=>{setEmail(address);setPassword(account.password);setError('')}}><strong>{labels[account.role]}</strong><small>{address}</small><span>Fill sample credentials ↗</span></button>)}
-          <p>All three accounts use <code>HeevaDemo2026!</code>. Do not enter personal information or passwords you use elsewhere.</p>
+          <p>All three accounts use <code>HeevaDemo2026!</code>. Do not enter real personal information or passwords you use elsewhere.</p>
         </div>
       </div>
     </> : <>
-      <div className="demo-dash-heading"><div><span className="demo-eyebrow">HEEVA {labels[user.role].toUpperCase()} PORTAL</span><h1>Welcome, {user.name}</h1><p>{labels[user.role]} dashboard — sample data only</p></div><button type="button" className="demo-logout" onClick={signOut}>Switch demo account</button></div>
+      <div className="demo-dash-heading"><div><span className="demo-eyebrow">{labels[role].toUpperCase()} WORKSPACE</span><h1>Welcome, {user.name}</h1><p>Your learning and teaching workspace · illustrative data</p></div><button type="button" className="demo-logout" onClick={signOut}>Switch demo account</button></div>
       <div className="demo-dashboard-grid">
         <nav className="demo-dash-nav" aria-label="Demo dashboard navigation">
-          {(user.role==='student'
-            ? [['overview','Overview'],['courses','My courses'],['profile','Learner profiles'],['messages','Support']]
-            : user.role==='educator'
-              ? [['overview','Overview'],['profile','My educator profile'],['courses','My course offers'],['messages','Heeva feedback']]
-              : [['overview','Overview'],['profile','Educator applications'],['courses','Course approvals'],['messages','Enrolment requests']]
-          ).map(([id,label])=><button type="button" key={id} className={tab===id?'active':''} onClick={()=>setTab(id)}>{label}</button>)}
+          {tabs[role].map(([id,label,symbol])=><button type="button" key={id} className={tab===id?'active':''} aria-current={tab===id?'page':undefined} onClick={()=>setTab(id)}><span className="demo-nav-icon" aria-hidden="true">{symbol}</span>{label}</button>)}
         </nav>
-        <section className="demo-dash-content">
-          {tab==='overview'?<>
-            <h2>Dashboard overview</h2>
-            <div className="demo-metrics">{demoRows.map(([title,value])=><article key={title}><span>{title}</span><strong>{value}</strong></article>)}</div>
-            <p className="demo-tip">The real portal will display information from your account once the private API has been deployed and connected. This demo deliberately performs no account changes.</p>
-          </>:tab==='profile'?<>
-            <h2>{user.role==='student'?'Learner profiles':user.role==='educator'?'Professional educator profile':'Educator applications'}</h2>
-            {user.role==='student'?<div className="demo-panel"><h3>Alex's learner profile</h3><p>Age group: 13–17 · Preferred language: English</p><p>Parent and guardian controls and privacy settings will be available in the connected platform.</p></div>:user.role==='educator'?<div className="demo-panel"><h3>Samira Roberts — Piano and beginner music</h3><p>Sample biography: “I help new learners build confidence at the piano through practical, encouraging lessons.”</p><p>Photo status: Draft · AI writing assistance: optional · Heeva review: Pending</p></div>:<div className="demo-panel"><h3>Pending applications</h3><p>Samira Roberts · Music · Needs profile review</p><p>Jordan Patel · School Maths · Awaiting qualifications check</p><p>Olivia Chen · Languages · Awaiting suitability checks</p></div>}
-          </>:tab==='courses'?<>
-            <h2>{user.role==='student'?'Courses and learning':user.role==='educator'?'Proposed course offers':'Course approval queue'}</h2>
-            <div className="demo-course-list">{sampleCourses.map(c=><article key={c.slug}><strong>{c.title}</strong><span>{c.status==='coming-soon'?'Coming soon':'Availability to be confirmed'}</span><p>{user.role==='student'?'Contact Heeva to request a lesson.':user.role==='educator'?'Proposed teaching offer is private until approved.':'Review tutor suitability, course details and price before publishing.'}</p></article>)}</div>
-          </>:<><h2>{user.role==='admin'?'Enrolment requests':'Messages and support'}</h2><div className="demo-panel"><p>{user.role==='admin'?'Sample enquiries are shown here after the secure backend is connected.':'For help with courses, availability or the approval process, contact Heeva support.'}</p></div></>}
-        </section>
+        <section className="demo-dash-content" aria-live="polite">{displayTab()}</section>
       </div>
     </>}
   </main>;

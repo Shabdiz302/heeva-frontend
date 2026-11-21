@@ -212,3 +212,22 @@
 .student-dashboard .student-field input,.student-dashboard .student-field select { min-height:46px; font-size:14px; }
 @media (max-width:700px) { .student-dashboard-welcome { display:block; padding:21px; } .student-dashboard-welcome button { margin-top:18px; width:100%; } }
 @media (max-width:520px) { .student-view-nav { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); } .student-view-nav button { justify-content:flex-start; } .student-view-nav button:last-child { grid-column:1/-1; } .student-dashboard .student-overview-stats small { font-size:11px; } }
+
+/* Keep each real student dashboard tab focused on its task.
+   Overview retains the full summary; other views suppress unrelated sections. */
+.student-dashboard[data-view="courses"] .student-learning-overview,
+.student-dashboard[data-view="courses"] .student-upcoming-panel,
+.student-dashboard[data-view="courses"] .student-dashboard-grid,
+.student-dashboard[data-view="schedule"] .student-learning-overview,
+.student-dashboard[data-view="schedule"] .student-course-section,
+.student-dashboard[data-view="schedule"] .student-dashboard-grid,
+.student-dashboard[data-view="requests"] .student-learning-overview,
+.student-dashboard[data-view="requests"] .student-course-section,
+.student-dashboard[data-view="requests"] .student-upcoming-panel,
+.student-dashboard[data-view="account"] .student-learning-overview,
+.student-dashboard[data-view="account"] .student-course-section,
+.student-dashboard[data-view="account"] .student-upcoming-panel { display:none; }
+.student-dashboard[data-view="requests"] .student-dashboard-grid > :nth-child(-n+2),
+.student-dashboard[data-view="account"] .student-dashboard-grid > :nth-child(n+3) { display:none; }
+.student-view-nav button:focus-visible,.staff-view-nav button:focus-visible {outline:3px solid #ae9054;outline-offset:2px;}
+@media(max-width:850px){.student-view-nav{overflow-x:auto;scrollbar-width:thin;}.student-view-nav button{min-width:max-content;}}

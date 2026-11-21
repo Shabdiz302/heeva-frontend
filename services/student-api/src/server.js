@@ -810,7 +810,8 @@ async function handle(req, res) {
     // Do not grant students, lessons, course administration, offer publishing, or other staff capabilities.
     if (staff.onboarding_only) {
       const allowed = new Set(["/api/staff/auth/me", "/api/staff/marketplace/profile",
-        "/api/staff/marketplace/portrait", "/api/staff/marketplace/cv", "/api/staff/marketplace/submit"]);
+        "/api/staff/marketplace/portrait", "/api/staff/marketplace/cv", "/api/staff/marketplace/submit",
+        "/api/staff/marketplace/ai-assist"]);
       if (!allowed.has(path)) return json(res,403,{error:"Finish your private educator profile and await Heeva approval."});
     }
 
@@ -960,6 +961,59 @@ async function handle(req, res) {
         if(storagePath) await unlink(storagePath).catch(()=>{});
         throw error;
       }finally{client.release();}
+    }
+
+    // Optional AI writing assists only educators. Suggestions are never saved or published.
+    if (method === "POST" && path === "/api/staff/marketplace/ai-assist" && staff.role === "teacher") {
+      const key = process.env.OPENAI_API_KEY || "";
+      const model = process.env.HEEVA_PROFILE_AI_MODEL || "";
+      if (!key || !model) return json(res,503,{error:"AI writing is not configured yet. You can continue editing manually."});
+      const body = await readJson(req);
+      const field = String(body.field || "");
+      const notes = typeof body.text === "string" ? body.text.trim() : "";
+      const locale = body.language === "fa" ? "Persian" : "English";
+      if (body.consent !== true || !["headline","biography","teachingApproach","courseDescription"].includes(field) ||
+          notes.length < 30 || notes.length > 1500) {
+        return json(res,400,{error:"Choose an allowed writing field, give 30–1,500 characters of your own factual text, and consent to AI processing."});
+      }
+      if (!rateLimit("educator-ai:" + staff.id,6,60*60*1000))
+        return json(res,429,{error:"AI writing hourly limit reached. Please try again later."});
+      const month = new Date().toISOString().slice(0,7);
+      const monthlyLimit = Math.min(100,Math.max(1,Number(process.env.HEEVA_PROFILE_AI_MONTHLY_LIMIT||20)));
+      const quota = await pool.query(
+        "INSERT INTO marketplace_ai_write_usage(staff_user_id,month_key,request_count) VALUES($1,$2,1) " +
+        "ON CONFLICT(staff_user_id,month_key) DO UPDATE SET request_count=marketplace_ai_write_usage.request_count+1 " +
+        "WHERE marketplace_ai_write_usage.request_count<$3 RETURNING request_count",
+        [staff.id,month,monthlyLimit]);
+      if (!quota.rowCount) return json(res,429,{error:"Your monthly AI profile-writing allowance has been reached."});
+      try {
+        const response = await fetch("https://api.openai.com/v1/responses",{
+          method:"POST",
+          headers:{"Authorization":"Bearer "+key,"Content-Type":"application/json"},
+          body:JSON.stringify({
+            model,
+            store:false,
+            max_output_tokens:300,
+            instructions:"You are the Heeva Educator Profile Writing Assistant. Rewrite a user's own provided factual words into concise, warm, professional " + locale +
+              " suitable for their " + field + ". Never invent qualifications, experience, clearances, awards, promises, subjects, prices, testimonials, or affiliations. Do not add unverifiable claims. Return only the rewritten text. Do not include markdown formatting.",
+            input:notes
+          }),
+          signal:AbortSignal.timeout(18000)
+        });
+        if (!response.ok) {
+          console.error("Profile writing provider returned status",response.status);
+          return json(res,502,{error:"Writing suggestions are temporarily unavailable. Please edit your draft manually."});
+        }
+        const data = await response.json();
+        const suggestion = (data.output||[]).flatMap(item=>item.content||[])
+          .filter(c=>c.type==="output_text").map(c=>c.text||"").join("\n").trim();
+        if (!suggestion || suggestion.length > 3500)
+          return json(res,502,{error:"No usable suggestion was returned. Your original draft is unchanged."});
+        return json(res,200,{suggestion,disclaimer:"Review every factual statement. AI cannot verify qualifications or experience."});
+      } catch(error) {
+        console.error("Profile writing request failed:",error.name||"Error");
+        return json(res,502,{error:"AI writing is temporarily unavailable. Your draft was not changed."});
+      }
     }
 
     // Marketplace teacher drafts are private and owned by the authenticated teacher.

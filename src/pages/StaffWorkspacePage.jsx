@@ -252,6 +252,11 @@ export default function StaffWorkspacePage() {
             <Eyebrow>Restricted access</Eyebrow><h3>Educator and staff sign in</h3>
             <StaffNotice type="warning">Private staff workspace. Educators with verified emails can complete private profiles here. Only approved educators and administrators can manage lessons.</StaffNotice>
             <p className="staff-small-note">Want to teach with Heeva? <Link to="/teacher/apply">Apply to teach</Link>.</p>
+            <div className="preview-demo-entry">
+              <strong>Reviewing the website?</strong>
+              <p>The sample credentials work on the separate dashboard demo—not on this real sign-in form, which requires the staging API.</p>
+              <Link className="button button-outline" to="/demo">Explore demo dashboards ↗</Link>
+            </div>
             <StaffNotice type="error">{error}</StaffNotice>
             <form className="staff-form" onSubmit={submitLogin}>
               <StaffField label="Staff email" type="email" autoComplete="username" value={loginForm.email} onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })} required />

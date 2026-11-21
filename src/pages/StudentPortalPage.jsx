@@ -391,11 +391,6 @@ export default function StudentPortalPage() {
             <button className="button button-outline" type="button" onClick={logout} disabled={busy}>Sign out</button>
           </div>
           <Notice type="error">{error}</Notice>
-          <div className="preview-demo-entry">
-            <strong>Want to explore a sample account?</strong>
-            <p>The demo accounts use a separate preview login. They do not work with this staging API sign-in.</p>
-            <Link className="button button-outline" to="/demo">Open dashboard demo ↗</Link>
-          </div>
           <Notice type="success">{notice}</Notice>
           <nav className="student-view-nav" aria-label="Learning dashboard sections">
             {[
@@ -639,6 +634,11 @@ export default function StudentPortalPage() {
           <Eyebrow>{registering ? 'New account' : 'Secure sign in'}</Eyebrow>
           <h2>{registering ? 'Create an account' : 'Sign in to Heeva'}</h2>
           <Notice type="warning">Staging preview only. Use test details, a test email and a unique password. Do not enter real children's personal information or payment details.</Notice>
+          <div className="preview-demo-entry">
+            <strong>Want to explore a sample account?</strong>
+            <p>The demo accounts use a separate preview login. They do not work with this staging API sign-in.</p>
+            <Link className="button button-outline" to="/demo">Open dashboard demo ↗</Link>
+          </div>
           <Notice type="error">{error}</Notice>
           {verificationPending ? (
             <form className="student-form" onSubmit={verifyEmail}>

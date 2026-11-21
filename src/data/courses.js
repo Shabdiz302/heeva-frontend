@@ -124,6 +124,209 @@ for (const [slug, details] of Object.entries(featuredCourseDetails)) {
   if (course) Object.assign(course, details);
 }
 
+// School and exam programmes: planning listings only; never advertise unverified teaching availability.
+categories.push({ id: 'school-subjects', label: 'School subjects', icon: '✎' });
+courses.push(...[
+  {
+    "slug": "primary-maths",
+    "title": "Primary School Maths",
+    "category": "school-subjects",
+    "status": "coming-soon",
+    "mark": "∑",
+    "colour": "blue",
+    "image": null,
+    "imageAlt": "",
+    "description": "Primary maths lessons designed to develop confidence with number, arithmetic, shapes, measures and problem-solving.",
+    "audience": "Primary school learners with parent or guardian involvement.",
+    "level": "Curriculum and level to be confirmed",
+    "lessonLength": "To be confirmed",
+    "price": null,
+    "outline": [
+      "Number sense and place value",
+      "Addition, subtraction, multiplication and division",
+      "Fractions, measurements and geometry",
+      "Reasoning and word problems"
+    ],
+    "requirements": "Educator, examination board, safeguarding requirements, schedule and fees must be confirmed before bookings open."
+  },
+  {
+    "slug": "primary-english",
+    "title": "Primary School English",
+    "category": "school-subjects",
+    "status": "coming-soon",
+    "mark": "Aa",
+    "colour": "blue",
+    "image": null,
+    "imageAlt": "",
+    "description": "Build reading fluency, comprehension, spelling, grammar and structured writing through guided practice.",
+    "audience": "Primary school learners with parent or guardian involvement.",
+    "level": "Curriculum and level to be confirmed",
+    "lessonLength": "To be confirmed",
+    "price": null,
+    "outline": [
+      "Reading and comprehension",
+      "Spelling and vocabulary",
+      "Grammar and punctuation",
+      "Creative and non-fiction writing"
+    ],
+    "requirements": "Educator, examination board, safeguarding requirements, schedule and fees must be confirmed before bookings open."
+  },
+  {
+    "slug": "11-plus-preparation",
+    "title": "11+ Entrance Exam Preparation",
+    "category": "school-subjects",
+    "status": "coming-soon",
+    "mark": "11+",
+    "colour": "blue",
+    "image": null,
+    "imageAlt": "",
+    "description": "Structured support for eligible school entrance assessments, subject to local assessment format and individual learning needs.",
+    "audience": "Learners preparing for relevant 11+ or independent school entrance exams; confirm exam requirements.",
+    "level": "Curriculum and level to be confirmed",
+    "lessonLength": "To be confirmed",
+    "price": null,
+    "outline": [
+      "English comprehension and vocabulary",
+      "Maths reasoning and accuracy",
+      "Verbal and non-verbal reasoning where relevant",
+      "Exam technique and timed practice"
+    ],
+    "requirements": "Educator, examination board, safeguarding requirements, schedule and fees must be confirmed before bookings open."
+  },
+  {
+    "slug": "ks3-maths",
+    "title": "Key Stage 3 Maths",
+    "category": "school-subjects",
+    "status": "coming-soon",
+    "mark": "∑",
+    "colour": "blue",
+    "image": null,
+    "imageAlt": "",
+    "description": "Strengthen secondary maths foundations with personalised support in number, algebra, geometry and data.",
+    "audience": "Years 7–9 learners or equivalent; confirm curriculum fit.",
+    "level": "Curriculum and level to be confirmed",
+    "lessonLength": "To be confirmed",
+    "price": null,
+    "outline": [
+      "Fractions, ratio and percentages",
+      "Algebraic expressions and equations",
+      "Geometry and measurements",
+      "Statistics and problem-solving"
+    ],
+    "requirements": "Educator, examination board, safeguarding requirements, schedule and fees must be confirmed before bookings open."
+  },
+  {
+    "slug": "ks3-science",
+    "title": "Key Stage 3 Science",
+    "category": "school-subjects",
+    "status": "coming-soon",
+    "mark": "⚛",
+    "colour": "blue",
+    "image": null,
+    "imageAlt": "",
+    "description": "Understand core biology, chemistry and physics concepts through clear explanations, questioning and practice.",
+    "audience": "Years 7–9 learners or equivalent; check curriculum and safe practical requirements.",
+    "level": "Curriculum and level to be confirmed",
+    "lessonLength": "To be confirmed",
+    "price": null,
+    "outline": [
+      "Cells, organisms and ecosystems",
+      "Particles, elements and reactions",
+      "Forces, energy and electricity",
+      "Scientific enquiry and data"
+    ],
+    "requirements": "Educator, examination board, safeguarding requirements, schedule and fees must be confirmed before bookings open."
+  },
+  {
+    "slug": "gcse-maths",
+    "title": "GCSE Mathematics Support",
+    "category": "school-subjects",
+    "status": "coming-soon",
+    "mark": "∑",
+    "colour": "blue",
+    "image": null,
+    "imageAlt": "",
+    "description": "Targeted maths tuition to build subject understanding, exam confidence and revision habits for GCSE learners.",
+    "audience": "GCSE students; exam board and foundation/higher tier to be confirmed.",
+    "level": "Curriculum and level to be confirmed",
+    "lessonLength": "To be confirmed",
+    "price": null,
+    "outline": [
+      "Number, algebra and geometry",
+      "Ratio, probability and statistics",
+      "Exam-style questions",
+      "Targeted revision and feedback"
+    ],
+    "requirements": "Educator, examination board, safeguarding requirements, schedule and fees must be confirmed before bookings open."
+  },
+  {
+    "slug": "gcse-english-language",
+    "title": "GCSE English Language Support",
+    "category": "school-subjects",
+    "status": "coming-soon",
+    "mark": "Aa",
+    "colour": "blue",
+    "image": null,
+    "imageAlt": "",
+    "description": "Develop reading analysis, purposeful writing and examination technique using exam-board-appropriate materials.",
+    "audience": "GCSE students; confirm examination board and specification.",
+    "level": "Curriculum and level to be confirmed",
+    "lessonLength": "To be confirmed",
+    "price": null,
+    "outline": [
+      "Analysing fiction and non-fiction",
+      "Creative and transactional writing",
+      "Language techniques",
+      "Timed exam practice and feedback"
+    ],
+    "requirements": "Educator, examination board, safeguarding requirements, schedule and fees must be confirmed before bookings open."
+  },
+  {
+    "slug": "gcse-combined-science",
+    "title": "GCSE Combined Science Support",
+    "category": "school-subjects",
+    "status": "coming-soon",
+    "mark": "⚛",
+    "colour": "blue",
+    "image": null,
+    "imageAlt": "",
+    "description": "Reinforce biology, chemistry and physics knowledge and scientific reasoning for combined science assessments.",
+    "audience": "GCSE combined science students; confirm board and tier.",
+    "level": "Curriculum and level to be confirmed",
+    "lessonLength": "To be confirmed",
+    "price": null,
+    "outline": [
+      "Biology foundations and processes",
+      "Chemistry concepts and calculations",
+      "Physics principles",
+      "Exam practice and required practical understanding"
+    ],
+    "requirements": "Educator, examination board, safeguarding requirements, schedule and fees must be confirmed before bookings open."
+  },
+  {
+    "slug": "a-level-maths",
+    "title": "A-Level Mathematics Support",
+    "category": "school-subjects",
+    "status": "coming-soon",
+    "mark": "∑",
+    "colour": "blue",
+    "image": null,
+    "imageAlt": "",
+    "description": "Support deeper mathematical understanding across pure mathematics, statistics and mechanics at A-level.",
+    "audience": "A-level maths students; confirm exam board and current specification.",
+    "level": "Curriculum and level to be confirmed",
+    "lessonLength": "To be confirmed",
+    "price": null,
+    "outline": [
+      "Algebra and functions",
+      "Calculus and trigonometry",
+      "Statistics and probability",
+      "Mechanics and examination practice"
+    ],
+    "requirements": "Educator, examination board, safeguarding requirements, schedule and fees must be confirmed before bookings open."
+  }
+]);
+
 // Course photography refresh: one distinct subject-matched image per course; the existing circular, centred crop styling is unchanged.
 
 // Published package details do not confirm an instructor's current availability.

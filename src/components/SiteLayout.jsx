@@ -6,7 +6,7 @@ import HeevaChat from './HeevaChat.jsx';
 
 const primaryNav = [
   ['Explore courses', '/courses'],
-  ['Our educators', '/teachers'],
+  ['Our Tutors', '/teachers'],
   ['How it works', '/how-heeva-works'],
   ['For parents', '/for-parents'],
   ['For Business', '/for-organisations'],
@@ -118,7 +118,7 @@ export function SiteFooter() {
         <div className="footer-col">
           <h2>Explore</h2>
           <Link to="/courses">All courses</Link>
-          <Link to="/teachers">Our teachers</Link>
+          <Link to="/teachers">Our Tutors</Link>
           <Link to="/how-heeva-works">How Heeva works</Link>
           <Link to="/student/login">Student / parent sign in</Link>
           <Link to="/staff/login">Educator sign in</Link>

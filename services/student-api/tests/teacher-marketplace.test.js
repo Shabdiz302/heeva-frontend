@@ -64,7 +64,7 @@ test("course offers are teacher-owned and approved retail rates are immutable sn
 test("teacher course proposals and pricing approvals are role-scoped",()=>{
   assert.match(server,/path === "\/api\/staff\/marketplace\/offers" && staff.role === "teacher"/);
   // Educator course proposals may be drafted before approval, but are never publicly bookable.
-  assert.match(server,/SELECT id FROM marketplace_teacher_profiles WHERE staff_user_id=\\$1/);
+  assert.match(server,/SELECT id FROM marketplace_teacher_profiles WHERE staff_user_id=\$1/);
   assert.match(server,/offerSubmitMatch && staff.role === "teacher"/);
   assert.match(server,/offerReviewMatch && staff.role === "admin"/);
   assert.match(server,/marketplace.offer.approved|marketplace.offer\."\+decision/);

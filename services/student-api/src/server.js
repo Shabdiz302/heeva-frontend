@@ -812,7 +812,7 @@ async function handle(req, res) {
       const allowed = new Set(["/api/staff/auth/me", "/api/staff/marketplace/profile",
         "/api/staff/marketplace/portrait", "/api/staff/marketplace/cv", "/api/staff/marketplace/submit",
         "/api/staff/marketplace/ai-assist", "/api/staff/marketplace/offers"]);
-      const canSubmitOwnOffer = method==="POST" && /^\\/api\\/staff\\/marketplace\\/offers\\/([0-9a-f-]{36})\\/submit$/i.test(path);
+      const canSubmitOwnOffer = method==="POST" && /^\/api\/staff\/marketplace\/offers\/([0-9a-f-]{36})\/submit$/i.test(path);
       if (!allowed.has(path) && !canSubmitOwnOffer) return json(res,403,{error:"Finish your private educator profile and await Heeva approval."});
     }
 

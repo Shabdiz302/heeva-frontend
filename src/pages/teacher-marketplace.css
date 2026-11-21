@@ -45,3 +45,9 @@
 .marketplace-check input { width:auto!important;flex:none;margin-top:3px; }
 .teacher-marketplace-apply .staff-card { margin:0; }
 @media(max-width:800px) {.teacher-marketplace-apply {grid-template-columns:1fr;gap:15px}.teacher-apply-promo{padding:8px 0}}
+
+/* Keep legal links and their surrounding text together in each consent row. */
+.teacher-marketplace-apply .marketplace-check { display:flex!important; align-items:flex-start; gap:12px; min-width:0; font-weight:500; }
+.teacher-marketplace-apply .marketplace-check input[type="checkbox"] { flex:0 0 auto; width:16px!important; height:16px; margin:3px 0 0; padding:0; }
+.teacher-marketplace-apply .marketplace-check > span { display:block; flex:1; min-width:0; line-height:1.6; }
+.teacher-marketplace-apply .marketplace-check a { display:inline; text-decoration:underline; text-underline-offset:2px; }

@@ -105,9 +105,9 @@ export function TeacherMarketplacePanel({ api, staff }) {
   const cvUrl=(import.meta.env.VITE_STUDENT_API_BASE || '/student-preview-api')+'/api/staff/marketplace/cv';
   const portraitUrl=(import.meta.env.VITE_STUDENT_API_BASE || '/student-preview-api')+'/api/staff/marketplace/portrait?v='+portraitVersion;
   if(loading)return <section className="staff-card">Loading your marketplace profile…</section>;
-  return <section className="staff-card teacher-marketplace" aria-label="Teacher marketplace profile">
+  return <section className="staff-card teacher-marketplace" aria-label="Educator marketplace profile">
     <header className="marketplace-header"><div>
-      <span className="marketplace-kicker">HEEVA TEACHER MARKETPLACE</span>
+      <span className="marketplace-kicker">HEEVA EDUCATOR MARKETPLACE</span>
       <h3>My teaching profile</h3>
       <p>Build your professional listing. Heeva reviews your details before anything becomes public.</p>
     </div><span className="marketplace-status">{status.replaceAll('_',' ')}</span></header>
@@ -120,7 +120,7 @@ export function TeacherMarketplacePanel({ api, staff }) {
     <form onSubmit={save} className="marketplace-form">
       <div className="marketplace-grid">
         <label>Public display name<input value={form.displayName} maxLength={120} onChange={edit('displayName')} required disabled={status==='pending_review'}/></label>
-        <label>Professional headline<input value={form.headline} maxLength={160} placeholder="e.g. Online piano tutor for beginners" onChange={edit('headline')} disabled={status==='pending_review'}/></label>
+        <label>Professional headline<input value={form.headline} maxLength={160} placeholder="e.g. Piano teacher for beginners or AI instructor" onChange={edit('headline')} disabled={status==='pending_review'}/></label>
         <label>Teaching subjects (comma separated)<input value={form.subjects} placeholder="Piano, Music theory" onChange={edit('subjects')} disabled={status==='pending_review'}/></label>
         <label>Languages (comma separated)<input value={form.languages} placeholder="English, Persian" onChange={edit('languages')} disabled={status==='pending_review'}/></label>
       </div>
@@ -128,7 +128,7 @@ export function TeacherMarketplacePanel({ api, staff }) {
       <div className="marketplace-grid">
         <label>Qualifications summary<textarea rows={3} value={form.qualificationsSummary} maxLength={2500} onChange={edit('qualificationsSummary')} disabled={status==='pending_review'}/></label>
         <label>Teaching experience<textarea rows={3} value={form.teachingExperience} maxLength={2500} onChange={edit('teachingExperience')} disabled={status==='pending_review'}/></label>
-        <label>Tutor earnings proposal (GBP per lesson)<input type="number" min="1" max="1000" step="0.01" inputMode="decimal" value={form.proposedRate} onChange={edit('proposedRate')} placeholder="20.00" disabled={status==='pending_review'}/></label>
+        <label>Proposed educator earnings (GBP per lesson)<input type="number" min="1" max="1000" step="0.01" inputMode="decimal" value={form.proposedRate} onChange={edit('proposedRate')} placeholder="20.00" disabled={status==='pending_review'}/></label>
         <label>Lesson duration<select value={form.lessonDurationMinutes} onChange={edit('lessonDurationMinutes')} disabled={status==='pending_review'}>
           {[30,45,60,90].map(n=><option key={n} value={n}>{n} minutes</option>)}
         </select></label>
@@ -136,7 +136,7 @@ export function TeacherMarketplacePanel({ api, staff }) {
       <p className="marketplace-hint">This is the amount you propose to earn, not the final customer price. Heeva determines its commission and must approve each public offer.</p>
       <div className="marketplace-disabled-media">
         <strong>Profile portrait (private staging upload)</strong>
-        {hasPortrait&&<img className="marketplace-portrait" src={portraitUrl} alt="Your uploaded teacher portrait" />}
+        {hasPortrait&&<img className="marketplace-portrait" src={portraitUrl} alt="Your uploaded educator portrait" />}
         <label className="marketplace-upload-label">JPEG, PNG or WebP (up to 5 MB)
           <input type="file" accept="image/jpeg,image/png,image/webp" disabled={!hasProfile || status==='pending_review' || busy}
             onChange={e=>setPortraitFile(e.target.files?.[0]||null)}/>
@@ -191,18 +191,18 @@ export function MarketplaceReviewPanel({api}) {
     }catch(err){setError(err.message)}finally{setBusy(false)}
   }
   return <section className="staff-card teacher-marketplace">
-    <header className="marketplace-header"><div><span className="marketplace-kicker">ADMIN MODERATION</span><h3>Teacher applications</h3><p>Review submitted teaching profiles and proposed tutor earnings. Approval is internal only.</p></div>
+    <header className="marketplace-header"><div><span className="marketplace-kicker">ADMIN MODERATION</span><h3>Educator profile reviews</h3><p>Review submitted teaching profiles and proposed educator earnings. Approval is internal only.</p></div>
     <span className="marketplace-status">{profiles.filter(p=>p.review_status==='pending_review').length} awaiting review</span></header>
     {error&&<p className="marketplace-error" role="alert">{error}</p>}
     {notice&&<p className="marketplace-success" role="status">{notice}</p>}
-    {!profiles.length&&<p>No teacher profiles submitted yet.</p>}
+    {!profiles.length&&<p>No educator profiles submitted yet.</p>}
     {profiles.map(p=><article key={p.id} className="marketplace-review-item">
       <div className="marketplace-review-heading"><div><h4>{p.display_name}</h4><p>{p.email} · {p.headline || 'No headline'}</p></div><span className="marketplace-status">{p.review_status.replaceAll('_',' ')}</span></div>
       <p>{p.biography || 'No biography yet.'}</p>
       {p.has_portrait && <img className="marketplace-portrait" src={(import.meta.env.VITE_STUDENT_API_BASE || '/student-preview-api')+'/api/staff/marketplace/review/'+p.id+'/portrait'} alt={'Uploaded private portrait of '+p.display_name} />}
       {p.has_cv && <p><a href={(import.meta.env.VITE_STUDENT_API_BASE || '/student-preview-api')+'/api/staff/marketplace/review/'+p.id+'/cv'}>Download private CV for review</a></p>}
       <div className="marketplace-review-meta"><span>Subjects: {(p.subjects||[]).join(', ')||'—'}</span><span>Languages: {(p.languages||[]).join(', ')||'—'}</span>
-      <span>Teacher rate: {p.proposed_rate_pence==null?'Not set':'£'+(p.proposed_rate_pence/100).toFixed(2)} / {p.lesson_duration_minutes} min</span></div>
+      <span>Educator rate: {p.proposed_rate_pence==null?'Not set':'£'+(p.proposed_rate_pence/100).toFixed(2)} / {p.lesson_duration_minutes} min</span></div>
       <details><summary>Qualifications and experience</summary><p>{p.qualifications_summary||'No qualifications summary.'}</p><p>{p.teaching_experience||'No experience summary.'}</p></details>
       {p.review_status==='pending_review'&&<div className="marketplace-review-actions">
         <label>Review feedback<textarea rows={2} maxLength={1200} value={feedback[p.id]||''} onChange={e=>setFeedback(old=>({...old,[p.id]:e.target.value}))} placeholder="Reason or requested changes"/></label>
@@ -232,17 +232,17 @@ export function TeacherApplicationsPanel({api}) {
       await api('/api/staff/marketplace/applications/'+item.id+'/decision',{
         method:'POST',body:JSON.stringify({decision,feedback:feedback[item.id]||''})
       });
-      await refresh();setNotice('Application decision saved. Teacher account access updated.');
+      await refresh();setNotice('Application decision saved. Educator account access updated.');
     }catch(e){setError(e.message)}finally{setBusy(false)}
   }
   return <section className="staff-card teacher-marketplace">
     <header className="marketplace-header"><div><span className="marketplace-kicker">ACCOUNT ONBOARDING</span>
-      <h3>Teacher registrations</h3><p>Email-verified applications require a Heeva approval before tutor login can be activated.</p></div>
+      <h3>Educator registrations</h3><p>Email-verified applications require Heeva approval before educator login can be activated.</p></div>
       <span className="marketplace-status">{applications.filter(a=>a.status==='pending_admin').length} awaiting approval</span>
     </header>
     {error&&<p role="alert" className="marketplace-error">{error}</p>}
     {notice&&<p role="status" className="marketplace-success">{notice}</p>}
-    {!applications.length&&<p>No teacher applications yet.</p>}
+    {!applications.length&&<p>No educator applications yet.</p>}
     {applications.map(item=><article className="marketplace-review-item" key={item.id}>
       <div className="marketplace-review-heading"><div><h4>{item.display_name}</h4><p>{item.email}</p></div>
         <span className="marketplace-status">{item.status.replaceAll('_',' ')}</span></div>
@@ -253,7 +253,7 @@ export function TeacherApplicationsPanel({api}) {
         <label>Review notes<textarea rows={2} maxLength={1200} value={feedback[item.id]||''}
           onChange={e=>setFeedback(old=>({...old,[item.id]:e.target.value}))}/></label>
         <button className="button button-outline" type="button" disabled={busy||!feedback[item.id]?.trim()} onClick={()=>decide(item,'rejected')}>Reject application</button>
-        <button className="button" type="button" disabled={busy} onClick={()=>decide(item,'approved')}>Approve teacher account</button>
+        <button className="button" type="button" disabled={busy} onClick={()=>decide(item,'approved')}>Approve educator account</button>
       </div>}
     </article>)}
   </section>;

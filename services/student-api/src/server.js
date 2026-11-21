@@ -242,9 +242,13 @@ async function currentStaff(req) {
   const token = getCookie(req, STAFF_COOKIE_NAME);
   if (!token || token.length > 100) return null;
   const result = await pool.query(
-    "SELECT u.id,u.email,u.display_name,u.role,u.teacher_slug,ss.id AS session_id " +
+    "SELECT u.id,u.email,u.display_name,u.role,u.teacher_slug,u.status,ss.id AS session_id, " +
+    "(u.status='suspended' AND u.role='teacher' AND EXISTS (SELECT 1 FROM marketplace_teacher_applications a " +
+    "WHERE a.staff_user_id=u.id AND a.email_verified_at IS NOT NULL AND a.status='pending_admin')) AS onboarding_only " +
     "FROM staff_sessions ss JOIN staff_users u ON u.id=ss.staff_user_id " +
-    "WHERE ss.token_hash=$1 AND ss.expires_at>NOW() AND u.status='active' LIMIT 1",
+    "WHERE ss.token_hash=$1 AND ss.expires_at>NOW() AND (u.status='active' OR " +
+    "(u.status='suspended' AND u.role='teacher' AND EXISTS (SELECT 1 FROM marketplace_teacher_applications a " +
+    "WHERE a.staff_user_id=u.id AND a.email_verified_at IS NOT NULL AND a.status='pending_admin'))) LIMIT 1",
     [hashSessionToken(token)]
   );
   return result.rows[0] || null;
@@ -748,7 +752,11 @@ async function handle(req, res) {
       return json(res,429,{error:"Too many staff sign-in attempts. Please wait and try again."});
     }
     const found = await pool.query(
-      "SELECT id,email,display_name,password_hash,role,teacher_slug FROM staff_users WHERE email=$1 AND status='active' LIMIT 1",
+      "SELECT u.id,u.email,u.display_name,u.password_hash,u.role,u.teacher_slug,u.status, " +
+        "(u.status='suspended' AND u.role='teacher' AND a.status='pending_admin' AND a.email_verified_at IS NOT NULL) AS onboarding_only " +
+        "FROM staff_users u LEFT JOIN marketplace_teacher_applications a ON a.staff_user_id=u.id " +
+        "WHERE u.email=$1 AND (u.status='active' OR (u.status='suspended' AND u.role='teacher' " +
+        "AND a.status='pending_admin' AND a.email_verified_at IS NOT NULL)) LIMIT 1",
       [email]
     );
     const staff = found.rows[0];
@@ -763,7 +771,7 @@ async function handle(req, res) {
       await client.query("UPDATE staff_users SET last_login_at=NOW() WHERE id=$1",[staff.id]);
       await auditStaffAction(client,staff.id,"staff.login","staff_user",staff.id);
       await client.query("COMMIT");
-      return json(res,200,{staff:{id:staff.id,email:staff.email,displayName:staff.display_name,role:staff.role,teacherSlug:staff.teacher_slug}});
+      return json(res,200,{staff:{id:staff.id,email:staff.email,displayName:staff.display_name,role:staff.role,teacherSlug:staff.teacher_slug,onboardingOnly:staff.onboarding_only===true}});
     } catch(error) {
       await client.query("ROLLBACK");
       clearStaffSessionCookie(res);
@@ -782,8 +790,16 @@ async function handle(req, res) {
     const staff = await currentStaff(req);
     if (!staff) return json(res,401,{error:"Staff sign-in required."});
 
+    // Verified applicants may access only their own onboarding resources before approval.
+    // Do not grant students, lessons, course administration, offer publishing, or other staff capabilities.
+    if (staff.onboarding_only) {
+      const allowed = new Set(["/api/staff/auth/me", "/api/staff/marketplace/profile",
+        "/api/staff/marketplace/portrait", "/api/staff/marketplace/cv", "/api/staff/marketplace/submit"]);
+      if (!allowed.has(path)) return json(res,403,{error:"Finish your private educator profile and await Heeva approval."});
+    }
+
     if (method === "GET" && path === "/api/staff/auth/me") {
-      return json(res,200,{staff:{id:staff.id,email:staff.email,displayName:staff.display_name,role:staff.role,teacherSlug:staff.teacher_slug}});
+      return json(res,200,{staff:{id:staff.id,email:staff.email,displayName:staff.display_name,role:staff.role,teacherSlug:staff.teacher_slug,onboardingOnly:staff.onboarding_only===true}});
     }
 
 
@@ -1147,7 +1163,8 @@ async function handle(req, res) {
         await client.query("BEGIN");
         const changed=await client.query(
           "UPDATE marketplace_teacher_applications SET status=$2,reviewed_by=$3,reviewed_at=NOW(),reviewer_feedback=$4 " +
-          "WHERE staff_user_id=$1 AND status='pending_admin' RETURNING staff_user_id",
+          "WHERE staff_user_id=$1 AND status='pending_admin' AND ($2<>'approved' OR EXISTS (" +
+          "SELECT 1 FROM marketplace_teacher_profiles p WHERE p.staff_user_id=$1 AND p.review_status='approved')) RETURNING staff_user_id",
           [teacherApplicationDecision[1],decision,staff.id,feedback]);
         if(!changed.rowCount){await client.query("ROLLBACK");return json(res,409,{error:"Application is not awaiting review."});}
         if(decision==="approved")await client.query(

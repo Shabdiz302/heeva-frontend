@@ -193,5 +193,50 @@
     "slug": "personal-finance",
     "title": "Personal Finance Foundations",
     "status": "coming-soon"
+  },
+  {
+    "slug": "primary-maths",
+    "title": "Primary School Maths",
+    "status": "coming-soon"
+  },
+  {
+    "slug": "primary-english",
+    "title": "Primary School English",
+    "status": "coming-soon"
+  },
+  {
+    "slug": "11-plus-preparation",
+    "title": "11+ Entrance Exam Preparation",
+    "status": "coming-soon"
+  },
+  {
+    "slug": "ks3-maths",
+    "title": "Key Stage 3 Maths",
+    "status": "coming-soon"
+  },
+  {
+    "slug": "ks3-science",
+    "title": "Key Stage 3 Science",
+    "status": "coming-soon"
+  },
+  {
+    "slug": "gcse-maths",
+    "title": "GCSE Mathematics Support",
+    "status": "coming-soon"
+  },
+  {
+    "slug": "gcse-english-language",
+    "title": "GCSE English Language Support",
+    "status": "coming-soon"
+  },
+  {
+    "slug": "gcse-combined-science",
+    "title": "GCSE Combined Science Support",
+    "status": "coming-soon"
+  },
+  {
+    "slug": "a-level-maths",
+    "title": "A-Level Mathematics Support",
+    "status": "coming-soon"
   }
 ]

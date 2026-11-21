@@ -1070,3 +1070,21 @@ img { display: block; max-width: 100%; }
   .primary-nav .button-nav { margin-top:12px; }
 }
 @media(max-width:560px) { .primary-nav { max-height:calc(100dvh - 66px); } }
+
+/* Public approved educator cards. No photo is implied until the real media passes review. */
+.approved-educators { padding-block:20px 30px; }
+.approved-educators h2 { color:var(--forest-deep); font-family:var(--serif); font-size:clamp(28px,3.5vw,38px); margin:0 0 8px; }
+.approved-educators > p { color:var(--muted); line-height:1.65; max-width:720px; }
+.approved-educator-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; margin-top:25px; }
+.approved-educator-card { padding:24px; border:1px solid var(--line); border-radius:14px; background:var(--paper); box-shadow:0 9px 30px rgba(35,60,53,.07); }
+.approved-educator-card h3 { font-size:20px; color:var(--forest-deep); margin:14px 0 4px; }
+.approved-educator-card p { font-size:13px; line-height:1.65; color:var(--muted); overflow-wrap:anywhere; }
+.approved-educator-avatar { width:68px; height:68px; display:grid; place-items:center; border-radius:50%; background:var(--sage); border:2px solid var(--yellow); color:var(--forest-deep); font:700 30px var(--serif); }
+.approved-educator-headline { font-weight:700; color:var(--forest-deep)!important; }
+.approved-educator-subjects { border-top:1px solid var(--line); padding-top:10px; }
+.approved-educator-profile { padding-block:65px 90px; max-width:850px; }
+.approved-educator-profile h1 { font:400 clamp(36px,5vw,60px) var(--serif); color:var(--forest-deep); }
+.approved-educator-profile h2 { margin-top:26px; font-size:20px; color:var(--forest-deep); }
+.approved-educator-profile p { line-height:1.85; white-space:pre-line; }
+@media(max-width:900px) { .approved-educator-grid {grid-template-columns:repeat(2,minmax(0,1fr));} }
+@media(max-width:600px) { .approved-educator-grid {grid-template-columns:1fr;} .approved-educator-card{padding:20px;} }
